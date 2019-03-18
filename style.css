@@ -1,5 +1,5 @@
 html {
-    color: black;
+    background-color: black;
 }
 
 body {
@@ -13,6 +13,14 @@ h1, h2, h3, h4 {
     text-transform: lowercase;
     margin: 0;
     background: transparent;
+}
+
+a {
+    color: red;
+}
+
+a:hover {
+    color: blue;
 }
 
 h1 {
