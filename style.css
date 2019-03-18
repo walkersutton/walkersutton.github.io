@@ -4,6 +4,7 @@ html {
 
 body {
     margin: 0;
+    padding-top: 3em;
     padding-left: 5%;
 }
 
@@ -20,7 +21,7 @@ a {
 }
 
 a:hover {
-    color: blue;
+    color: white;
 }
 
 h1 {
