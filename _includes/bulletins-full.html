@@ -1,0 +1,29 @@
+{%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+{% assign bulletins = site.posts | where:'categories', 'bulletins' %}
+
+<h1 class="nowrap">
+    Bulletins
+</h1>
+<!-- <em class="light-text">&nbsp;&nbsp;for new and interesting things</em> -->
+
+<ul class="bulletins spaced">
+    {%- if bulletins.size > 0 -%}
+        {%- for post in bulletins -%}
+            <li>
+                
+                {{ post.content | remove: '<p>' | remove: '</p>' }}
+
+                <span>&gt;</span>
+
+                <a class="no-underline" href="{{ post.url | relative_url }}">
+                    <time class="thin-text" datetime="{{ page.date | date_to_xmlschema }}" itemprops="datePublished">
+                        <em>
+                            {{ post.date | date: date_format }}
+                        </em>
+                    </time>
+                </a>
+
+            </li>
+        {%- endfor -%}
+    {%- endif -%}
+</ul>
