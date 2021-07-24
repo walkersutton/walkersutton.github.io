@@ -7,16 +7,16 @@
 	margin-left: auto;
 	margin-right: auto;
 	a {
-		color: #0000EE;
+		color: var(--main-text-color);
 	}
 	a:visited {
-		color:#0000EE;
+		color: var(--main-text-color);
 	}
 	a:hover {
-		color:#0000EE;
+		color: var(--main-text-color);
 	}
 	a:active {
-		color:#0000EE;
+		color: var(--main-text-color);
 	}
 }
 .header ul, .footer ul {
