@@ -14,7 +14,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: walker sutton
+title: Walker Sutton
 email: walker@walkercsutton.com
 twitter: walkercsutton
 github: walkersutton
