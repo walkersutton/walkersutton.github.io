@@ -1,6 +1,6 @@
 ---
 layout: default
-title: bulletins
+title: Bulletins
 permalink: /bulletins
 ---
 # Bulletins
