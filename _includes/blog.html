@@ -1,22 +1,19 @@
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
-<h1 class="pb5">
-    Blog
-</h1>
-<ul>
-    {%- if site.posts.size > 0 -%}
-        {%- for post in site.posts -%}
+<h1>blog</h1>
+{%- if site.posts.size > 0 -%}
+    {%- for post in site.posts -%}
+        <ul>
             {%- if post.categories contains "blog" -%}
                 <li>
-                    <a href="{{ post.url | relative_url }}">
-                        <h3>
+                    <h2>
+                        <a href="{{ post.url | relative_url }}">
                             {{ post.title | escape }}
-                        </h3>
-                    </a>
+                        </a>
+                    </h2>
                     <em class="thin-text">{{ post.date | date: date_format }}</em>
-                    <!-- <p>{{ post.post_description }}</p> -->
+                    <p>{{ post.post_description }}</p>
                 </li>
             {%- endif -%}
-        {%- endfor -%}
-    {%- endif -%}
-</ul>
-  
+        </ul>
+    {%- endfor -%}
+{%- endif -%}
