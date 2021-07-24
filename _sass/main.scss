@@ -21,7 +21,6 @@ html {
 * {
 	margin: 0px;
 	padding: 0px;
-	
 }
 h1, h2, h3, h4, h5 {
 	font-family: 'Heebo', sans-serif;
@@ -34,15 +33,8 @@ p {
 	margin-bottom: .5em;
 }
 a {
-	// color: var(--link-color);
 	text-decoration: none;
-	// &:hover {
-	// 	color: var(--link-hover-color);
-	// }
-
 }
-
-
 strong {
 	font-weight: 600;
 }
