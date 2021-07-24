@@ -5,7 +5,7 @@ permalink: /bulletins
 ---
 # Bulletins
 
-> This is an archive of my 2020 bulletins. I decided to stop posting 'bulleins' because I realized the type of content is more suited for other platforms (Twitter, Instagram, etc.).
+*This is an archive of my bulletins. I decided to stop posting 'bulleins' because I realized the type of content is more suited for other platforms (Twitter, Instagram, etc.).*
 
 #### 06/14/2020
 Finished reading ['The Color of Law: A Forgotten History of How Our Government Segregated America'](https://www.goodreads.com/book/show/32191706-the-color-of-law).
@@ -17,7 +17,7 @@ Last day of my co-op at Priceline.
 I ordered some H Plus Son bicycle rims from Japan. I'm working on building a custom wheelset for my bike. They could take anywhere from 1-3 months to arrive. The Shimano hubs that I already ordered from the U.K. arrived last week.
 
 #### 08/08/2020
-['Jam is obsolete' blog post by Jeff Kaufman](https://www.jefftk.com/p/jam-is-obsolete).
+['Jam is obsolete'](https://www.jefftk.com/p/jam-is-obsolete) blog post by Jeff Kaufman.
 
 #### 08/24/2020
 Summited King Peak in Humboldt County, California.

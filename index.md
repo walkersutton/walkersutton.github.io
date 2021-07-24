@@ -4,6 +4,6 @@
 
 layout: index
 ---
-## Hi, I'm Walker.
+# Hi, I'm Walker.
 
 <img class="text-image-landscape" src="https://pbs.twimg.com/profile_images/1369687722541998081/Qg449cAj_400x400.jpg" alt="twitter_profile_picture">

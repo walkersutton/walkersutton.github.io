@@ -3,7 +3,7 @@ layout: default
 title: about
 permalink: /about
 ---
-# about
+# About
 
 Hi, I'm Walker.
 
