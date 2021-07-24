@@ -1,52 +1,22 @@
-
-.pb5 {
-	padding-bottom: 5px;
-}
-.pb10 {
-	padding-bottom: 10px;
-}
-.pb20 {
-	padding-bottom: 20px;
-}
-
 @media (max-width: 869px) {
 	:root {
 		--main-width: 784px;
 	}
     .main {
-		padding-left: 32px !important;
-		padding-right: 32px !important;
+		padding: 0px 16px;
 	}
 	.container {
 		display: block;
 	}
 	.home-main-image {
-		margin: 20px 0 20px 0;
+		margin: 20px 0;
 		display: block;
 		margin-left: auto;
 		margin-right: auto;
 		max-height: 369px;
 		width: auto;
 	}
-	.bulletins {
-		width: 100%;
-		padding: 10px 0px 10px 10px;
-	}
-	.bulletins li {
-		padding-right: 10px;
-	}
-	.book {
-		width: 18em;
-		padding: 0px 20px 20px 20px;
-	}
 	.photo {
 		max-width: 100%;
-	}
-}
-
-@media (max-width: 666px) {
-	.bulletin {
-		width: 100%;
-		padding: 10px 0px 10px 10px;
 	}
 }
