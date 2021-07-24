@@ -1,21 +1,4 @@
 /* blog */
-.selection-list {
-	max-width: 100%;
-	overflow-wrap: break-word;
-  word-wrap: break-word;
-	hyphens: auto;
-}
-.selection-list :hover > *{
-	color: var(--link-color);
-}
-.selection-list a {
-	text-decoration: none;
-	color: var(--main-text-color);
-	/* make sure this color thing isn't messing up link colorign */
-}
-.selection-list a:visited {
-	color: var(--main-text-color);
-}
 .summary {
 	padding: 6px 0px 6px 0px;
 	margin: 6px;
