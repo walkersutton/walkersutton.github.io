@@ -1,15 +1,15 @@
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
-<h1>blog</h1>
+<h2>Blog</h2>
 {%- if site.posts.size > 0 -%}
     {%- for post in site.posts -%}
         <ul>
             {%- if post.categories contains "blog" -%}
                 <li>
-                    <h2>
+                    <h3>
                         <a href="{{ post.url | relative_url }}">
                             {{ post.title | escape }}
                         </a>
-                    </h2>
+                    </h3>
                     <em class="thin-text">{{ post.date | date: date_format }}</em>
                     <p>{{ post.post_description }}</p>
                 </li>
