@@ -21,7 +21,17 @@ html {
 * {
 	margin: 0px;
 	padding: 0px;
+	
+}
+h1, h2, h3, h4, h5 {
 	font-family: 'Heebo', sans-serif;
+}
+h1, h2 {
+	margin-bottom: .5em;
+}
+p {
+	font-family: 'STIX Two Math', serif;
+	margin-bottom: .5em;
 }
 a {
 	// color: var(--link-color);
