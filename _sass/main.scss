@@ -9,13 +9,14 @@
 	--lr-padding: 6px;
 	--tb-padding: 1px;
 	--wide-padding: 16px;
-	--nav-width: 50em; /* 1140px */
+	--nav-width: 51em; /* 1140px */
 	--main-width: 49em;
 	--head-height: 49px;
 	--foot-height: 210px;
 }
 html {
 	min-height: 100%;
+	
 }
 * {
 	margin: 0px;
@@ -23,13 +24,15 @@ html {
 	font-family: 'Heebo', sans-serif;
 }
 a {
-	color: var(--link-color);
+	// color: var(--link-color);
 	text-decoration: none;
-	&:hover {
-		color: var(--link-hover-color);
-	}
+	// &:hover {
+	// 	color: var(--link-hover-color);
+	// }
 
 }
+
+
 strong {
 	font-weight: 600;
 }
@@ -51,12 +54,10 @@ strong {
 	padding: 8px;
 	box-shadow: 8px 8px #917b6035;
 }
-
 .main {
 	max-width: var(--main-width);
 	background-color: transparent;
-	padding-top: 24px;
-	padding-bottom: 24px;
+	padding: 24px 16px;
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
