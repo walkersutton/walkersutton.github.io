@@ -16,6 +16,10 @@
 
 title: walker sutton
 email: walker@walkercsutton.com
+twitter: walkercsutton
+github: walkersutton
+linkedin: walkersutton
+
 description: My personal website for sharing thoughts, projects, and other interests.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://walkercsutton.com" # the base hostname & protocol for your site, e.g. http://example.com
