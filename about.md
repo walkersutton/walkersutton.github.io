@@ -9,7 +9,7 @@ circa October 2018
 ### 👋 Intro
 * 👨🏻‍💻 I'm a software engineer on the quality development team at [InterSystems](https://intersystems.com).
 * 🏡 I'm originally from the [East End](https://en.wikipedia.org/wiki/East_End_(Long_Island)) of Long Island.
-* 🎓 I recently graduated from Northeastern with a B.A. in Computer Science
+* 🎓 I recently graduated from Northeastern with a B.A. in Computer Science.
 
 ### 😄 Fun
 * 🏃 Running
