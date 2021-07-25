@@ -1,3 +1,18 @@
+@font-face { 
+	font-family: Heebo;
+	font-style: normal;
+	font-weight: 400;
+	src: url('/assets/fonts/Heebo-Regular.ttf');
+	font-display: swap;
+} 
+@font-face { 
+	font-family: STIX Two Math;
+	font-style: normal;
+	font-weight: 400;
+	src: url('/assets/fonts/STIXTwoMath-Regular.ttf');
+	font-display: swap;
+}
+
 :root {
 	--navbar-background: #eee;
 	--light-text: #b1b1b1;
