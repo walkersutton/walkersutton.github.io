@@ -16,7 +16,7 @@ I decided to make this leaderboard because currently on the NYT website, you can
 
 There is a best times chart below which graphically shows each person's fastest time for a particular day of the week.
 
-### best solve times
+#### Best Solve Times
 
 **there should be a dynamic chart here, but I need to figure out how to migrate it over from my static site**
 
