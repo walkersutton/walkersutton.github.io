@@ -4,7 +4,6 @@ title: About
 permalink: /about
 ---
 <img class="img-wide" src="https://i.imgur.com/sTXCdDv.jpg">
-circa October 2018
 
 ### 👋 Intro
 * 👨🏻‍💻 I'm a software engineer on the quality development team at [InterSystems](https://intersystems.com).
