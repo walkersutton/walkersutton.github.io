@@ -11,7 +11,7 @@
           {%- for path in page_paths -%}
             {%- assign page = site.pages | where: "path", path | first -%}
             <!-- might be a better way to ignore certain pages in navbar -->
-            {%- if page.title and page.url != "/" and page.url != "/bulletins" -%}
+            {%- if page.title and page.url != "/" and page.url != "/bulletins" and page.url != "/404" -%}
             <li><a href="{{ page.url | relative_url }}">{{ page.title | escape }}</a></li>
             {%- endif -%}
           {%- endfor -%}
