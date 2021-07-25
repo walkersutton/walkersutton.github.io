@@ -9,8 +9,11 @@
                         {{ post.title | escape }}
                     </a>
                 </h3>
-                <em class="thin-text">{{ post.date | date: date_format }}</em>
-                <p>{{ post.post_description }}</p>
+                <p>
+                    {{ post.date | date: date_format }}
+                    <br>
+                    {{ post.post_description }}
+                </p>
             </li>
         </ul>
     {%- endfor -%}

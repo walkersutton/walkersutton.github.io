@@ -1,7 +1,7 @@
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
 <h2>Recent Blog Posts</h2>
 {%- if site.posts.size > 0 -%}
-    {%- for post in site.posts limit:3 -%}
+    {%- for post in site.posts limit:4 -%}
         <ul>
             <li>
                 <h3>
@@ -9,8 +9,11 @@
                         {{ post.title | escape }}
                     </a>
                 </h3>
-                <em class="thin-text">{{ post.date | date: date_format }}</em>
-                <p>{{ post.post_description }}</p>
+                <p>
+                    {{ post.date | date: date_format }}
+                    <br>
+                    {{ post.post_description }}
+                </p>
             </li>
         </ul>
     {%- endfor -%}

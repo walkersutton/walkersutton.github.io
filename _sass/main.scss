@@ -15,7 +15,6 @@
 
 :root {
 	--navbar-background: #eee;
-	--light-text: #b1b1b1;
 	--main-text-color: black;
 	--bulletin-text-color: white;
 	--link-color: blue;
@@ -56,12 +55,6 @@ strong {
 .discrete {
     color: var(--main-text-color) !important;
     text-decoration: none !important;
-}
-.light-text {
-	color: var(--light-text);
-}
-.thin-text {
-    font-weight: 300;
 }
 .highlightText {
 	background-color: black;
