@@ -3,7 +3,7 @@ layout: page
 title: About
 permalink: /about
 ---
-<img style="width: 100%; height: auto;" src="https://i.imgur.com/sTXCdDv.jpg">
+<img class="img-wide" src="https://i.imgur.com/sTXCdDv.jpg">
 circa October 2018
 
 ### 👋 Intro
@@ -20,7 +20,7 @@ circa October 2018
 ### 🚧 Projects
 * 🚴 [Cadence Calculator](https://cadecalc.app)
 * 🐦 [@WePollUs](https://twitter.com/wepollus)
-* More on the [blog](/blog)
+* 📓 More on the [blog](/blog)
 
 ### 👔 Work
 * 🩺 Engineer at InterSystems (current)
