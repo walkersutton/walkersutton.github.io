@@ -6,7 +6,7 @@ date: 2017-04-19 12:00:00 -0500
 published: true
 categories: blog
 ---
-<img class="text-image-landscape" src="https://i.imgur.com/kWSXrpI.jpg" alt="sparkjuke"><span class="right">
+<img class="img-wide" src="https://i.imgur.com/kWSXrpI.jpg" alt="sparkjuke"><span class="right">
 
 **C++, Raspberry Pi**
 

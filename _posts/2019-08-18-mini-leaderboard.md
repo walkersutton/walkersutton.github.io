@@ -6,7 +6,7 @@ date:   2019-08-18 12:00:00 -0500
 published: true
 categories: blog
 ---
-<img class="text-image-landscape" src="https://i.imgur.com/nUY7X8b.png" alt="nyt_mini_leaderboard_main">
+<img class="img-wide" src="https://i.imgur.com/nUY7X8b.png" alt="nyt_mini_leaderboard_main">
 
 **Python, cron, GoogleCharts, GoogleSheetsAPI**
 

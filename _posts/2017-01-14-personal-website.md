@@ -6,7 +6,7 @@ date:   2017-01-14 12:00:00 -0500
 published: true
 categories: blog
 ---
-<img class="text-image-landscape" src="https://i.imgur.com/Twc7PHV.png" alt="old_website_screenshot_main">
+<img class="img-wide" src="https://i.imgur.com/Twc7PHV.png" alt="old_website_screenshot_main">
 
 **Node, Express, HTML, CSS, JS**
 
@@ -14,24 +14,24 @@ I decided I wanted to have a website on January 18, 2017. I can't remember why, 
 
 ### spring 2017 version
 
-<img class="text-image-landscape" src="https://i.imgur.com/2K1mWPD.png" alt="old_website_screenshot_spring_2017">
+<img class="img-wide" src="https://i.imgur.com/2K1mWPD.png" alt="old_website_screenshot_spring_2017">
 
 This is what the first rendition of my site looked like. I chose a fairly simple portfolio template on Squarespace and built it out from there. The image above doesn't include the original graphics because when I captured the screenshot recently, Squarespace had already removed the images that I uploaded two years ago.<br><br>Over the summer of 2017, I went to my local library and checked out a beginner's guide to website development. After reading through it, I was able to put together my first webpage from scratch! It's not pretty by any means, but from that point forward, I was comfortable experimenting with new designs.
 
 ### book tutorial page
 
-<img class="text-image-landscape" src="https://i.imgur.com/g9UYFsi.png" alt="old_website_screenshot_book_tutorial">
+<img class="img-wide" src="https://i.imgur.com/g9UYFsi.png" alt="old_website_screenshot_book_tutorial">
 
 I started off by trying to create a menu. In the book, I learned about lists and tables, and from what I was finding online, I thought I could use these structures to build my own iteration. After lots of experimenting with different design properties and structures, I had a very tentative menu that looked something like this.
 
 ### first menu
 
-<img class="text-image-landscape" src="https://i.imgur.com/nf0H2YF.png" alt="old_website_screenshot_first_menu">
+<img class="img-wide" src="https://i.imgur.com/nf0H2YF.png" alt="old_website_screenshot_first_menu">
 
 I wasn't super thrilled with how it was looking, so I tried adding some color and reformatting the layout until I ended up with this.
 
 ### revamped menu
-<img class="text-image-landscape" src="https://i.imgur.com/XI7VxPe.png" alt="old_website_screenshot_revamped_menu">
+<img class="img-wide" src="https://i.imgur.com/XI7VxPe.png" alt="old_website_screenshot_revamped_menu">
 
 I was a little happier with how this menu turned out, but I still wasn't at the point where I could replace my content on Squarespace with this. (I know it looks a little funky, these were only the early prototypes)
 
@@ -39,11 +39,11 @@ I toyed around with this new idea where the site was more of a landing page than
 
 ### landing page
 
-<img class="text-image-landscape" src="https://i.imgur.com/HTrAW8u.png" alt="old_website_screenshot_landing_page">
+<img class="img-wide" src="https://i.imgur.com/HTrAW8u.png" alt="old_website_screenshot_landing_page">
 
 ### on-hover
 
-<img class="text-image-landscape" src="https://i.imgur.com/xzuyitR.png" alt="old_website_screenshot_on_hover">
+<img class="img-wide" src="https://i.imgur.com/xzuyitR.png" alt="old_website_screenshot_on_hover">
 
 For my next concept, I decided to build a single scrolling page. From a design standpoint, I thought this was a fairly easy layout to implement since you only need to worry about vertical positioning. It also scales fairly well because the perspective is similar on most devices.
 
@@ -51,13 +51,13 @@ I wanted the background color of this site to be white, but once I started addin
 
 ### single scroll clean
 
-<img class="text-image-portrait" src="https://i.imgur.com/rKnrian.png" alt="old_website_screenshot_single_scroll_clean">
+<img class="img-tall" src="https://i.imgur.com/rKnrian.png" alt="old_website_screenshot_single_scroll_clean">
 
 I was happy with how the single scrolling page turned out, but I started running into problems with displaying my content. I wanted to add pictures, and had plans to create a blog type section, but if I stuck with this layout, I feared the height of the page would become too tall, and it'd be unpleasant for users to navigate.<br><br>I needed to create another menu. My earlier attempts at menus weren't very pretty, so I started from a clean slate. I ended up with a left vertical bar for navigation/social links and then a title on the top edge. I no longer had issues with content formatting -- the L shaped navigation bar on the top left created space for the main content on each page.
 
 ### left column
 
-<img class="text-image-landscape" src="https://i.imgur.com/J9oQ6em.png" alt="old_website_screenshot_left_column">
+<img class="img-wide" src="https://i.imgur.com/J9oQ6em.png" alt="old_website_screenshot_left_column">
 
 The site was starting to feel more put together, but I had one major problem with it -- it didn't scale well on mobile. It would been great if all of my visitors were on desktop, but the majority of my traffic comes from mobile users. I also felt like the home page was a bit redundant since the main content was basically just another navigation menu, so that needed to change.
 
@@ -66,7 +66,7 @@ Bootstrap is a great tool for creating mobile-friendly websites, and I've had ex
 
 ### current version
 
-<img class="text-image-landscape" src="https://i.imgur.com/Twc7PHV.png" alt="old_website_screenshot_current_version">
+<img class="img-wide" src="https://i.imgur.com/Twc7PHV.png" alt="old_website_screenshot_current_version">
 
 I'm very happy with how this site turned out. I think it scales well on both desktop and mobile, and I was also able to keep a similar design to the previous rendition. To minimize redundancies, I decided to get rid of the left pane altogether and chose to use an image based navigation method. I also moved the social links to the top, and on mobile they're pushed to the bottom to free up screen space.
 

@@ -7,7 +7,7 @@ published: true
 categories: blog
 ---
 
-<img class="text-image-portrait" src="https://i.imgur.com/EM2NExP.gif" alt="forbidden_island_world_game_gif">
+<img class="img-tall" src="https://i.imgur.com/EM2NExP.gif" alt="forbidden_island_world_game_gif">
 
 **Java**
 
