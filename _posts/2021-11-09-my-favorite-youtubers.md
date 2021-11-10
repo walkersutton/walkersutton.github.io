@@ -1,7 +1,7 @@
 ---
 layout: post
 title: My Favorite YouTubers
-post_description: An onging list of the best YouTubers, in my opinion.
+post_description: An ever-changing list of the best YouTubers.
 date:   2021-11-09 23:00:00 -0500
 published: true
 categories: blog
