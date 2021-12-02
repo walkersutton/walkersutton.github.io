@@ -5,7 +5,7 @@ permalink: /bulletins
 ---
 # Bulletins
 
-*This is an archive of my bulletins. I decided to stop posting 'bulleins' because I realized the type of content is more suited for other platforms (Twitter, Instagram, etc.).*
+*This is an archive of my bulletins. I decided to stop posting 'bulletins' because I realized the type of content is more suited for other platforms (Twitter, Instagram, etc.).*
 
 #### 06/14/2020
 Finished reading ['The Color of Law: A Forgotten History of How Our Government Segregated America'](https://www.goodreads.com/book/show/32191706-the-color-of-law).

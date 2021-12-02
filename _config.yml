@@ -20,7 +20,7 @@ twitter: walkercsutton
 github: walkersutton
 linkedin: walkersutton
 
-description: My personal website for sharing thoughts, projects, and other interests.
+description: My personal website for sharing thoughts, projects, and interests.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://walkercsutton.com" # the base hostname & protocol for your site, e.g. http://example.com
 
@@ -32,7 +32,6 @@ markdown: kramdown
 plugins:
     - jekyll-feed
     - jekyll-sitemap
- 
 
 feed:
   posts_limit: 666

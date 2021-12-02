@@ -16,7 +16,7 @@ permalink: /about
 * 🪁🏄 Kiteboarding
 * 🧩 Crossword Puzzles
 
-### 🚧 Current & Projects
+### 🚧 Current Projects
 * 🚴 [Cadence Calculator](https://cadecalc.app)
 * 🐦 [@WePollUs](https://twitter.com/wepollus)
 * 📓 More on the [blog](/blog)
