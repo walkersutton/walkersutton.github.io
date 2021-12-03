@@ -1,20 +1,17 @@
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
-<h2>Recent Blog Posts</h2>
 {%- if site.posts.size > 0 -%}
-    {%- for post in site.posts limit:4 -%}
-        <ul>
-            <li>
-                <h3>
+	<ul class="blog blog-short">
+  		{%- for post in site.posts limit:6 -%}
+            <li class="flex">
+                <h4 class="left">
                     <a href="{{ post.url | relative_url }}">
                         {{ post.title | escape }}
                     </a>
-                </h3>
-                <p>
+                </h4>
+                <p class="push-right">
                     {{ post.date | date: date_format }}
-                    <br>
-                    {{ post.post_description }}
                 </p>
             </li>
-        </ul>
-    {%- endfor -%}
+    	{%- endfor -%}
+	</ul>
 {%- endif -%}

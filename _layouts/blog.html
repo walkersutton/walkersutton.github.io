@@ -2,5 +2,20 @@
 layout: default
 ---
 {{ content }}
-
-{%- include blog.html -%}
+{%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+{%- if site.posts.size > 0 -%}
+    <ul class="blog">
+		{%- for post in site.posts -%}
+				<li class="flex">
+					<h4 class="left">
+						<a href="{{ post.url | relative_url }}">
+							{{ post.title | escape }}
+						</a>
+					</h4>
+					<p class="push-right">
+						{{ post.date | date: date_format }}
+					</p>
+				</li>
+		{%- endfor -%}
+    </ul>
+{%- endif -%}

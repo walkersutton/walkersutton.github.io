@@ -1,0 +1,41 @@
+@media (max-width: 869px) {
+	:root {
+		--main-width: 784px;
+	}
+    .main {
+		padding: 0px var(--lg);
+	}
+	.container {
+		display: block;
+	}
+}
+@media (max-width: 500px) {
+	:root {
+		--vert-padding: var(--sm) !important;
+	}
+	h1, h2 {
+		padding-top: .5em !important;
+	}
+	.flex {
+		flex-direction: column;
+	}
+	.push-right {
+		margin-left: 0 !important;
+	}
+	.footer li {
+		font-size: 1.1em;
+		padding-top: var(--xs) !important;
+	}
+	.blog-short {
+		padding-left: var(--xxs) !important;
+		padding-right: var(--xxs) !important;
+	}
+	.lpmd {
+		padding-left: var(--xxs) !important;
+	}
+}
+
+.twitter-tweet {
+	margin-left: auto;
+	margin-right: auto;
+}

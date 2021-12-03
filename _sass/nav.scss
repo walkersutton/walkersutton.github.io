@@ -6,20 +6,17 @@
 	max-width: var(--nav-width);
 	margin-left: auto;
 	margin-right: auto;
-	span, li, a {
-		font-family: 'Heebo', sans-serif !important;
-		a {
-			color: var(--main-text-color);
-		}
-	}
+	color: var(--secondary-color);
+	padding-left: var(--side-padding);
+	padding-right: var(--side-padding);
 	a:visited {
-		color: var(--main-text-color);
+		color: var(--secondary-color);
 	}
 	a:hover {
-		color: var(--main-text-color);
+		color: var(--secondary-color);
 	}
 	a:active {
-		color: var(--main-text-color);
+		color: var(--secondary-color);
 	}
 }
 .header ul, .footer ul {
@@ -32,29 +29,31 @@
 }
 .header {
 	height: var(--head-height);
+	padding-top: var(--vert-padding);
 }
 .short-head { 
 	display: none;
 }
 .header span {
 	font-weight: 400;
-	font-size: 1.5em;
-	margin-top: 9px;
-	padding-left: var(--wide-padding);
+	font-size: 1.6em;
 }
 .header ul {
-	margin-top: 16px;
-	padding-right: 10px;
+	padding-top: 4px;
 }
 .header li {
 	display: inline;
 	text-align: center;
 	padding: 0px 6px;
+	font-size: 1.25em;
 }
 /* footer */
 .footer ul {
-	padding: 24px var(--wide-padding);
+	padding: var(--xxl) 0px;
 	margin: 0;
+}
+.footer li {
+	padding-top: var(--xxxs);
 }
 .site-title {
     display: block;

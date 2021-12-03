@@ -24,6 +24,48 @@
 .four-oh-four {
 	height: 500px;
 }
-.same-line {
-    display: flex;
+
+/* flex box */
+.flex {
+	display: flex;
+}
+.push-right {
+	margin-left: auto;
+	float: right;
+}
+
+/* padding */
+.plg {
+	padding: var(--lg);
+}
+.tplg {
+	padding-top: var(--lg);
+}
+.rplg {
+	padding-right: var(--lg);
+}
+.bplg {
+	padding-bottom: var(--lg);
+}
+.lplg {
+	padding-left: var(--lg);
+}
+.pmd {
+	padding: var(--md);
+}
+.tpmd {
+	padding-top: var(--md);
+}
+.rpmd {
+	padding-right: var(--md);
+}
+.bpmd {
+	padding-bottom: var(--md);
+}
+.lpmd {
+	padding-left: var(--md);
+}
+/* drop shadow */
+.ds {
+	filter: drop-shadow(var(--xs) var(--xs) 0px var(--tertiary-color));
 }

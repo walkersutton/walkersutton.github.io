@@ -1,19 +1,17 @@
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
 {%- if site.posts.size > 0 -%}
-    {%- for post in site.posts -%}
-        <ul>
-            <li>
-                <h4 class="left">
-                    <a href="{{ post.url | relative_url }}">
-                        {{ post.title | escape }}
-                    </a>
-                </h4>
-                <p class="right">
-                    {{ post.date | date: date_format }}
-                    <!--<br>-->
-                    <!--{{ post.post_description }}-->
-                </p>
-            </li>
-        </ul>
-    {%- endfor -%}
+    <ul class="blog">
+		{%- for post in site.posts -%}
+				<li class="flex">
+					<h4 class="left">
+						<a href="{{ post.url | relative_url }}">
+							{{ post.title | escape }}
+						</a>
+					</h4>
+					<p class="push-right">
+						{{ post.date | date: date_format }}
+					</p>
+				</li>
+		{%- endfor -%}
+    </ul>
 {%- endif -%}

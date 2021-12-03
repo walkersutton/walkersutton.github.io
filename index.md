@@ -4,7 +4,10 @@
 
 layout: index
 ---
-<div class="center">
-<img class="img-small" src="https://pbs.twimg.com/profile_images/1369687722541998081/Qg449cAj_400x400.jpg" alt="twitter_profile_picture">
-<h2>Hi! I'm Walker.</h2>
+<div class="flex tplg bplg">
+<img class="img-small ds" src="https://pbs.twimg.com/profile_images/1369687722541998081/Qg449cAj_400x400.jpg" alt="twitter_profile_picture">
+<div class="tpmd lpmd">
+<h1>Hi! I'm Walker.</h1>
+<p></p>
+</div>
 </div>

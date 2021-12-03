@@ -1,32 +1,48 @@
-@font-face { 
-	font-family: Heebo;
-	font-style: normal;
-	font-weight: 400;
-	src: url('/assets/fonts/Heebo-Regular.ttf');
-	font-display: swap;
-} 
-@font-face { 
-	font-family: STIX Two Math;
-	font-style: normal;
-	font-weight: 400;
-	src: url('/assets/fonts/STIXTwoMath-Regular.ttf');
-	font-display: swap;
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/assets/fonts/inconsolata/static/Inconsolata-Light.ttf') format('truetype')
+}
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/assets/fonts/inconsolata/static/Inconsolata-Regular.ttf') format('truetype')
+}
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/assets/fonts/inconsolata/static/Inconsolata-Medium.ttf') format('truetype')
 }
 
 :root {
-	--navbar-background: #eee;
-	--main-text-color: black;
-	--bulletin-text-color: white;
-	--link-color: blue;
+	--background-color: #0d0d0d;
+	--navbar-background: var(--background-color);
+	--primary-color: #fff;
+	--secondary-color: #D9AEFD;
+	--tertiary-color: #333;
+	--navbar-text: var(--secondary-color);
+	--bulletin-text-color: var(--primary-color);
+	--link-color: var(--secondary-color);
 	--link-hover-color: salmon;
-	--navbar-text: black;
 	--lr-padding: 6px;
 	--tb-padding: 1px;
-	--wide-padding: 16px;
+	--side-padding: 24px;
+	--vert-padding: 20px;
 	--nav-width: 47em;
 	--main-width: 45em;
 	--head-height: 49px;
 	--foot-height: 210px;
+	--xxl: 32px;
+	--xl: 28px;
+	--lg: 24px;
+	--md: 20px;
+	--sm: 16px;
+	--xs: 12px;
+	--xxs: 8px;
+	--xxxs: 4px;
 }
 html {
 	min-height: 100%;
@@ -34,29 +50,40 @@ html {
 * {
 	margin: 0px;
 	padding: 0px;
+	background-color: var(--background-color);
+	color: var(--primary-color);
+	font-family: 'Inconsolata', monospace;
 }
-h1, h2, h3, h4, h5 {
-	font-family: 'Heebo', sans-serif;
+h1 {
+	font-size: 2em;
+	padding-bottom: var(--sm);
 }
 h1, h2 {
-	margin-bottom: .5em;
+	padding-top: 1em;
 }
-p {
-	font-family: 'STIX Two Math', serif;
-	margin-bottom: .5em;
+h3 {
+	padding-bottom: var(--xxxs);
+}
+h1, h2, h3, h4, h5 {
+	color: var(--secondary-color);
 }
 a {
 	text-decoration: none;
+	color: var(--secondary-color);
 }
+p {
+	font-size: 1.1em;
+}
+
 strong {
 	font-weight: 600;
 }
 .discrete {
-    color: var(--main-text-color) !important;
+    color: var(--primary-color) !important;
     text-decoration: none !important;
 }
 .highlightText {
-	background-color: black;
+	background-color: var(--secondary-color);
 	color: white;
 	font-size: 1.2em;
 	font-weight: 300;
@@ -65,31 +92,8 @@ strong {
 }
 .main {
 	max-width: var(--main-width);
-	background-color: transparent;
-	padding: 24px 16px;
+	margin: 0px var(--side-padding);
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
-}
-
-.img-tall {
-	max-height: 525px;
-	display: block;
-	// margin-left: auto;
-	// margin-right: auto;
-	width: auto;
-	max-width: 100%;
-	padding-bottom: 20px;
-}
-.img-wide {
-	max-width: 100%;
-	display: block;
-	// margin-left: auto;
-	// margin-right: auto;
-	max-height: 469px;
-	padding-bottom: 20px;
-}
-.img-small {
-	width: 200px;
-	height: 200px;
 }
