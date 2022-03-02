@@ -2,16 +2,18 @@
 {%- if site.posts.size > 0 -%}
 	<ul class="blog blog-short">
   		{%- for post in site.posts limit:6 -%}
-            <li class="flex">
-                <h4 class="left">
-                    <a href="{{ post.url | relative_url }}">
-                        {{ post.title | escape }}
-                    </a>
-                </h4>
-                <p class="push-right">
-                    {{ post.date | date: date_format }}
-                </p>
-            </li>
+  			{%- if post.published -%}
+				<li class="flex">
+					<h4 class="left">
+						<a href="{{ post.url | relative_url }}">
+							{{ post.title | escape }}
+						</a>
+					</h4>
+					<p class="push-right">
+						{{ post.date | date: date_format }}
+					</p>
+				</li>
+			{%- endif -%}
     	{%- endfor -%}
 	</ul>
 {%- endif -%}

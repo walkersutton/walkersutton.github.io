@@ -6,6 +6,7 @@ layout: default
 {%- if site.posts.size > 0 -%}
     <ul class="blog">
 		{%- for post in site.posts -%}
+			{%- if post.published -%}
 				<li class="flex">
 					<h4 class="left">
 						<a href="{{ post.url | relative_url }}">
@@ -16,6 +17,7 @@ layout: default
 						{{ post.date | date: date_format }}
 					</p>
 				</li>
+			{%- endif -%}
 		{%- endfor -%}
     </ul>
 {%- endif -%}
