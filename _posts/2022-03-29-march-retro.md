@@ -29,7 +29,7 @@ Throughout the month of February, I participated in [Fweb3](https://fweb3.xyz), 
 
 ## Wrap Up
 
-### Goals for next month - keep it stupid simple
+### Goals for next month
 * [Cadence Calculator](https://cadecalc.app) soft launch
 * Write a [Hammerspoon](https://hammerspoonTODO.com) blog post
 * xx _Only Two This Month_
