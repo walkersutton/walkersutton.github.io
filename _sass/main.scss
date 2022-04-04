@@ -43,6 +43,7 @@
 	--xs: 12px;
 	--xxs: 8px;
 	--xxxs: 4px;
+	--def-font-size: 1.15em;
 }
 html {
 	min-height: 100%;
@@ -58,11 +59,17 @@ h1 {
 	font-size: 2em;
 	padding-bottom: var(--sm);
 }
-h1, h2 {
-	padding-top: 1em;
+h2 {
+	padding-top: var(--xs);
+	padding-bottom: var(--xxs);
 }
 h3 {
-	padding-bottom: var(--xxxs);
+	font-size: 1.3em;
+	padding-bottom: var(--xxs);
+}
+h4 {
+	font-size: 1.2em;
+	padding-bottom: var(--xxs);
 }
 h1, h2, h3, h4, h5 {
 	color: var(--secondary-color);
@@ -72,7 +79,7 @@ a {
 	color: var(--secondary-color);
 }
 p {
-	font-size: 1.1em;
+	font-size: var(--def-font-size);
 }
 
 strong {
@@ -85,7 +92,7 @@ strong {
 .highlightText {
 	background-color: var(--secondary-color);
 	color: white;
-	font-size: 1.2em;
+	font-size: vat(--def-font-size);
 	font-weight: 300;
 	padding: 8px;
 	box-shadow: 8px 8px #917b6035;
@@ -96,4 +103,5 @@ strong {
 	margin-left: auto;
 	margin-right: auto;
 	display: block;
+	padding-top: var(--xl);
 }

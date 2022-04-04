@@ -10,7 +10,7 @@ permalink: /about
 ## 👋 Intro
 * 👨🏻‍💻 I'm a software engineer on the Data Platforms team at [InterSystems](https://intersystems.com).
 * 🏡 I'm originally from the [East End](https://en.wikipedia.org/wiki/East_End_(Long_Island)) of Long Island.
-* 🎓 I recently graduated from Northeastern with a B.A. in Computer Science.
+* 🎓 I graduated from Northeastern with a B.A. in Computer Science.
 
 ## 😄 Fun
 * 🏃 Running

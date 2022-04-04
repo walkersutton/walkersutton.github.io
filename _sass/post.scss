@@ -23,14 +23,16 @@
 	ul {
 		padding-left: var(--md);
 		padding-bottom: var(--xs);
+		line-height: 120%;
+		//padding-top: var(--sm);
+		font-size: var(--def-font-size);
 	}
 	p {
-		padding-bottom: var(--sm);
-		padding-top: var(--sm);
-		line-height: 108%;
+		padding-bottom: var(--md);
+		line-height: 111%;
 	}
 	h4 {
-		font-size: 1.25em;
+		//font-size: 1.25em;
 	}
 
 }
