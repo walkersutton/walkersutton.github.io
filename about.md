@@ -8,9 +8,9 @@ permalink: /about
 <div id="about" markdown="1">
 <img class="img-wide" src="https://i.imgur.com/sTXCdDv.jpg">
 ## 👋 Intro
-* 👨🏻‍💻 I'm a software engineer on the Data Platforms team at [InterSystems](https://intersystems.com).
+* 👨🏻‍💻 I'm a software engineer on the API team at [Flexport](https://flexport.com).
 * 🏡 I'm originally from the [East End](https://en.wikipedia.org/wiki/East_End_(Long_Island)) of Long Island.
-* 🎓 I graduated from Northeastern with a B.A. in Computer Science.
+* 🎓 I studied Computer Science at Northeastern University.
 
 ## 😄 Fun
 * 🏃 Running
@@ -24,7 +24,8 @@ permalink: /about
 * 📓 More on the [blog](/blog)
 
 ## 👔 Work
-* 🩺 Engineer at [InterSystems](https://www.intersystems.com/) (current)
+* 🚢 [Flexport](https://www.flexport.com) (current)
+* 🩺 [InterSystems](https://www.intersystems.com)
 * ✈️ [Priceline](https://www.priceline.com)
 * 🚗 [TripBuddy](https://www.thetripbuddyapp.com)
 
