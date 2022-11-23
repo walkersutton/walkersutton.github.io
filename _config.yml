@@ -22,7 +22,7 @@ linkedin: walkersutton
 
 description: My personal website for sharing thoughts, projects, and interests.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://walkercsutton.com" # the base hostname & protocol for your site, e.g. http://example.com
+url: "http://walkersutton.com" # the base hostname & protocol for your site, e.g. http://example.com
 
 excerpt_separator: <!--end_excerpt-->
 
