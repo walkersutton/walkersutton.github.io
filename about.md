@@ -19,9 +19,13 @@ permalink: /about
 * 🧩 Crossword Puzzles
 
 ## 🚧 Current Projects
-* 🚴 [Cadence Calculator](https://cadecalc.app)
-* 🐦 [@WePollUs](https://twitter.com/wepollus)
-* 📓 More on the [blog](/blog)
+* GPX video overlay tool (in progress)
+* Simple clone of an existing SAAS (idea / ~began implementation)
+* Y Combinator pitch (idea)
+
+## 🏚 Projects in shambles
+* 🚴 [Cadence Calculator](https://github.com/walkersutton/cadence-calculator) - Generate cadence data for your fixed gear Strava activities. A better understanding of Strava API derailed this project. Read about [what's wrong with the Strava API](https://walkersutton.com/coming_soon).
+* 🐦 [@WePollUs](https://twitter.com/wepollus) - A Twitter bot that generates crowdsourced polls. I might revive this project. If you're interested in working on this, please reach out.
 
 ## 👔 Work
 * 🚢 [Flexport](https://www.flexport.com) (current)
