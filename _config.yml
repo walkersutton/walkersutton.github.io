@@ -15,7 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 
 title: Walker Sutton
-email: walker@walkercsutton.com
+email: walker@walkersutton.com
 twitter: walkercsutton
 github: walkersutton
 linkedin: walkersutton
@@ -32,6 +32,7 @@ plugins:
     - jekyll-feed
     - jekyll-sitemap
 
+timezone: America/Los_Angeles
 feed:
   posts_limit: 666
 
