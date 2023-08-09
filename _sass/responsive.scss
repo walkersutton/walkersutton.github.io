@@ -8,6 +8,9 @@
 	.container {
 		display: block;
 	}
+	.img-med-responsive {
+		max-width: 100%;
+	}
 }
 @media (max-width: 500px) {
 	:root {
