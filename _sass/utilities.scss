@@ -34,6 +34,14 @@
 	float: right;
 }
 
+/* flex container */
+.flex-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	padding-bottom: var(--md);
+}
+
 /* padding */
 .plg {
 	padding: var(--lg);
@@ -68,4 +76,13 @@
 /* drop shadow */
 .ds {
 	filter: drop-shadow(var(--xs) var(--xs) 0px var(--tertiary-color));
+}
+
+table, tr, td, th {
+  border-collapse: collapse;
+  border: 1px solid;
+  padding: 2px;
+}
+th {
+  padding: 4px;
 }

@@ -11,6 +11,14 @@
 	.img-med-responsive {
 		max-width: 100%;
 	}
+	.flex-container {
+		img {
+			width: 100%;
+		}
+		:not(:last-of-type) {
+			margin-bottom: var(--md);
+		}
+	}
 }
 @media (max-width: 500px) {
 	:root {

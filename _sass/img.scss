@@ -19,6 +19,11 @@
 	margin-left: auto;
 	margin-right: auto;
 }
+.flex-container img {
+	width: calc(50% - 10px);
+	max-width: 100%;
+	height: auto;
+}
 .img-small {
 	width: 200px;
 	height: 200px;
