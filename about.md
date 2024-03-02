@@ -28,7 +28,7 @@ permalink: /about
 * 🐦 [@WePollUs](https://twitter.com/wepollus) - A Twitter bot that generates crowdsourced polls. I might revive this project. If you're interested in working on this, please reach out.
 
 ## 👔 Work
-* 🚢 [Flexport](https://www.flexport.com) (current)
+* 🚢 [Flexport](https://www.flexport.com)
 * 🩺 [InterSystems](https://www.intersystems.com)
 * ✈️ [Priceline](https://www.priceline.com)
 * 🚗 [TripBuddy](https://www.thetripbuddyapp.com)
