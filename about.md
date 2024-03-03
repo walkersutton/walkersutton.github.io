@@ -8,7 +8,7 @@ permalink: /about
 <div id="about" markdown="1">
 <img class="img-wide" src="https://i.imgur.com/sTXCdDv.jpg">
 ## 👋 Intro
-* 👨🏻‍💻 I'm a software engineer on the SMB team at [Flexport](https://flexport.com).
+* 👨🏻‍💻 I'm a software engineer.
 * 🏡 I'm originally from the [East End](https://en.wikipedia.org/wiki/East_End_(Long_Island)) of Long Island.
 * 🎓 I studied Computer Science at Northeastern University.
 
