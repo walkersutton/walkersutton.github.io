@@ -1,5 +1,6 @@
 _site
 .swp
+.tool-versions
 .DS_Store
 .sass-cache
 .jekyll-metadata
