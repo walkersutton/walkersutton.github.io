@@ -25,6 +25,6 @@ permalink: /about
 * 🚴 [Cadence Calculator](https://github.com/walkersutton/cadence-calculator) - Generate cadence data for your fixed gear Strava activities. A better understanding of Strava API derailed this project. Read about [what's wrong with the Strava API](https://walkersutton.com/coming_soon).
 * 🐦 [@WePollUs](https://twitter.com/wepollus) - A Twitter bot that generates crowdsourced polls. I might revive this project. If you're interested in working on this, please reach out.
 
-## 🔗 Links
+## misc
 * 🚲 [PedalRoom](https://www.pedalroom.com/members/walkersutton)
 </div>
