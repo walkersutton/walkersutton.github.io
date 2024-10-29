@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/walkersutton.github.io/static/css/main.b3d221d0.css",
-    "main.js": "/walkersutton.github.io/static/js/main.a186649c.js",
-    "index.html": "/walkersutton.github.io/index.html",
-    "main.b3d221d0.css.map": "/walkersutton.github.io/static/css/main.b3d221d0.css.map",
-    "main.a186649c.js.map": "/walkersutton.github.io/static/js/main.a186649c.js.map"
+    "main.css": "/static/css/main.b3d221d0.css",
+    "main.js": "/static/js/main.a186649c.js",
+    "index.html": "/index.html",
+    "main.b3d221d0.css.map": "/static/css/main.b3d221d0.css.map",
+    "main.a186649c.js.map": "/static/js/main.a186649c.js.map"
   },
   "entrypoints": [
     "static/css/main.b3d221d0.css",
