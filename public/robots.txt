@@ -1,0 +1,4 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://walkersutton.com/sitemap.xml
