@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Cadence Calculator",
+    "href": "https://github.com/walkersutton/cadence-calculator",
+    "blurb": "A Strava app that generates cadence data for fixed gear cycling activities."
+  },
+  {
+    "name": "@wepollus",
+    "href": "https://x.com/wepollus",
+    "blurb": "A Twitter bot that creates community-driven polls."
+  }
+]

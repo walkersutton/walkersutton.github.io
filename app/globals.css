@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #d2b0f4; /* unused currently */
+
+  --color-bg: var(--color-neutral-100);
+  --color-bg-hover: var(--color-neutral-200);
+
+  --color-text: var(--color-neutral-800);
+  --color-text-variant: var(--color-neutral-900);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: var(--color-neutral-950);
+    --color-bg-hover: var(--color-neutral-900);
+
+    --color-text: var(--color-neutral-100);
+    --color-text-variant: var(--color-neutral-400);
+  }
+}
