@@ -3,12 +3,12 @@
 [walkersutton.com](https://walkersutton.com)
 
 ```bash
-yarn dev
-yarn start
-yarn build
+pnpm dev
+pnpm start
+pnpm build
 
 # the real deal
-yarn deploy
+pnpm deploy
 ```
 
 design for this site largely attributed to [Emil Kowalski](https://emilkowal.ski/)
