@@ -8,7 +8,7 @@ pnpm start
 pnpm build
 
 # the real deal
-pnpm deploy
+pnpm run deploy
 ```
 
 design for this site largely attributed to [Emil Kowalski](https://emilkowal.ski/)
