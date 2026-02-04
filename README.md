@@ -2,13 +2,19 @@
 
 [walkersutton.com](https://walkersutton.com)
 
-```bash
-pnpm dev
-pnpm start
-pnpm build
+# Deploy
 
-# the real deal
+```sh
+pnpm build
 pnpm run deploy
 ```
 
-design for this site largely attributed to [Emil Kowalski](https://emilkowal.ski/)
+## Development
+
+```sh
+pnpm dev
+pnpm start
+pnpm build
+```
+
+Design for this site largely attributed to [Emil Kowalski](https://emilkowal.ski/)
