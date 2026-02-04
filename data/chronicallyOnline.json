@@ -1,14 +1,18 @@
 [
   {
-    "name": "Store",
-    "href": "https://store.walkersutton.com"
+    "name": "Blog",
+    "href": "https://walkersutton.substack.com/"
   },
   {
     "name": "X",
     "href": "https://x.com/walkercsutton"
   },
   {
-    "name": "GitHub",
+    "name": "Store",
+    "href": "https://store.walkersutton.com"
+  },
+  {
+    "name": "hideGitHub",
     "href": "https://github.com/walkersutton"
   },
   {

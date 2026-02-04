@@ -8,8 +8,8 @@ export default async function Home() {
   return (
     <main className="flex flex-col gap-20">
       <Section title="Active Projects" elements={activeProjects} />
-      <Section title="Dormant Projects" elements={dormantProjects} />
       {posts && <Section title="Writing" elements={posts} />}
+      <Section title="Dormant Projects" elements={dormantProjects} />
     </main>
   );
 }

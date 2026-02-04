@@ -1,8 +1,13 @@
 [
   {
+    "name": "vard",
+    "href": "https://vard.app",
+    "blurb": "No code website builder for professional practice firms."
+  },
+  {
     "name": "cyclemetry",
     "href": "https://github.com/walkersutton/cyclemetry",
-    "blurb": "An app for creating cycling telemetry video overlays."
+    "blurb": "A tool for creating cycling telemetry video overlays."
   },
   { "name": "hidehome server", "href": "#", "blurb": "blurb here" },
   { "name": "hidebike shelf", "href": "#", "blurb": "blurb here" }
