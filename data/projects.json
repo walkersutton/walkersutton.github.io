@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Vard",
+    "hide": true,
+    "href": "https://vard.app",
+    "image": "/images/vard.gif",
+    "blurb": "No code website builder for professional practices."
+  },
+  {
+    "name": "Cyclemetry",
+    "href": "https://github.com/walkersutton/cyclemetry",
+    "image": "/images/cyclemetry.gif",
+    "blurb": "A tool for creating cycling telemetry video overlays."
+  },
+  {
+    "name": "spac",
+    "href": "https://github.com/walkersutton/spac",
+    "image": "/images/spac.gif",
+    "blurb": "Caps Lock HUD for macOS."
+  },
+  {
+    "name": "tog",
+    "href": "https://chromewebstore.google.com/detail/pfemfkpbkkcgdmimaicpfbmhfjcefijn?utm_source=item-share-cb",
+    "image": "/images/tog.gif",
+    "blurb": "Chrome extension for flipping between light and dark mode in the browser."
+  },
+  {
+    "name": "Cadence Calculator",
+    "href": "https://github.com/walkersutton/cadence-calculator",
+    "image": "/images/cadence-calculator.gif",
+    "blurb": "A Strava app that generates cadence data for fixed gear cycling activities."
+  },
+  {
+    "name": "@wepollus",
+    "href": "https://x.com/wepollus",
+    "image": "/images/wepollus.gif",
+    "blurb": "A Twitter bot that creates community-driven polls."
+  },
+  { "name": "hidehome server", "href": "#", "blurb": "blurb here", "hide": true },
+  { "name": "hidebike shelf", "href": "#", "blurb": "blurb here", "hide": true }
+]

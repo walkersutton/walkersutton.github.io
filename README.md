@@ -13,8 +13,6 @@ pnpm run deploy
 
 ```sh
 pnpm dev
-pnpm start
 pnpm build
+pnpm start
 ```
-
-Design for this site largely attributed to [Emil Kowalski](https://emilkowal.ski/)

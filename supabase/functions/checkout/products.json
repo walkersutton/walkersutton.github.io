@@ -1,0 +1,26 @@
+{
+  "prod_RhX9Fq63x7M8p2": {
+    "slug": "walker-sutton-t-shirt",
+    "details": [
+      "Heavy-weight cotton",
+      "Boxy fit",
+      "Screen printed",
+      "Wash cold, hang dry"
+    ],
+    "hoverImage": "tee_hover.jpg",
+    "extraImages": ["tee_detail_1.jpg", "tee_detail_2.jpg"],
+    "priority": 0
+  },
+  "prod_RhXAZ9vFz6Z2Xy": {
+    "slug": "canvas-tote-bag",
+    "details": [
+      "Durable 12oz canvas",
+      "Inner pocket",
+      "Reinforced straps",
+      "Handmade in NYC"
+    ],
+    "hoverImage": "tote_hover.jpg",
+    "extraImages": ["tote_detail_1.jpg"],
+    "priority": 1
+  }
+}
