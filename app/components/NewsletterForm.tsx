@@ -34,7 +34,7 @@ export default function NewsletterForm() {
 
   return (
     <div className="mx-auto md:mx-0 flex flex-col gap-2 w-full max-w-xl">
-      <form onSubmit={handleSubmit} className="flex gap-3 h-10">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
         <input
           type="email"
           placeholder="your@email.address"
@@ -42,7 +42,7 @@ export default function NewsletterForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={status === "loading" || status === "success"}
-          className={`bg-transparent px-4 flex-grow focus:outline-none border border-[var(--color-text)] placeholder:text-[var(--color-text-variant)] disabled:opacity-50 text-xs uppercase tracking-wider h-full transition-all ${
+          className={`bg-transparent px-4 flex-grow focus:outline-none border border-[var(--color-text)] placeholder:text-[var(--color-text-variant)] disabled:opacity-50 text-xs uppercase tracking-wider h-10 transition-all ${
             status === "success" ? "line-through opacity-100! text-[var(--color-text-variant)]" : ""
           }`}
         />
@@ -51,7 +51,7 @@ export default function NewsletterForm() {
           loading={status === "loading"}
           disabled={status === "success"}
           fullWidth={false}
-          className={`border uppercase border-[var(--color-text)] transition-all px-8 !h-full !py-0 flex items-center justify-center hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] ${
+          className={`border uppercase border-[var(--color-text)] transition-all px-8 h-10 py-0 flex items-center justify-center hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] ${
             status === "success"
               ? "!bg-[var(--color-text)] !text-[var(--color-bg)] disabled:opacity-100"
               : ""

@@ -10,11 +10,17 @@ interface ProjectImageProps {
 export default function ProjectImage({ src, alt }: ProjectImageProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [staticFrame, setStaticFrame] = useState<string | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const isGif = src.toLowerCase().endsWith(".gif");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!isGif) return;
+    // Detect touch/mobile — on these devices GIFs should loop natively
+    setIsTouchDevice(window.matchMedia("(hover: none)").matches);
+  }, []);
+
+  useEffect(() => {
+    if (!isGif || isTouchDevice) return;
 
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -34,15 +40,14 @@ export default function ProjectImage({ src, alt }: ProjectImageProps) {
         setStaticFrame(canvas.toDataURL("image/webp"));
       } catch (err) {
         console.error("Failed to capture GIF frame:", err);
-        // Fallback to the GIF if canvas capture fails (e.g. CORS)
         setStaticFrame(src);
       }
     };
-  }, [src, isGif]);
+  }, [src, isGif, isTouchDevice]);
 
   const [nonce, setNonce] = useState(0);
 
-  if (!isGif) {
+  if (!isGif || isTouchDevice) {
     return (
       <img
         src={src}
