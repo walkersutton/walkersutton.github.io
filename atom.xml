@@ -3,7 +3,7 @@
   <title>Walker Sutton</title>
   <link href="https://walkersutton.com/atom.xml" rel="self" />
   <link href="https://walkersutton.com" />
-  <updated>2026-03-15T00:30:34.487Z</updated>
+  <updated>2026-03-15T00:49:22.241Z</updated>
   <id>https://walkersutton.com</id>
   <author>
     <name>Walker Sutton</name>
@@ -14,257 +14,87 @@
     <link href="https://pcpartpicker.com/b/GPFgXL" />
     <id>https://pcpartpicker.com/b/GPFgXL</id>
     <updated>2025-09-08T00:00:00.000Z</updated>
-    <content type="html">&lt;p&gt;I wanted a better way to manage my photo/video storage, and started learning more about NASs. I was also interested in learning more about the self-hosted space.&lt;/p&gt;
-&lt;h2&gt;Notes:&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;I made an effort to try and source used parts. In my last 2 builds, I&amp;#39;ve only ever used new components - mostly because I used to think that used parts would bottleneck the rest of my build&lt;/li&gt;
-&lt;li&gt;I ended up buying the wrong CPU cooler on the first go - ended up reselling it on eBay&lt;/li&gt;
-&lt;li&gt;Fitting x4 HDDs in the Streacom DA2 is TIGHT - I initially had them sitting on their sides, kinda upright, but recently rearranged them so that they kinda sit atop each other. Definitely not my favorite configuration, but it works for now. I like how compact the case is. I also like the simplicity of Synology tower servers, buttt haven&amp;#39;t looked into them all that much - I think price:performance isn&amp;#39;t as good?&lt;/li&gt;
-&lt;li&gt;I have TrueNAS Scale installed on this guy. It gets the job done but isn&amp;#39;t my favorite. I feel a bit limited by the official catalog offerings, even though I know I can use non-catalog apps&lt;/li&gt;
-&lt;li&gt;Feels a bit overkill with 56TB storage configured in RAID-Z2 but hey, at least I won&amp;#39;t have to worry about running out of storage for a while&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Really happy with this build! I bought cpu, cpu cooler, and case on Facebook Marketplace and eBay. Definitely will be sourcing used parts again in future builds.&lt;/p&gt;
-&lt;p&gt;I&amp;#39;m starting to worry about not having a physical backup of this machine. I&amp;#39;m considering buying some sort of thunderbolt hard drive enclosure with a mac mini and setting up some sort of rsync job.&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;I wanted a better way to manage my photo/video storage, and started learning more about NASs. I was also interested in learning more about the self-hosted space. ## Notes: - I made an effort to try and source used parts. In my last 2 builds, I&amp;#39;ve only ever used new com...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://pcpartpicker.com/b/GPFgXL&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>Gaming PC Build</title>
     <link href="https://pcpartpicker.com/b/YN6rxr" />
     <id>https://pcpartpicker.com/b/YN6rxr</id>
     <updated>2025-09-07T00:00:00.000Z</updated>
-    <content type="html">&lt;p&gt;I built this PC to play Call of Duty.&lt;/p&gt;
-&lt;h2&gt;Notes:&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;I bought the graphics card on its launch date which was kinda exciting&lt;/li&gt;
-&lt;li&gt;I initially purchased an MSI PRO Z690-P, but ended up not being compatible, so returned to Newegg and replaced with an MSI PRO Z790-P&lt;/li&gt;
-&lt;li&gt;I ended up buying Windows 11 on eBay for $55 - worked out well&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;I wasn&amp;#39;t using the computer much, so ended up giving to my brother. We packed it in a suitcase with bubble wrap and he flew with it as a checked bag. The tempered glass side paneled shattered during transit, but we were able to buy a replacement panel from Corsair.&lt;/p&gt;
-&lt;p&gt;I hadn&amp;#39;t used Windows on a personal computer of mine for +10 years, and this experience reaffirmed my decision to continue using unix operating systems.&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;I built this PC to play Call of Duty. ## Notes: - I bought the graphics card on its launch date which was kinda exciting - I initially purchased an MSI PRO Z690-P, but ended up not being compatible, so returned to Newegg and replaced with an MSI PRO Z790-P - I ended up...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://pcpartpicker.com/b/YN6rxr&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>March Retro</title>
     <link href="https://walkersutton.com/blog/2022-march-retro" />
     <id>https://walkersutton.com/blog/2022-march-retro</id>
     <updated>2022-04-04T00:00:00.000Z</updated>
-    <content type="html">&lt;p&gt;&lt;em&gt;This is the beginning of an attempt to mimic &lt;a href=&quot;https://mtlynch.io/retrospectives/&quot;&gt;Michael Lynch&amp;#39;s retrospectives&lt;/a&gt;. Hopefully this can help me achieve some of my goals, and maybe someone can find value in it as well.&lt;/em&gt;&lt;/p&gt;
-&lt;h2&gt;February Highlights&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Launched my parent&amp;#39;s website for their &lt;a href=&quot;https://theinnatorient.com&quot;&gt;new inn&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://twitter.com/wepollus&quot;&gt;@wepollus&lt;/a&gt; Revival&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://fweb3.xyz&quot;&gt;Fweb3&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;The Inn at Orient&lt;/h3&gt;
-&lt;p&gt;My parents sold their house last spring and bought &lt;a href=&quot;https://theinnatorient.com&quot;&gt;an inn&lt;/a&gt;! They&amp;#39;ve been working on lots of renovations over the past year, and just a few weeks ago, they welcomed their first guests. I was asked to help get the business set up online. I initially thought it might be interesting to build their property management/online booking system from scratch, but we ended up using a third-party service provider as I grossly underestimated the amount of work required to build something like this.&lt;/p&gt;
-&lt;p&gt;We decided to use &lt;a href=&quot;https://cloudbeds.com&quot;&gt;Cloud Beds&lt;/a&gt; to handle the bulk of our online reservations (we&amp;#39;re also using Square to handle payments for those who choose to not book through one of our integrated OTAs (online travel agencies)). It certainly isn&amp;#39;t a perfect system - there&amp;#39;s a lot of manual configuration that needs to be completed for each booking channel. For every OTA you connect to, you have to create an account with the travel agency, configure payments, set up taxes, create listings for each room (this includes uploading images, configuring property details, etc.); I can go on. This also means that every time you want to make an edit to a listing, you have to apply the same change on every single OTA. The only OTA cross-functionality CB offers is the ability to sync room rates and room availabilities. I&amp;#39;m not sure if this is simply because online travel agencies have APIs with limited functionality or if Cloud Beds just decided it was easier to only support the most basic required functionality. I tried to read Airbnb&amp;#39;s API documentation to see if they expose endpoints for updating listing details and similar functions, but their docs aren&amp;#39;t made publicly available; it also seems rather difficult to gain access to their API.&lt;/p&gt;
-&lt;p&gt;I think there might be a gap in the market here. You could build a &amp;#39;Plaid for OTAs&amp;#39;, assuming that you could provide Cloud Beds and other hotel management SAAS companies value by making it easier for them to support more functionality with more OTAs. I would like to think that Airbnb would grant you an API key for an access request like this, but who knows.&lt;/p&gt;
-&lt;h3&gt;&lt;a href=&quot;https://twitter.com/wepollus&quot;&gt;@wepollus&lt;/a&gt; Revival&lt;/h3&gt;
-&lt;p&gt;I built a &lt;a href=&quot;https://twitter.com/wepollus&quot;&gt;Twitter bot&lt;/a&gt; in 2020 that generates Twitter polls based on user interactions. A few months ago, the bot broke because of some changes to the Twitter website. I ended up putting the bot on pause for a while and decided it was time to revive @wepollus last month. I learned that at some point over the last year or so, the Twitter API was updated with a new endpoint that supports creating Twitter polls. This was great news to hear because the broken component was doing just this, but instead of using the API, it was using &lt;a href=&quot;https://www.selenium.dev/&quot;&gt;Selenium&lt;/a&gt;. I&amp;#39;m happy to report that the bot is now back online. Also very happy that I no longer need Selenium to achieve this functionality because the API should significantly reduce the amount of time I spend maintaining this project.&lt;/p&gt;
-&lt;h3&gt;Fweb3&lt;/h3&gt;
-&lt;p&gt;Throughout the month of February, I participated in &lt;a href=&quot;https://fweb3.xyz&quot;&gt;Fweb3&lt;/a&gt;, a new, annual, month-long event dedicated to learning about web3. I found out about it through &lt;a href=&quot;https://twitter.com/shl/status/1488562644223082497&quot;&gt;Sahil on Twitter&lt;/a&gt;; it seemed like a good opportunity to learn more about Ethereum, NFTs, and the web3 space. Over the course of a few weeks, the community designed and built a fully-fledged game centered around learning about crypto. You start off by setting up a crypto wallet and to win the game, you must create your own ERC-20 token! I&amp;#39;d definitely recommend it to anyone interested in learning more about Ethereum. If you run into any troubles, there&amp;#39;s a great Discord community that will help you.&lt;/p&gt;
-&lt;h2&gt;Wrap Up&lt;/h2&gt;
-&lt;h3&gt;Goals for next month&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://cadecalc.app&quot;&gt;Cadence Calculator&lt;/a&gt; soft launch&lt;/li&gt;
-&lt;li&gt;Write a &lt;a href=&quot;https://hammerspoonTODO.com&quot;&gt;Hammerspoon&lt;/a&gt; blog post&lt;/li&gt;
-&lt;li&gt;xx &lt;em&gt;Only Two This Month&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h4&gt;Cadence Calculator MVP&lt;/h4&gt;
-&lt;p&gt;I started working on &lt;a href=&quot;https://github.com/walkersutton/cadence-calculator&quot;&gt;Cadence Calculator&lt;/a&gt; last summer. There&amp;#39;s still a fair bit of work to be done, and I&amp;#39;m hoping that by the end of this month, I can begin to onboard a few interested users (that is, if there are interested users) into a pilot program. I&amp;#39;ll write a blog post about this project soon for anyone interested.&lt;/p&gt;
-&lt;h4&gt;Hammerspoon Blog Post&lt;/h4&gt;
-&lt;p&gt;I&amp;#39;d like to get into the habit of publishing blog posts more often. I&amp;#39;m going to try to write one blog post this month (in addition to what you&amp;#39;re currently reading). One is enough to make me struggle with setting aside the time to write, but shouldn&amp;#39;t be overwhelming.&lt;/p&gt;
-&lt;h4&gt;xx Only Two This Month&lt;/h4&gt;
-&lt;p&gt;I really do like lists of 3, but I&amp;#39;m already running late with this post, so 2 goals for the month of March will have to do.&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;&lt;em&gt;This is the beginning of an attempt to mimic &lt;a href=&quot;https://mtlynch.io/retrospectives/&quot;&gt;Michael Lynch&amp;#39;s retrospectives&lt;/a&gt;. Hopefully this can help me achieve some of my goals, and maybe someone can find value in it as well.&lt;/em&gt; ## February Highlights - Launched my parent&amp;#39;s websi...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/2022-march-retro&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>My Favorite YouTubers</title>
     <link href="https://walkersutton.com/blog/2021-favorite-youtubers" />
     <id>https://walkersutton.com/blog/2021-favorite-youtubers</id>
     <updated>2021-11-10T00:00:00.000Z</updated>
-    <content type="html">&lt;h2&gt;Adventure&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/BeauMiles&quot;&gt;Beau Miles&lt;/a&gt; - A redheaded Australian with a knack for building and adventure.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/NikolaiSchirmerchannel&quot;&gt;Nikolai Schirmer&lt;/a&gt; - Norwegian skier and filmmaker, delivering mountain adventures.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Architecture&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/channel/UCDsElQQt_gCZ9LgnW-7v-cQ&quot;&gt;Kirsten Dirksen&lt;/a&gt; - Documenting simple living, self-sufficiency, small (and tiny) homes, backyard gardens (and livestock), alternative transport, DIY, craftsmanship and philosophies of life&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Bikes&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/TerryBarentsenVision&quot;&gt;Terry Barentsen&lt;/a&gt; - A blend of cycling and filmmaking.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/SAFABrian&quot;&gt;Safa Brian&lt;/a&gt; - Next level cycling films.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Comedy&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/CasuallyExplained&quot;&gt;Casually Explained&lt;/a&gt; - Sarcastic animated videos describing everyday life.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/gustoonz&quot;&gt;Gus Johnson&lt;/a&gt; - Short sketch comedy.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Computers&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/user/Computerphile&quot;&gt;Computerphile&lt;/a&gt; - Computers and computer stuff.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Education&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/TomScottGo&quot;&gt;Tom Scott&lt;/a&gt; - History, geography, science, technology, and linguistics.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Engineering&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/TomStantonEngineering&quot;&gt;Tom Stanton&lt;/a&gt; - An Aerospace engineer meets 3D printers.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/StuffMadeHere&quot;&gt;Stuff Made Here&lt;/a&gt; - Engineering, fabricating and creating things out of nothing.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Mathematics&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/user/Numberphile&quot;&gt;Numberphile&lt;/a&gt; - Videos about numbers.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;Science&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.youtube.com/c/smartereveryday&quot;&gt;Smarter Every Day&lt;/a&gt; - Exploring the world using science.&lt;/li&gt;
-&lt;/ul&gt;
-</content>
+    <content type="html">&lt;h2&gt;Adventure - &lt;a href=&quot;https://www.youtube.com/c/BeauMiles&quot;&gt;Beau Miles&lt;/a&gt; - A redheaded Australian with a knack for building and adventure. - &lt;a href=&quot;https://www.youtube.com/c/NikolaiSchirmerchannel&quot;&gt;Nikolai Schirmer&lt;/a&gt; - Norwegian skier and filmmaker, delivering mountain adventures. ##...&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/2021-favorite-youtubers&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>Mini Crossword Puzzle Leaderboard</title>
     <link href="https://walkersutton.com/blog/mini-crossword-leaderboard" />
     <id>https://walkersutton.com/blog/mini-crossword-leaderboard</id>
     <updated>2019-08-18T00:00:00.000Z</updated>
-    <content type="html">&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/nUY7X8b.png&quot; alt=&quot;nyt_mini_leaderboard_main&quot; /&gt;
-
-&lt;p&gt;&lt;strong&gt;Python, cron, GoogleCharts, GoogleSheetsAPI&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;I decided to make this leaderboard because currently on the NYT website, you can only see your friends&amp;#39; current day&amp;#39;s solve time. I think it would be interesting to see how people perform over time. Who has the fastest time ever? Who has the fastest time for a particular day of the week? Like the full crosswords, does the day of the week coorespond to puzzles of different difficulties? Do we solve faster if we&amp;#39;ve solved a greater number of puzzles? There are lots of questions to ask and answers to be found with some of this data, and it&amp;#39;s also just a fun way to see how we all fare stacked against each other.&lt;/p&gt;
-&lt;p&gt;I&amp;#39;m still working on automating the data input from the crossword puzzle website to my Google Sheet, so right now, I just input data manually. I&amp;#39;ve been trying to use Flask, Beautiful Soup, and lxml, but I&amp;#39;m getting caught up with authenticating my user when logging in.&lt;/p&gt;
-&lt;p&gt;There is a best times chart below which graphically shows each person&amp;#39;s fastest time for a particular day of the week.&lt;/p&gt;
-&lt;h4&gt;Best Solve Times&lt;/h4&gt;
-&lt;p&gt;&lt;strong&gt;there should be a dynamic chart here, but I need to figure out how to migrate it over from my static site&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;More content coming soon...&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;&lt;strong&gt;Python, cron, GoogleCharts, GoogleSheetsAPI&lt;/strong&gt; I decided to make this leaderboard because currently on the NYT website, you can only see your friends&amp;#39; current day&amp;#39;s solve time. I think it would be interesting to see how people perform over time. Who has the fastest ti...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/mini-crossword-leaderboard&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>Meet Walker — Software Engineering Intern</title>
     <link href="https://medium.com/tripbuddy/meet-walker-software-engineering-intern-a9261f2c3d80" />
     <id>https://medium.com/tripbuddy/meet-walker-software-engineering-intern-a9261f2c3d80</id>
     <updated>2019-06-06T00:00:00.000Z</updated>
-    <content type="html">&lt;h2&gt;Tell us about yourself&lt;/h2&gt;
-&lt;p&gt;Hi, my name is Walker Sutton. I’m currently a student at Northeastern University studying computer science in Boston, MA. I grew up in a small town on Long Island. My mother is a chef, so I enjoyed learning how to cook whilst growing up. I think British English is funny. I like to ride my bike and I like to challenge myself.&lt;/p&gt;
-&lt;h4&gt;Some hobbies of mine:&lt;/h4&gt;
-&lt;ul&gt;
-&lt;li&gt;Kiteboarding: I discovered the sport by watching videos of people kiteboarding online. I like the simplicity of solely using the wind as your power source. A few years ago, I decided to take lessons. I soon after bought some gear, but since then, I haven’t had a lot of time to go out and ride, but I’m eager to.&lt;/li&gt;
-&lt;li&gt;Crossword puzzles: I religiously attempt the NYT puzzles, but have only successfully been able to complete up to the Wednesday edition.&lt;/li&gt;
-&lt;li&gt;Making videos: Since I was a kid, I’ve always enjoyed picking up a camera and making little movies. I upload my creations to my YouTube channel.&lt;/li&gt;
-&lt;/ul&gt;
-</content>
+    <content type="html">&lt;h2&gt;Tell us about yourself Hi, my name is Walker Sutton. I’m currently a student at Northeastern University studying computer science in Boston, MA. I grew up in a small town on Long Island. My mother is a chef, so I enjoyed learning how to cook whilst growing up. I thi...&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;https://medium.com/tripbuddy/meet-walker-software-engineering-intern-a9261f2c3d80&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>Swing | Stock Trading Application</title>
     <link href="https://walkersutton.com/blog/swing" />
     <id>https://walkersutton.com/blog/swing</id>
     <updated>2018-07-19T00:00:00.000Z</updated>
-    <content type="html">&lt;img className=&quot;img-tall&quot; src=&quot;https://i.imgur.com/HhDYe3l.png&quot; alt=&quot;swing_stock_trading_web_app_screenshot&quot; /&gt;
-
-&lt;p&gt;&lt;strong&gt;SQL, PHP, jQuery, HTML, CSS, Javascript&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;I took a &lt;strong&gt;Database Design&lt;/strong&gt; course over the summer this year. For the final project, my partner and I decided to create a stock screening web application. Our initial idea was to create an algorithmic trading web app since we are both interested in the stock market, but due to various limitations, we quickly realized that wouldn&amp;#39;t have been feasible.&lt;/p&gt;
-&lt;p&gt;We decided to take the top 25 stocks from the S&amp;amp;P 500 and create a database of metrics over the last 10 years. The data for each stock was collected from &lt;a href=&quot;https://nasdaq.com&quot;&gt;https://nasdaq.com&lt;/a&gt;, and was later compiled into one centralized format that we imported into mySQL. We were able to determine the level of risk for a particular stock as well as a recommended position for a given stock using formulas that we created.&lt;/p&gt;
-&lt;p&gt;Our application is suited for everyone with any interest in the stock market. Swing gives you some basic metrics that you expect to see on any stock trading application such as % change, 52 week high and low, as well as volume metrics. What really makes our app stand out is our recommendation and risk assessments of these stocks.&lt;/p&gt;
-&lt;p&gt;In trying to complete this project, I believe that we were a bit too ambitious in the UI design as neither of us have had any real experience with web design before this class. Therefore, it is not very surprising that we were not able to complete all of the goals that we set out to do. Specifically, we were not able to complete the side by side analysis of the two stocks of the user’s choice. Although we weren’t able to complete this component of the application, I still believe that our application is still very useful to traders of all sorts.&lt;/p&gt;
-&lt;h4&gt;Landing Page&lt;/h4&gt;
-&lt;img className=&quot;img-tall&quot; src=&quot;https://i.imgur.com/5FtX0a2.png&quot; alt=&quot;swing_interface_screenshot&quot; /&gt;
-
-&lt;h4&gt;Early UI Designs&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/BqHdC1W.png&quot; alt=&quot;swing_mockup_interface_screenshot_1&quot; /&gt;
-
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/nDUeVkx.png&quot; alt=&quot;swing_mockup_interface_screenshot_2&quot; /&gt;
-
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/RRHLmEB.png&quot; alt=&quot;swing_mockup_interface_screenshot_3&quot; /&gt;
-</content>
+    <content type="html">&lt;p&gt;&lt;strong&gt;SQL, PHP, jQuery, HTML, CSS, Javascript&lt;/strong&gt; I took a &lt;strong&gt;Database Design&lt;/strong&gt; course over the summer this year. For the final project, my partner and I decided to create a stock screening web application. Our initial idea was to create an algorithmic trading web app since w...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/swing&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>Forbidden Island World</title>
     <link href="https://walkersutton.com/blog/forbidden-island-world" />
     <id>https://walkersutton.com/blog/forbidden-island-world</id>
     <updated>2018-06-28T17:00:00.000Z</updated>
-    <content type="html">&lt;img className=&quot;img-tall&quot; src=&quot;https://i.imgur.com/EM2NExP.gif&quot; alt=&quot;forbidden_island_world_game_gif&quot; /&gt;
-
-&lt;p&gt;&lt;strong&gt;Java&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;I took &lt;strong&gt;Fundamentals of Computer Science II&lt;/strong&gt; during the summer of 2018. For our final project, we had to create a flooding island game. The game begins by your character randomly spawning somewhere on the island. As time advances, the water level rises, and if you touch the water, it&amp;#39;s game over. It&amp;#39;s your job to move the player around the island and collect all of the helicopter parts before you get flooded. You win the game by collecting all of the parts before touching the water.&lt;/p&gt;
-&lt;p&gt;The animation above shows the 3 different terrain types - a perfect pyramid, random diamond, and randomly* generated terrain (the last isn&amp;#39;t completely random because the algorithm creates gradual gradients for adjacent cells). I don&amp;#39;t have a visual example of the completed game on hand, and I don&amp;#39;t remember how to execute the program, but it was running as expected when I submitted the assignment.&lt;/p&gt;
-&lt;p&gt;If I ever get around to running the game again, I&amp;#39;ll be sure to insert an image here showing some sample gameplay.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/walkersutton/Forbidden-Island-World-Game&quot;&gt;GitHub repo&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;p.s. beware, code is ugly&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;&lt;strong&gt;Java&lt;/strong&gt; I took &lt;strong&gt;Fundamentals of Computer Science II&lt;/strong&gt; during the summer of 2018. For our final project, we had to create a flooding island game. The game begins by your character randomly spawning somewhere on the island. As time advances, the water level rises, and...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/forbidden-island-world&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>SparkJuke | Raspberry Pi Jukebox</title>
     <link href="https://walkersutton.com/blog/sparkjuke" />
     <id>https://walkersutton.com/blog/sparkjuke</id>
     <updated>2017-04-19T00:00:00.000Z</updated>
-    <content type="html">&lt;p&gt;&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/kWSXrpI.jpg&quot; alt=&quot;sparkjuke&quot; /&gt;&lt;span className=&quot;right&quot;&gt;&lt;/span&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;C++, Raspberry Pi&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;I took an intro to engineering course during the spring semester of my freshman year. I&amp;#39;m writing this summary almost two years after taking the course, but from what I remember, we concentrated on working with MATLAB during the first half of the course, and finished the semester with a few weeks of working with a Raspberry Pi.&lt;/p&gt;
-&lt;p&gt;For our final project, we needed to build something that could demonstrate what we learned throughout the semester. I decided to build a &amp;#39;jukebox&amp;#39;. I used an LCD to display the current song being played along with any other messages the user needed in order to use the device. I utilized a piezo buzzer to play the differnet songs on the jukebox, and I also connected a few push buttons to control the device.&lt;/p&gt;
-&lt;p&gt;Reflecting on the end result, I remember the software being a bit primitive. Each button only corresponded to one song, but I could&amp;#39;ve easily added more than three songs to the jukebox by having two of the buttons be up/down selectors and the other button could&amp;#39;ve played the selected song. At the time, I didn&amp;#39;t have a firm grasp on loops, which is why I chose to limit the device to only three songs.&lt;/p&gt;
-&lt;p&gt;I ran into some sound quality issues with the piezo buzzer once I began testing the different songs. Since the frequency range on the buzzer is limited, some of the songs I was playing on the device didn&amp;#39;t sound quite like they should have. This was more of a hardware issue than anything.&lt;/p&gt;
-&lt;p&gt;It was a fun project to work on, and it definitely helped me realize that I enjoyed doing this kind of work. In the following semester, I took some more engineering classes since I liked this class so much, but I didn&amp;#39;t realize until later that this class was more of a hands-on programming class than it was an engineering class.&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;&lt;strong&gt;C++, Raspberry Pi&lt;/strong&gt; I took an intro to engineering course during the spring semester of my freshman year. I&amp;#39;m writing this summary almost two years after taking the course, but from what I remember, we concentrated on working with MATLAB during the first half of the...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/sparkjuke&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>Personal Website</title>
     <link href="https://walkersutton.com/blog/personal-website" />
     <id>https://walkersutton.com/blog/personal-website</id>
     <updated>2017-01-14T00:00:00.000Z</updated>
-    <content type="html">&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/Twc7PHV.png&quot; alt=&quot;old_website_screenshot_main&quot; /&gt;
-
-&lt;p&gt;&lt;strong&gt;Node, Express, HTML, CSS, JS&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;I decided I wanted to have a website on January 18, 2017. I can&amp;#39;t remember why, but I think it&amp;#39;s because I thought I needed to somehow promote my fundraiser for the NYC Marathon that year. At the time I had no idea how to build the site from scratch, so I decided to use Squarespace. I was already familiar with the platform because I created a few websites for clubs and classes in high school, so it didn&amp;#39;t take me long to get it all set up.&lt;/p&gt;
-&lt;h4&gt;Spring 2017 Version&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/2K1mWPD.png&quot; alt=&quot;old_website_screenshot_spring_2017&quot; /&gt;
-
-&lt;p&gt;This is what the first rendition of my site looked like. I chose a fairly simple portfolio template on Squarespace and built it out from there. The image above doesn&amp;#39;t include the original graphics because when I captured the screenshot recently, Squarespace had already removed the images that I uploaded two years ago.&lt;br /&gt;&lt;br /&gt;Over the summer of 2017, I went to my local library and checked out a beginner&amp;#39;s guide to website development. After reading through it, I was able to put together my first webpage from scratch! It&amp;#39;s not pretty by any means, but from that point forward, I was comfortable experimenting with new designs.&lt;/p&gt;
-&lt;h4&gt;Book Tutorial Page&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/g9UYFsi.png&quot; alt=&quot;old_website_screenshot_book_tutorial&quot; /&gt;
-
-&lt;p&gt;I started off by trying to create a menu. In the book, I learned about lists and tables, and from what I was finding online, I thought I could use these structures to build my own iteration. After lots of experimenting with different design properties and structures, I had a very tentative menu that looked something like this.&lt;/p&gt;
-&lt;h4&gt;First Menu&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/nf0H2YF.png&quot; alt=&quot;old_website_screenshot_first_menu&quot; /&gt;
-
-&lt;p&gt;I wasn&amp;#39;t super thrilled with how it was looking, so I tried adding some color and reformatting the layout until I ended up with this.&lt;/p&gt;
-&lt;h4&gt;Revamped Menu&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/XI7VxPe.png&quot; alt=&quot;old_website_screenshot_revamped_menu&quot; /&gt;
-
-&lt;p&gt;I was a little happier with how this menu turned out, but I still wasn&amp;#39;t at the point where I could replace my content on Squarespace with this. (I know it looks a little funky, these were only the early prototypes)&lt;/p&gt;
-&lt;p&gt;I toyed around with this new idea where the site was more of a landing page than a personal website. I like the simplicity of what I came up with -- when you hover over one of the words, an inverted bar pops up with the username/link to my profile on the give website. It wasn&amp;#39;t a bad design, it still didn&amp;#39;t replace what I had on Squarespace, and it didn&amp;#39;t achieve the same effect on mobile since you can&amp;#39;t &amp;#39;hover&amp;#39; with a mouse. Because of this, I decided to wrap this idea up, and move on to something else.&lt;/p&gt;
-&lt;h4&gt;Landing Page&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/HTrAW8u.png&quot; alt=&quot;old_website_screenshot_landing_page&quot; /&gt;
-
-&lt;h4&gt;On-Hover&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/xzuyitR.png&quot; alt=&quot;old_website_screenshot_on_hover&quot; /&gt;
-
-&lt;p&gt;For my next concept, I decided to build a single scrolling page. From a design standpoint, I thought this was a fairly easy layout to implement since you only need to worry about vertical positioning. It also scales fairly well because the perspective is similar on most devices.&lt;/p&gt;
-&lt;p&gt;I wanted the background color of this site to be white, but once I started adding more elements, trying to figure out which pieces were where and how the different elements interacted with one another started to become a nightmare. To help me visualize where all of the elements were on the page, I added unique background colors to the different pieces. This workflow helped me organize and understand where everything was on the page, and I&amp;#39;ve used this strategy ever since.&lt;/p&gt;
-&lt;h4&gt;Single Scroll Clean&lt;/h4&gt;
-&lt;img className=&quot;img-tall&quot; src=&quot;https://i.imgur.com/rKnrian.png&quot; alt=&quot;old_website_screenshot_single_scroll_clean&quot; /&gt;
-
-&lt;p&gt;I was happy with how the single scrolling page turned out, but I started running into problems with displaying my content. I wanted to add pictures, and had plans to create a blog type section, but if I stuck with this layout, I feared the height of the page would become too tall, and it&amp;#39;d be unpleasant for users to navigate.&lt;br /&gt;&lt;br /&gt;I needed to create another menu. My earlier attempts at menus weren&amp;#39;t very pretty, so I started from a clean slate. I ended up with a left vertical bar for navigation/social links and then a title on the top edge. I no longer had issues with content formatting -- the L shaped navigation bar on the top left created space for the main content on each page.&lt;/p&gt;
-&lt;h4&gt;Left Column&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/J9oQ6em.png&quot; alt=&quot;old_website_screenshot_left_column&quot; /&gt;
-
-&lt;p&gt;The site was starting to feel more put together, but I had one major problem with it -- it didn&amp;#39;t scale well on mobile. It would been great if all of my visitors were on desktop, but the majority of my traffic comes from mobile users. I also felt like the home page was a bit redundant since the main content was basically just another navigation menu, so that needed to change.&lt;/p&gt;
-&lt;p&gt;Bootstrap is a great tool for creating mobile-friendly websites, and I&amp;#39;ve had experience in the past using it to create &lt;a href=&quot;https://willowsutton.com&quot;&gt;my sister&amp;#39;s website&lt;/a&gt;. I played around with a few templates, but realized that I wanted something more customizable. Don&amp;#39;t get me wrong, you can do a lot with Bootstrap, but I wanted something a bit more tailored and I thought creating a dynamic website from the bottom up would be a fun project.&lt;/p&gt;
-&lt;h4&gt;Current Version&lt;/h4&gt;
-&lt;img className=&quot;img-wide&quot; src=&quot;https://i.imgur.com/Twc7PHV.png&quot; alt=&quot;old_website_screenshot_current_version&quot; /&gt;
-
-&lt;p&gt;I&amp;#39;m very happy with how this site turned out. I think it scales well on both desktop and mobile, and I was also able to keep a similar design to the previous rendition. To minimize redundancies, I decided to get rid of the left pane altogether and chose to use an image based navigation method. I also moved the social links to the top, and on mobile they&amp;#39;re pushed to the bottom to free up screen space.&lt;/p&gt;
-&lt;p&gt;On each content page, your current position in the website is displayed alongside the top title, giving the site a computer directory feel. I&amp;#39;m a bit skeptical about how intuitive it will be for users to navigate backwards, but I think most people understand that clicking the main title brings you &amp;#39;back&amp;#39; to the home page, or in this case, to the page at the previous level.&lt;/p&gt;
-&lt;p&gt;I think it&amp;#39;s time for me to build out my site&amp;#39;s content instead of revamping it every few months. When I feel like it needs a facelift, I&amp;#39;ll come back to this..&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;&lt;strong&gt;Node, Express, HTML, CSS, JS&lt;/strong&gt; I decided I wanted to have a website on January 18, 2017. I can&amp;#39;t remember why, but I think it&amp;#39;s because I thought I needed to somehow promote my fundraiser for the NYC Marathon that year. At the time I had no idea how to build the site...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://walkersutton.com/blog/personal-website&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
   <entry>
     <title>First Custom PC Build</title>
     <link href="https://pcpartpicker.com/b/Pq8KHx" />
     <id>https://pcpartpicker.com/b/Pq8KHx</id>
     <updated>2015-04-06T00:00:00.000Z</updated>
-    <content type="html">&lt;p&gt;I purchased all of my parts from a local Microcenter. There, they helped me to choose what parts I needed VS wanted and also assisted in choosing parts that were the best bang for your buck. Going in there, I figured that the prices would be outrageous and I was planning on only purchasing select parts from them and the rest online, but I ended up buying everything in store because they weren&amp;#39;t far off from online once shipping and all other expenses were calculated.&lt;/p&gt;
-</content>
+    <content type="html">&lt;p&gt;I purchased all of my parts from a local Microcenter. There, they helped me to choose what parts I needed VS wanted and also assisted in choosing parts that were the best bang for your buck. Going in there, I figured that the prices would be outrageous and I was planni...&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://pcpartpicker.com/b/Pq8KHx&quot;&gt;Read full post&lt;/a&gt;&lt;/p&gt;</content>
   </entry>
 </feed>
