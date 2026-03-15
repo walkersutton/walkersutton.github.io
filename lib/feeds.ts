@@ -38,11 +38,19 @@ export async function generateRssFeed() {
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
+      const content = fullPost?.content || "";
       const url = meta.external_url || `${SITE_CONFIG.siteUrl}/blog/${meta.slug}`;
-      const excerpt = generateExcerpt(fullPost?.content || "");
-      const htmlContent = await marked.parse(excerpt);
-      const combinedContent = `${htmlContent}<p><a href="${url}">Read full post</a></p>`;
-      return { ...meta, htmlContent: combinedContent };
+      
+      let htmlContent: string;
+      if (meta.external_url) {
+        const excerpt = generateExcerpt(content);
+        htmlContent = await marked.parse(excerpt);
+        htmlContent += `<p><a href="${url}">Read full post</a></p>`;
+      } else {
+        htmlContent = await marked.parse(content);
+      }
+      
+      return { ...meta, htmlContent };
     }),
   );
 
@@ -83,11 +91,19 @@ export async function generateAtomFeed() {
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
+      const content = fullPost?.content || "";
       const url = meta.external_url || `${SITE_CONFIG.siteUrl}/blog/${meta.slug}`;
-      const excerpt = generateExcerpt(fullPost?.content || "");
-      const htmlContent = await marked.parse(excerpt);
-      const combinedContent = `${htmlContent}<p><a href="${url}">Read full post</a></p>`;
-      return { ...meta, htmlContent: combinedContent };
+      
+      let htmlContent: string;
+      if (meta.external_url) {
+        const excerpt = generateExcerpt(content);
+        htmlContent = await marked.parse(excerpt);
+        htmlContent += `<p><a href="${url}">Read full post</a></p>`;
+      } else {
+        htmlContent = await marked.parse(content);
+      }
+      
+      return { ...meta, htmlContent };
     }),
   );
 
@@ -125,14 +141,22 @@ export async function generateJsonFeed() {
     postsMetadata.map(async (post) => {
       const url = post.external_url || `${SITE_CONFIG.siteUrl}/blog/${post.slug}`;
       const fullPost = await getPostBySlug(post.slug);
-      const excerpt = generateExcerpt(fullPost?.content || "");
-      const htmlContent = await marked.parse(excerpt);
-      const combinedContent = `${htmlContent}<p><a href="${url}">Read full post</a></p>`;
+      const content = fullPost?.content || "";
+      
+      let htmlContent: string;
+      if (post.external_url) {
+        const excerpt = generateExcerpt(content);
+        htmlContent = await marked.parse(excerpt);
+        htmlContent += `<p><a href="${url}">Read full post</a></p>`;
+      } else {
+        htmlContent = await marked.parse(content);
+      }
+      
       return {
         id: url,
         url: url,
         title: post.title,
-        content_html: combinedContent,
+        content_html: htmlContent,
         date_published: new Date(post.date).toISOString(),
       };
     }),
