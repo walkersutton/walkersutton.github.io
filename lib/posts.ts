@@ -113,11 +113,41 @@ export function generateExcerpt(
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   } else {
+    // Strip markdown heading markers (e.g. ## Notes:) and list markers (- item, * item)
+    // before collapsing whitespace so they don't appear as literal characters
+    excerpt = excerpt.replace(/^#{1,6}\s+/gm, "");
+    excerpt = excerpt.replace(/^[-*+]\s+/gm, "");
     excerpt = excerpt.replace(/\s+/g, " ").trim();
   }
 
   if (excerpt.length > length) {
-    excerpt = excerpt.substring(0, length).trim() + "...";
+    if (preserveNewlines) {
+      // Greedily accumulate complete blocks (separated by \n\n) up to the length limit.
+      // If the accumulated result is too short (the very next block alone exceeds the limit),
+      // fall back to a character-truncated portion of that next block so we don't show too little.
+      const blocks = excerpt.split("\n\n");
+      let result = "";
+      let nextBlock = "";
+      for (const block of blocks) {
+        const candidate = result ? result + "\n\n" + block : block;
+        if (candidate.length > length) {
+          nextBlock = block;
+          break;
+        }
+        result = candidate;
+      }
+      // If we have nothing yet (first block already exceeds limit), or result is less than
+      // half the limit, include a character-truncated portion of the next block too.
+      if (!result || result.length < length / 2) {
+        const extra = nextBlock || excerpt;
+        const remaining = length - (result ? result.length + 2 : 0);
+        const truncated = extra.substring(0, remaining).trim();
+        result = result ? result + "\n\n" + truncated : truncated;
+      }
+      excerpt = result.trim() + "...";
+    } else {
+      excerpt = excerpt.substring(0, length).trim() + "...";
+    }
   }
 
   return excerpt;

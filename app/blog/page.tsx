@@ -13,7 +13,7 @@ export default async function BlogPage() {
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
-      const excerpt = generateExcerpt(fullPost?.content || "");
+      const excerpt = generateExcerpt(fullPost?.content || "", { preserveNewlines: true });
       return { ...meta, excerpt };
     }),
   );

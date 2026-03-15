@@ -14,7 +14,7 @@ export default async function Home() {
   const latestPosts = await Promise.all(
     latestPostsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
-      const excerpt = generateExcerpt(fullPost?.content || "");
+      const excerpt = generateExcerpt(fullPost?.content || "", { preserveNewlines: true });
       return { ...meta, excerpt };
     }),
   );
