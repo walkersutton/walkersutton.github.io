@@ -2,22 +2,12 @@ import { Redis } from "@upstash/redis";
 
 const INVENTORY_PREFIX = "inventory:";
 
-let redisInstance: Redis | null = null;
-
-function getRedis(): Redis {
-  if (!redisInstance) {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      throw new Error("Redis env vars are not set");
-    }
-    redisInstance = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    });
-  }
-  return redisInstance;
-}
-
 export async function getInventory(productId: string, productSlug?: string): Promise<number> {
+  // Bypassing Redis for now to avoid build-time dynamic rendering issues
+  // Since the store isn't actively being used for inventory management.
+  return 1;
+  
+  /* 
   try {
     const redis = getRedis();
 
@@ -38,6 +28,7 @@ export async function getInventory(productId: string, productSlug?: string): Pro
     console.error("Redis error:", e);
     return 0;
   }
+  */
 }
 
 export async function hasStock(productId: string, productSlug?: string): Promise<boolean> {
