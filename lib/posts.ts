@@ -91,18 +91,16 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 export function generateExcerpt(content: string, length: number = 269): string {
   let excerpt = content.trim();
 
-  // Strip HTML tags accurately (target img, span, div) to avoid eating < or > in code snippets
-  excerpt = excerpt.replace(/<(img|span|div)[^>]*\/?>/g, "");
-  excerpt = excerpt.replace(/<\/(img|span|div)>/g, "");
-
-  // Strip markdown images entirely
+  // Strip common markdown elements that might look bad in a short preview
+  // Strip images
   excerpt = excerpt.replace(/!\[.*?\]\(.*?\)/g, "");
+  // Strip HTML-like tags
+  excerpt = excerpt.replace(/<[^>]*>?/gm, "");
+  // Strip code blocks (roughly)
+  excerpt = excerpt.replace(/```[\s\S]*?```/g, "");
 
-  // Strip regular markdown links but keep text
-  excerpt = excerpt.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-
-  // Clean up whitespace without destroying markdown's newlines
-  excerpt = excerpt.trim();
+  // Clean up whitespace
+  excerpt = excerpt.replace(/\s+/g, " ").trim();
 
   if (excerpt.length > length) {
     excerpt = excerpt.substring(0, length).trim() + "...";

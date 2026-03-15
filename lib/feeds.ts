@@ -1,4 +1,4 @@
-import { getAllPosts, getPostBySlug } from "./posts";
+import { getAllPosts, getPostBySlug, generateExcerpt } from "./posts";
 import { marked } from "marked";
 import { SITE_CONFIG } from "./config";
 
@@ -38,8 +38,11 @@ export async function generateRssFeed() {
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
-      const htmlContent = await marked.parse(fullPost?.content || "");
-      return { ...meta, htmlContent };
+      const url = meta.external_url || `${SITE_CONFIG.siteUrl}/blog/${meta.slug}`;
+      const excerpt = generateExcerpt(fullPost?.content || "");
+      const htmlContent = await marked.parse(excerpt);
+      const combinedContent = `${htmlContent}<p><a href="${url}">Read full post</a></p>`;
+      return { ...meta, htmlContent: combinedContent };
     }),
   );
 
@@ -80,8 +83,11 @@ export async function generateAtomFeed() {
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
-      const htmlContent = await marked.parse(fullPost?.content || "");
-      return { ...meta, htmlContent };
+      const url = meta.external_url || `${SITE_CONFIG.siteUrl}/blog/${meta.slug}`;
+      const excerpt = generateExcerpt(fullPost?.content || "");
+      const htmlContent = await marked.parse(excerpt);
+      const combinedContent = `${htmlContent}<p><a href="${url}">Read full post</a></p>`;
+      return { ...meta, htmlContent: combinedContent };
     }),
   );
 
@@ -119,12 +125,14 @@ export async function generateJsonFeed() {
     postsMetadata.map(async (post) => {
       const url = post.external_url || `${SITE_CONFIG.siteUrl}/blog/${post.slug}`;
       const fullPost = await getPostBySlug(post.slug);
-      const htmlContent = await marked.parse(fullPost?.content || "");
+      const excerpt = generateExcerpt(fullPost?.content || "");
+      const htmlContent = await marked.parse(excerpt);
+      const combinedContent = `${htmlContent}<p><a href="${url}">Read full post</a></p>`;
       return {
         id: url,
         url: url,
         title: post.title,
-        content_html: htmlContent,
+        content_html: combinedContent,
         date_published: new Date(post.date).toISOString(),
       };
     }),
