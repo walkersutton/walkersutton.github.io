@@ -88,7 +88,11 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   };
 }
 
-export function generateExcerpt(content: string, length: number = 269): string {
+export function generateExcerpt(
+  content: string,
+  options: { length?: number; preserveNewlines?: boolean } = {}
+): string {
+  const { length = 269, preserveNewlines = false } = options;
   let excerpt = content.trim();
 
   // Strip common markdown elements that might look bad in a short preview
@@ -100,7 +104,17 @@ export function generateExcerpt(content: string, length: number = 269): string {
   excerpt = excerpt.replace(/```[\s\S]*?```/g, "");
 
   // Clean up whitespace
-  excerpt = excerpt.replace(/\s+/g, " ").trim();
+  if (preserveNewlines) {
+    // Keep newlines but collapse multiple ones, and trim each line
+    excerpt = excerpt
+      .split("\n")
+      .map((line) => line.trim())
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  } else {
+    excerpt = excerpt.replace(/\s+/g, " ").trim();
+  }
 
   if (excerpt.length > length) {
     excerpt = excerpt.substring(0, length).trim() + "...";

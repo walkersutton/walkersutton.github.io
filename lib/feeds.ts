@@ -43,7 +43,7 @@ export async function generateRssFeed() {
       
       let htmlContent: string;
       if (meta.external_url) {
-        const excerpt = generateExcerpt(content);
+        const excerpt = generateExcerpt(content, { preserveNewlines: true });
         htmlContent = await marked.parse(excerpt);
         htmlContent += `<p><a href="${url}">Read full post</a></p>`;
       } else {
@@ -96,7 +96,7 @@ export async function generateAtomFeed() {
       
       let htmlContent: string;
       if (meta.external_url) {
-        const excerpt = generateExcerpt(content);
+        const excerpt = generateExcerpt(content, { preserveNewlines: true });
         htmlContent = await marked.parse(excerpt);
         htmlContent += `<p><a href="${url}">Read full post</a></p>`;
       } else {
@@ -145,7 +145,7 @@ export async function generateJsonFeed() {
       
       let htmlContent: string;
       if (post.external_url) {
-        const excerpt = generateExcerpt(content);
+        const excerpt = generateExcerpt(content, { preserveNewlines: true });
         htmlContent = await marked.parse(excerpt);
         htmlContent += `<p><a href="${url}">Read full post</a></p>`;
       } else {
