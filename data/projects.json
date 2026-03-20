@@ -13,6 +13,12 @@
     "blurb": "A tool for creating cycling telemetry video overlays."
   },
   {
+    "name": "facelapse",
+    "href": "https://github.com/walkersutton/facelapse",
+    "image": "/images/facelapse.gif",
+    "blurb": "Create GIFs with your face."
+  },
+  {
     "name": "spac",
     "href": "https://github.com/walkersutton/spac",
     "image": "/images/spac.gif",
@@ -36,6 +42,11 @@
     "image": "/images/wepollus.gif",
     "blurb": "A Twitter bot that creates community-driven polls."
   },
-  { "name": "hidehome server", "href": "#", "blurb": "blurb here", "hide": true },
+  {
+    "name": "hidehome server",
+    "href": "#",
+    "blurb": "blurb here",
+    "hide": true
+  },
   { "name": "hidebike shelf", "href": "#", "blurb": "blurb here", "hide": true }
 ]
