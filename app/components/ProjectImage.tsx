@@ -22,7 +22,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
   }, []);
 
   useEffect(() => {
-    if (!isGif || isTouchDevice || !still) return;
+    if (!isGif || isTouchDevice) return;
 
     const img = new Image();
     img.crossOrigin = "anonymous";
@@ -31,8 +31,6 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
       setIsGifLoaded(true);
       
       // If we don't have a pre-generated still, extract one from the loaded GIF
-      // (This logic is only reached if 'still' is present now, so it's a bit redundant 
-      // but keeps the extraction logic if we ever want to re-enable it for auto-stills)
       if (!still) {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -48,7 +46,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
           setStaticFrame(canvas.toDataURL("image/webp"));
         } catch (err) {
           console.error("Failed to capture GIF frame:", err);
-          setStaticFrame(src);
+          // Don't set staticFrame to src (the GIF) to avoid looping
         }
       }
     };
@@ -56,7 +54,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
 
   const [nonce, setNonce] = useState(0);
 
-  if (!isGif || isTouchDevice || !still) {
+  if (!isGif || isTouchDevice) {
     return (
       <img
         src={src}
@@ -83,7 +81,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
       
       {/* Base Image (Static Frame or Still) - Defines the container size */}
       <img
-        src={still}
+        src={still || src}
         alt=""
         aria-hidden="true"
         className="w-full h-auto block opacity-0 pointer-events-none"
