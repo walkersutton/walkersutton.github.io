@@ -52,7 +52,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
     };
   }, [src, isGif, isTouchDevice, still]);
 
-  const [nonce, setNonce] = useState(0);
+
 
   if (!isGif || isTouchDevice) {
     return (
@@ -65,14 +65,14 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
     );
   }
 
-  // Add a nonce to the GIF URL to force restart on hover
-  const gifSrc = isHovered ? `${src}?v=${nonce}` : src;
+  // Use a stable URL so it's cached, but the 'key' prop on the img tag below
+  // forces React to re-mount the element on hover, which restarts the GIF.
+
 
   return (
     <div 
       className="relative w-full h-auto overflow-hidden bg-neutral-100 dark:bg-neutral-800"
       onMouseEnter={() => {
-        setNonce(n => n + 1);
         setIsHovered(true);
       }}
       onMouseLeave={() => setIsHovered(false)}
@@ -99,7 +99,8 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
       {/* Animated Overlay - Only load if hovered or after some background loading logic if desired */}
       {/* For now, we always start loading the GIF in background via useEffect, but only show it here on hover */}
       <img
-        src={gifSrc}
+        key={isHovered ? "active" : "inactive"}
+        src={src}
         alt={alt}
         className={`absolute inset-0 w-full h-full object-cover block transition-opacity duration-200 ${
           isHovered && isGifLoaded ? "opacity-100" : "opacity-0"
