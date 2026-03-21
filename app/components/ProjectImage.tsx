@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 
 interface ProjectImageProps {
   src: string;
+  still?: string;
   alt: string;
 }
 
-export default function ProjectImage({ src, alt }: ProjectImageProps) {
+export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [staticFrame, setStaticFrame] = useState<string | null>(null);
+  const [staticFrame, setStaticFrame] = useState<string | null>(still || null);
+  const [isGifLoaded, setIsGifLoaded] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const isGif = src.toLowerCase().endsWith(".gif");
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,24 +28,29 @@ export default function ProjectImage({ src, alt }: ProjectImageProps) {
     img.crossOrigin = "anonymous";
     img.src = src;
     img.onload = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      setIsGifLoaded(true);
       
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      // If we don't have a pre-generated still, extract one from the loaded GIF
+      if (!still) {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      
-      try {
-        setStaticFrame(canvas.toDataURL("image/webp"));
-      } catch (err) {
-        console.error("Failed to capture GIF frame:", err);
-        setStaticFrame(src);
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        try {
+          setStaticFrame(canvas.toDataURL("image/webp"));
+        } catch (err) {
+          console.error("Failed to capture GIF frame:", err);
+          setStaticFrame(src);
+        }
       }
     };
-  }, [src, isGif, isTouchDevice]);
+  }, [src, isGif, isTouchDevice, still]);
 
   const [nonce, setNonce] = useState(0);
 
@@ -71,34 +78,32 @@ export default function ProjectImage({ src, alt }: ProjectImageProps) {
     >
       <canvas ref={canvasRef} className="hidden" />
       
-      {/* Base Image (Static Frame) - Defines the container size */}
-      {/* We use a hidden version of the original src to ensure the container gets height immediately */}
+      {/* Base Image (Static Frame or Still) - Defines the container size */}
       <img
-        src={src}
+        src={still || src}
         alt=""
         aria-hidden="true"
         className="w-full h-auto block opacity-0 pointer-events-none"
       />
 
-      {/* Visible Static Frame */}
+      {/* Visible Static Frame / Placeholder */}
       {staticFrame && (
         <img
           src={staticFrame}
           alt={alt}
-          className="absolute inset-0 w-full h-full block transition-opacity duration-300 opacity-100"
+          className="absolute inset-0 w-full h-full object-cover block transition-opacity duration-300 opacity-100"
         />
       )}
 
-      {/* Animated Overlay */}
-      {staticFrame && (
-        <img
-          src={gifSrc}
-          alt={alt}
-          className={`absolute inset-0 w-full h-full block transition-opacity duration-200 ${
-            isHovered ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      )}
+      {/* Animated Overlay - Only load if hovered or after some background loading logic if desired */}
+      {/* For now, we always start loading the GIF in background via useEffect, but only show it here on hover */}
+      <img
+        src={gifSrc}
+        alt={alt}
+        className={`absolute inset-0 w-full h-full object-cover block transition-opacity duration-200 ${
+          isHovered && isGifLoaded ? "opacity-100" : "opacity-0"
+        }`}
+      />
     </div>
   );
 }

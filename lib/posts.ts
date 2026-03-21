@@ -25,7 +25,7 @@ export function getAllPosts(): PostMetadata[] {
 
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsData = fileNames
-    .filter((fileName) => fileName.endsWith(".md") || fileName.endsWith(".mdx"))
+    .filter((fileName) => (fileName.endsWith(".md") || fileName.endsWith(".mdx")) && !fileName.startsWith("draft"))
     .map((fileName) => {
       const fullPath = path.join(postsDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, "utf8");

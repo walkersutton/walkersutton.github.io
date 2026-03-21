@@ -6,6 +6,7 @@ export interface Project {
   href: string;
   blurb: string;
   image?: string;
+  still?: string;
   featured?: boolean;
   price?: string;
   isSoldOut?: boolean;
@@ -66,7 +67,7 @@ export default function ProjectCard({
       >
         <div className="relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
           {project.image ? (
-            <ProjectImage src={project.image} alt={project.name} />
+            <ProjectImage src={project.image} still={project.still} alt={project.name} />
           ) : (
             <ProjectGraphic name={project.name} blurb={project.blurb} />
           )}

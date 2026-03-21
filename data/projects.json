@@ -4,42 +4,49 @@
     "hide": true,
     "href": "https://vard.app",
     "image": "/images/vard.gif",
+    "still": "/images/vard-still.jpg",
     "blurb": "No code website builder for professional practices."
   },
   {
     "name": "Cyclemetry",
     "href": "https://github.com/walkersutton/cyclemetry",
     "image": "/images/cyclemetry.gif",
+    "still": "/images/cyclemetry-still.jpg",
     "blurb": "A tool for creating cycling telemetry video overlays."
   },
   {
     "name": "facelapse",
     "href": "https://github.com/walkersutton/facelapse",
     "image": "/images/facelapse.gif",
+    "still": "/images/facelapse-still.jpg",
     "blurb": "Create GIFs with your face."
   },
   {
     "name": "spac",
     "href": "https://github.com/walkersutton/spac",
     "image": "/images/spac.gif",
+    "still": "/images/spac-still.jpg",
     "blurb": "Caps Lock HUD for macOS."
   },
   {
     "name": "tog",
     "href": "https://chromewebstore.google.com/detail/pfemfkpbkkcgdmimaicpfbmhfjcefijn?utm_source=item-share-cb",
     "image": "/images/tog.gif",
+    "still": "/images/tog-still.jpg",
     "blurb": "Chrome extension for flipping between light and dark mode in the browser."
   },
   {
     "name": "Cadence Calculator",
     "href": "https://github.com/walkersutton/cadence-calculator",
     "image": "/images/cadence-calculator.gif",
+    "still": "/images/cadence-calculator-still.jpg",
     "blurb": "A Strava app that generates cadence data for fixed gear cycling activities."
   },
   {
     "name": "@wepollus",
     "href": "https://x.com/wepollus",
     "image": "/images/wepollus.gif",
+    "still": "/images/wepollus-still.jpg",
     "blurb": "A Twitter bot that creates community-driven polls."
   },
   {
