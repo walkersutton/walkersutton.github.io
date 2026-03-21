@@ -25,21 +25,18 @@
     "name": "spac",
     "href": "https://github.com/walkersutton/spac",
     "image": "/images/spac.gif",
-    "still": "/images/spac-still.jpg",
     "blurb": "Caps Lock HUD for macOS."
   },
   {
     "name": "tog",
     "href": "https://chromewebstore.google.com/detail/pfemfkpbkkcgdmimaicpfbmhfjcefijn?utm_source=item-share-cb",
     "image": "/images/tog.gif",
-    "still": "/images/tog-still.jpg",
     "blurb": "Chrome extension for flipping between light and dark mode in the browser."
   },
   {
     "name": "Cadence Calculator",
     "href": "https://github.com/walkersutton/cadence-calculator",
     "image": "/images/cadence-calculator.gif",
-    "still": "/images/cadence-calculator-still.jpg",
     "blurb": "A Strava app that generates cadence data for fixed gear cycling activities."
   },
   {
