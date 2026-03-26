@@ -5,9 +5,11 @@ import "./globals.css";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_CONFIG.siteUrl),
   title: SITE_CONFIG.title,
   description: SITE_CONFIG.description,
   alternates: {
+    canonical: "/",
     types: {
       "application/rss+xml": "/rss.xml",
     },
