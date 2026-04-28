@@ -2,15 +2,9 @@
 
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { usePathname } from "next/navigation";
 
 export default function CartSummary() {
   const { itemCount, isHydrated } = useCart();
-  const pathname = usePathname();
-
-  if (!pathname?.startsWith("/store")) {
-    return null;
-  }
 
   return (
     <Link href="/store/bag" className="text-sm flex items-center group relative z-10">

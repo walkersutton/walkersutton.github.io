@@ -11,10 +11,13 @@ import OrderSummary from "./OrderSummary";
 import CheckoutForm from "./CheckoutForm";
 import ImageZoom from "./ImageZoom";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
+);
 
 export default function BagContent() {
-  const { items, updateQuantity, totalPrice, isHydrated, itemCount } = useCart();
+  const { items, updateQuantity, totalPrice, isHydrated, itemCount } =
+    useCart();
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [shippingCountry, setShippingCountry] = useState("US");
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -35,28 +38,30 @@ export default function BagContent() {
 
   const shippingCost = getShippingPrice(shippingCountry, itemCount);
 
-  const checkoutThemeValues = isDarkMode 
+  const checkoutThemeValues = isDarkMode
     ? {
-        colorText: '#f5f5f5', // neutral-100
-        colorBackground: 'transparent',
-        colorPrimary: '#f5f5f5',
-        colorDanger: '#ff4d4d',
-        borderColor: '#525252', // neutral-600 (matches --color-border variant)
+        colorText: "#f5f5f5", // neutral-100
+        colorBackground: "transparent",
+        colorPrimary: "#f5f5f5",
+        colorDanger: "#ff4d4d",
+        borderColor: "#525252", // neutral-600 (matches --color-border variant)
       }
     : {
-        colorText: '#171717', // neutral-900
-        colorBackground: 'transparent',
-        colorPrimary: '#171717',
-        colorDanger: '#ff0000',
-        borderColor: '#e5e5e5', // neutral-200 (matches --color-border)
+        colorText: "#171717", // neutral-900
+        colorBackground: "transparent",
+        colorPrimary: "#171717",
+        colorDanger: "#ff0000",
+        borderColor: "#e5e5e5", // neutral-200 (matches --color-border)
       };
 
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center w-full">
-        <h1 className="text-sm font-bold tracking-widest uppercase mb-6">Your Bag is empty</h1>
+        <h1 className="text-sm font-bold tracking-widest uppercase mb-6">
+          Your Bag is empty
+        </h1>
         <Link href="/store" className="nav-link hover-accent text-sm">
-          CONTINUE SHOPPING
+          Click for Store
         </Link>
       </div>
     );
@@ -67,7 +72,9 @@ export default function BagContent() {
       <div className="flex flex-col md:flex-row flex-grow items-start gap-12">
         {/* Left Column: Cart Items & Summary */}
         <div className="w-full md:w-3/5 space-y-4">
-          <h1 className="text-2xl font-bold tracking-wider uppercase mb-8">YOUR BAG</h1>
+          <h1 className="text-2xl font-bold tracking-wider uppercase mb-8">
+            YOUR BAG
+          </h1>
 
           <CartItemList
             items={items}
@@ -85,38 +92,39 @@ export default function BagContent() {
         {/* Right Column: Mini Checkout */}
         <div className="w-full md:w-2/5 p-6 md:p-8 bg-neutral-100 dark:bg-neutral-900 transition-colors">
           <div className="md:sticky md:top-32 space-y-8">
-            <Elements 
+            <Elements
               stripe={stripePromise}
               options={{
                 appearance: {
-                  theme: 'stripe',
+                  theme: "stripe",
                   variables: {
                     colorPrimary: checkoutThemeValues.colorPrimary,
                     colorBackground: checkoutThemeValues.colorBackground,
                     colorText: checkoutThemeValues.colorText,
                     colorDanger: checkoutThemeValues.colorDanger,
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                    spacingUnit: '4px',
-                    borderRadius: '0px',
+                    fontFamily:
+                      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                    spacingUnit: "4px",
+                    borderRadius: "0px",
                   },
                   rules: {
-                    '.Input': {
+                    ".Input": {
                       border: `1px solid ${checkoutThemeValues.borderColor}`,
-                      boxShadow: 'none',
-                      padding: '16px',
-                      fontSize: '14px',
-                      textTransform: 'uppercase',
+                      boxShadow: "none",
+                      padding: "16px",
+                      fontSize: "14px",
+                      textTransform: "uppercase",
                       color: checkoutThemeValues.colorText,
                     },
-                    '.Label': {
-                      fontSize: '14px',
-                      textTransform: 'uppercase',
-                      fontWeight: '400',
-                      letterSpacing: '0.1em',
+                    ".Label": {
+                      fontSize: "14px",
+                      textTransform: "uppercase",
+                      fontWeight: "400",
+                      letterSpacing: "0.1em",
                       color: checkoutThemeValues.colorText,
-                    }
-                  }
-                }
+                    },
+                  },
+                },
               }}
             >
               <CheckoutForm onAddressChange={setShippingCountry} />
