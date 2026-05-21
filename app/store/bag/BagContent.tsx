@@ -41,17 +41,19 @@ export default function BagContent() {
   const checkoutThemeValues = isDarkMode
     ? {
         colorText: "#f5f5f5", // neutral-100
-        colorBackground: "transparent",
+        colorBackground: "#0a0a0a", // neutral-950 (matches dark:bg-neutral-950 on email input)
+        colorTextPlaceholder: "#525252", // neutral-600 (matches dark:placeholder:text-neutral-600)
         colorPrimary: "#f5f5f5",
         colorDanger: "#ff4d4d",
-        borderColor: "#525252", // neutral-600 (matches --color-border variant)
+        borderColor: "#e5e5e5", // neutral-200 (matches dark:border-neutral-200)
       }
     : {
         colorText: "#171717", // neutral-900
-        colorBackground: "transparent",
+        colorBackground: "#ffffff", // white (matches bg-white on email input)
+        colorTextPlaceholder: "#a3a3a3", // neutral-400 (matches placeholder:text-neutral-400)
         colorPrimary: "#171717",
         colorDanger: "#ff0000",
-        borderColor: "#e5e5e5", // neutral-200 (matches --color-border)
+        borderColor: "#262626", // neutral-800 (matches border-neutral-800)
       };
 
   if (items.length === 0) {
@@ -96,11 +98,12 @@ export default function BagContent() {
               stripe={stripePromise}
               options={{
                 appearance: {
-                  theme: "stripe",
+                  theme: "none" as any,
                   variables: {
                     colorPrimary: checkoutThemeValues.colorPrimary,
                     colorBackground: checkoutThemeValues.colorBackground,
                     colorText: checkoutThemeValues.colorText,
+                    colorTextPlaceholder: checkoutThemeValues.colorTextPlaceholder,
                     colorDanger: checkoutThemeValues.colorDanger,
                     fontFamily:
                       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',

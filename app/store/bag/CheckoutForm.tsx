@@ -148,7 +148,7 @@ export default function CheckoutForm({
             placeholder="EMAIL ADDRESS"
             value={formData.email}
             onChange={handleEmailChange}
-            className="w-full border border-neutral-800 dark:border-neutral-200 p-4 text-sm focus:outline-none transition-all bg-[var(--color-bg)] uppercase tracking-wider placeholder:opacity-20"
+            className="w-full border border-neutral-800 dark:border-neutral-200 p-4 text-sm focus:outline-none transition-all bg-white dark:bg-neutral-950 text-[var(--color-text)] uppercase tracking-wider placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
           />
         </div>
       </section>
