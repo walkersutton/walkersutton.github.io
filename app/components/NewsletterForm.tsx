@@ -1,8 +1,7 @@
 "use client";
-
+ 
 import { useState } from "react";
 import Button from "@/app/components/ui/Button";
-import { supabase } from "@/lib/supabase";
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -15,14 +14,21 @@ export default function NewsletterForm() {
     setStatus("loading");
 
     try {
-      const { error } = await supabase.functions.invoke("add-newsletter", {
-        body: {
-          email_address: email,
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const response = await fetch(`${apiUrl}/api/add-newsletter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          email_address: email,
+        }),
       });
 
-      if (error) {
-        throw error;
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(resData.error || "Subscription failed");
       }
 
       setStatus("success");

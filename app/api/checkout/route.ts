@@ -1,11 +1,17 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "npm:stripe@^14";
-import { Redis } from "npm:@upstash/redis@^1";
+import { NextResponse } from "next/server";
+import { getStripe } from "@/lib/stripe";
+import { getRedis } from "@/lib/redis";
+import productsMetadata from "@/data/products.json";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+export async function OPTIONS() {
+  return new NextResponse("ok", { headers: corsHeaders });
+}
 
 interface CheckoutBody {
   items: { productId: string; quantity: number }[];
@@ -21,33 +27,19 @@ interface CheckoutBody {
   };
 }
 
-// Load product metadata
-import productsMetadata from "./products.json" assert { type: "json" };
-
-serve(async (req) => {
-  // Handle CORS
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
+export async function POST(req: Request) {
   try {
     const { items, email, shippingAddress } = (await req.json()) as CheckoutBody;
 
     if (!items || items.length === 0) {
-      return new Response(JSON.stringify({ error: "No items provided" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return NextResponse.json(
+        { error: "No items provided" },
+        { status: 400, headers: corsHeaders }
+      );
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
-
-    const redis = new Redis({
-      url: Deno.env.get("UPSTASH_REDIS_REST_URL") || "",
-      token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN") || "",
-    });
+    const stripe = getStripe();
+    const redis = getRedis();
 
     const lineItems = [];
     const origin = req.headers.get("origin") || "https://walkersutton.com";
@@ -62,12 +54,12 @@ serve(async (req) => {
       const slug = meta?.slug || item.productId;
 
       // Check stock
-      const inventory = await redis.get<number>(`inventory:${slug}`) || await redis.get<number>(`inventory:${item.productId}`) || 0;
+      const inventory = (await redis.get<number>(`inventory:${slug}`)) || (await redis.get<number>(`inventory:${item.productId}`)) || 0;
       if (inventory < item.quantity) {
-        return new Response(JSON.stringify({ error: `Sorry, ${stripeProduct.name} is out of stock` }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return NextResponse.json(
+          { error: `Sorry, ${stripeProduct.name} is out of stock` },
+          { status: 400, headers: corsHeaders }
+        );
       }
 
       const price = await stripe.prices.retrieve(stripeProduct.default_price as string);
@@ -77,10 +69,10 @@ serve(async (req) => {
           currency: "usd",
           product_data: {
             name: stripeProduct.name,
-            description: stripeProduct.description,
-            images: [stripeProduct.images[0]],
+            description: stripeProduct.description || undefined,
+            images: stripeProduct.images[0] ? [stripeProduct.images[0]] : [],
           },
-          unit_amount: price.unit_amount,
+          unit_amount: price.unit_amount || 0,
         },
         quantity: item.quantity,
       });
@@ -123,13 +115,12 @@ serve(async (req) => {
       cancel_url: `${origin}/bag`,
     });
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return NextResponse.json({ url: session.url }, { headers: corsHeaders });
+  } catch (error: any) {
+    console.error("Checkout route error:", error);
+    return NextResponse.json(
+      { error: error.message || "Internal Server Error" },
+      { status: 500, headers: corsHeaders }
+    );
   }
-});
+}

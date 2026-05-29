@@ -96,10 +96,13 @@ export default function CheckoutForm({
     try {
       setSubmitting(true);
       
-      const { supabase } = await import("@/lib/supabase");
-      
-      const { data, error: funcError } = await supabase.functions.invoke("checkout", {
-        body: {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const response = await fetch(`${apiUrl}/api/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
           email: formData.email,
           shippingAddress: {
@@ -111,18 +114,20 @@ export default function CheckoutForm({
             zip: value.address.postal_code,
             country: value.address.country,
           },
-        },
+        }),
       });
 
-      if (funcError) {
-        throw new Error(funcError.message || "Checkout failed");
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(resData.error || "Checkout failed");
       }
 
-      if (!data?.url) {
+      if (!resData?.url) {
         throw new Error("No checkout URL returned from function");
       }
 
-      window.location.href = data.url;
+      window.location.href = resData.url;
     } catch (err) {
       console.error("Checkout error:", err);
       setError(err instanceof Error ? err.message : "Something went wrong");
