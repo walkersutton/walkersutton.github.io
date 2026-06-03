@@ -13,31 +13,37 @@ export default function ProductGallery({ images, name }: ProductGalleryProps) {
 
   return (
     <>
-      <div className="flex flex-col">
-        {images.map((img, index) => (
+      <div className="pd-gallery">
+        {images.map((img, i) => (
           <div
-            key={index}
-            className="aspect-square relative w-full cursor-zoom-in"
+            key={i}
+            className="shop-img cursor-zoom-in"
+            style={{
+              aspectRatio: i === 0 ? "4/5" : "1/1",
+              borderRadius: 18,
+              position: "relative",
+            }}
             onClick={() => setZoomedImage(img)}
           >
             <Image
               src={img}
-              alt={`${name} image ${index + 1}`}
+              alt={`${name} ${i + 1}`}
               fill
               className="object-cover"
-              priority={index === 0}
+              style={{ borderRadius: 18 }}
+              priority={i === 0}
             />
           </div>
         ))}
       </div>
 
-      {/* Zoom Overlay */}
       {zoomedImage && (
         <div
-          className="fixed inset-0 z-[100] bg-white/95 dark:bg-black/95 flex items-center justify-center p-6 cursor-zoom-out"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-6 cursor-zoom-out"
+          style={{ background: "rgba(19,16,9,0.88)" }}
           onClick={() => setZoomedImage(null)}
         >
-          <div className="relative w-full h-full max-w-6xl max-h-[90vh]">
+          <div className="relative w-full h-full max-w-4xl max-h-[90vh]">
             <Image
               src={zoomedImage}
               alt="Zoomed product"

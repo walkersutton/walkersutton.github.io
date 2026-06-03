@@ -6,7 +6,7 @@ import { SITE_CONFIG } from "@/lib/config";
 
 const SECTIONS = [
   { prefix: "/projects", label: "Projects", root: "/projects" },
-  { prefix: "/store", label: "Store", root: "/store" },
+  { prefix: "/goods", label: "Goods", root: "/goods" },
   { prefix: "/blog", label: "Blog", root: "/blog" },
 ];
 

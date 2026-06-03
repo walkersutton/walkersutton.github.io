@@ -96,12 +96,21 @@ export function generateExcerpt(
   let excerpt = content.trim();
 
   // Strip common markdown elements that might look bad in a short preview
-  // Strip images
+  // Strip fenced code blocks first
+  excerpt = excerpt.replace(/```[\s\S]*?```/g, "");
+  // Strip images (before inline links)
   excerpt = excerpt.replace(/!\[.*?\]\(.*?\)/g, "");
+  // Strip inline links — keep link text, drop URL
+  excerpt = excerpt.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
   // Strip HTML-like tags
   excerpt = excerpt.replace(/<[^>]*>?/gm, "");
-  // Strip code blocks (roughly)
-  excerpt = excerpt.replace(/```[\s\S]*?```/g, "");
+  // Strip bold/italic markers
+  excerpt = excerpt.replace(/\*\*\*([^*]+)\*\*\*/g, "$1");
+  excerpt = excerpt.replace(/\*\*([^*]+)\*\*/g, "$1");
+  excerpt = excerpt.replace(/\*([^*]+)\*/g, "$1");
+  excerpt = excerpt.replace(/_([^_]+)_/g, "$1");
+  // Strip inline code
+  excerpt = excerpt.replace(/`[^`]+`/g, "");
 
   // Clean up whitespace
   if (preserveNewlines) {

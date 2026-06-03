@@ -38,7 +38,7 @@ export default function RootLayout({
         src="//gc.zgo.at/count.js"
       />
       <body
-        className={`bg-[var(--color-bg)] text-[var(--color-text)] antialiased mx-auto overflow-x-hidden px-4 md:overflow-x-visible min-h-screen flex flex-col`}
+        className={`bg-[var(--color-bg)] text-[var(--color-text)] antialiased overflow-x-hidden px-4 md:px-8 md:overflow-x-visible min-h-screen flex flex-col`}
       >
         <CartProvider>
           <Header />

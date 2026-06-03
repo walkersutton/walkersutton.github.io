@@ -3,6 +3,7 @@ import ProjectImage from "./ProjectImage";
 
 export interface Project {
   name: string;
+  category?: "digital" | "physical";
   href: string;
   blurb: string;
   image?: string;
@@ -80,7 +81,7 @@ export default function ProjectCard({
         </div>
         
         {/* Text Area - perfectly matching /projects page original layout, with price support */}
-        <div className="flex flex-col border-b-3 border-x-3 border-neutral-800 dark:border-neutral-200 px-3 pb-3 mt-auto">
+        <div className="flex flex-col border-3 border-neutral-800 dark:border-neutral-200 px-3 py-3 mt-auto">
           <div className="flex items-baseline gap-2">
             <h3 className="font-display text-md font-bold group-hover:underline decoration-[var(--accent)] underline-offset-4">
               {project.name}

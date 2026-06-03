@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
-  output: "export",
+  // output: process.env.VERCEL ? undefined : "export",
+  output: undefined,
   images: { unoptimized: true },
 };
 

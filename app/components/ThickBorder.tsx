@@ -11,7 +11,8 @@ export default function ThickBorder({
 }: ThickBorderProps) {
   return (
     <Component
-      className={`border-t-5 border-neutral-800 dark:border-neutral-200 w-full ${className}`}
+      className={`w-full border-0 ${className}`}
+      style={{ borderTop: "1px solid var(--color-rule)" }}
     />
   );
 }

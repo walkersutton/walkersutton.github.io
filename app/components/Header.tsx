@@ -1,94 +1,112 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import HeaderTitle from "./HeaderTitle";
-import CartSummary from "./CartSummary";
-import HamburgerButton from "./HamburgerButton";
-import ThickBorder from "./ThickBorder";
+import { useState, useEffect } from "react";
 
-const HEADER_LINKS = [
+const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
+  { href: "/trips", label: "Trips" },
+  { href: "/services", label: "Services" },
+  { href: "/goods", label: "Goods" },
 ];
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const isStore = pathname?.startsWith("/store");
+  const active = NAV_LINKS.find((l) => pathname?.startsWith(l.href))?.href ?? "";
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (isMenuOpen) {
-      document.body.classList.add("mobile-menu-open");
-    } else {
-      document.body.classList.remove("mobile-menu-open");
-    }
-    return () => {
-      document.body.classList.remove("mobile-menu-open");
-    };
-  }, [isMenuOpen]);
+    setMenuOpen(false);
+  }, [pathname]);
 
   return (
-    <header className="pt-4 pb-4 flex flex-col">
-      <div className="flex items-center gap-4 pb-1 md:pl-0 md:pr-0 lg:pr-0">
-        <HeaderTitle />
+    <header className="w-full max-w-[1080px] mx-auto">
+      <div className="flex items-center gap-6 py-7">
+        <Link
+          href="/"
+          className="flex items-center gap-3 no-underline"
+          style={{ color: "var(--color-text)" }}
+        >
+          <span
+            className="w-[11px] h-[11px] rounded-full shrink-0"
+            style={{ background: "var(--accent)" }}
+          />
+          <span className="text-[21px] font-[680] tracking-[-0.02em]">
+            Walker Sutton
+          </span>
+        </Link>
 
-        {isStore ? (
-          <div className="ml-auto">
-            <CartSummary />
-          </div>
-        ) : (
-          <>
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex flex-row gap-5 ml-auto items-center">
-              {HEADER_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="nav-link hover-accent text-sm"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
+        <nav className="ml-auto hidden sm:flex gap-7">
+          {NAV_LINKS.map(({ href, label }) => {
+            const isActive = active === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                data-active={isActive}
+                className="link-sweep py-1.5 text-[15px] font-medium no-underline transition-colors duration-150"
+                style={{
+                  color: isActive
+                    ? "var(--color-text)"
+                    : "var(--color-text-variant)",
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
-            {/* Mobile Toggle */}
-            <div className="md:hidden ml-auto flex items-center">
-              <HamburgerButton
-                isOpen={isMenuOpen}
-                onToggle={() => setIsMenuOpen(!isMenuOpen)}
-              />
-            </div>
-          </>
-        )}
+        <button
+          className="ml-auto sm:hidden p-1.5 -mr-1"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label="Toggle menu"
+          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text)" }}
+        >
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line
+              x1="3" y1="11" x2="19" y2="11"
+              style={{
+                transformOrigin: "11px 11px",
+                transform: menuOpen ? "rotate(45deg)" : "translateY(-4px)",
+                transition: "transform 0.25s ease",
+              }}
+            />
+            <line
+              x1="3" y1="11" x2="19" y2="11"
+              style={{
+                transformOrigin: "11px 11px",
+                transform: menuOpen ? "rotate(-45deg)" : "translateY(4px)",
+                transition: "transform 0.25s ease",
+              }}
+            />
+          </svg>
+        </button>
       </div>
 
-      <ThickBorder />
+      <div className="h-px" style={{ background: "var(--color-border)" }} />
 
-      {/* Mobile Navigation Drawer (non-store only) */}
-      {!isStore && (
-        <div className="md:hidden">
-          <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-              isMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            <nav className="flex flex-col gap-4 pt-6 pb-6">
-              {HEADER_LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="nav-link hover-accent text-lg w-fit"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </nav>
-            {isMenuOpen && <ThickBorder />}
-          </div>
-        </div>
+      {menuOpen && (
+        <nav className="sm:hidden flex flex-col">
+          {NAV_LINKS.map(({ href, label }) => {
+            const isActive = active === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="py-4 text-[17px] font-medium no-underline border-b"
+                style={{
+                  color: isActive ? "var(--color-text)" : "var(--color-text-variant)",
+                  borderColor: "var(--color-border-faint)",
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
       )}
     </header>
   );

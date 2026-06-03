@@ -1,13 +1,20 @@
 "use client";
- 
+
 import { useState } from "react";
-import Button from "@/app/components/ui/Button";
+
+const statusCopy = {
+  idle: "Occasional notes. No schedule.",
+  loading: "Adding you...",
+  success: "You are on the list.",
+  error: "Something went wrong. Try again.",
+};
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
+  const showSubmit = email.trim().length > 0 || status !== "idle";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +39,7 @@ export default function NewsletterForm() {
       }
 
       setStatus("success");
+      setEmail("");
     } catch (err) {
       console.error("Newsletter error:", err);
       setStatus("error");
@@ -39,34 +47,39 @@ export default function NewsletterForm() {
   };
 
   return (
-    <div className="mx-auto md:mx-0 flex flex-col gap-2 w-full max-w-xl">
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+    <section
+      className="newsletter-signup w-full max-w-[420px]"
+      aria-label="Newsletter signup"
+    >
+      <form onSubmit={handleSubmit} className="newsletter-form">
         <input
+          aria-label="Email address"
           type="email"
-          placeholder="your@email.address"
+          placeholder="newsletter@signup.plz"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (status === "error") setStatus("idle");
+          }}
           required
           disabled={status === "loading" || status === "success"}
-          className={`bg-transparent px-4 flex-grow focus:outline-none border border-[var(--color-text)] placeholder:text-[var(--color-text-variant)] disabled:opacity-50 text-xs uppercase tracking-wider h-10 transition-all ${
-            status === "success" ? "line-through opacity-100! text-[var(--color-text-variant)]" : ""
-          }`}
+          className="newsletter-input"
         />
-        <Button
+        <button
           type="submit"
-          loading={status === "loading"}
-          disabled={status === "success"}
-          fullWidth={false}
-          className={`border uppercase border-[var(--color-text)] transition-all px-8 h-10 py-0 flex items-center justify-center hover:bg-[var(--color-text)] hover:text-[var(--color-bg)] ${
-            status === "success"
-              ? "!bg-[var(--color-text)] !text-[var(--color-bg)] disabled:opacity-100"
-              : ""
-          }`}
-          variant="secondary"
+          aria-hidden={!showSubmit}
+          data-visible={showSubmit}
+          disabled={!showSubmit || status === "loading" || status === "success"}
+          tabIndex={showSubmit ? 0 : -1}
+          className="newsletter-button"
         >
-          {status === "success" ? "We'll be in touch" : "Subscribe"}
-        </Button>
+          {status === "loading"
+            ? "Sending"
+            : status === "success"
+              ? "Joined"
+              : "Subscribe"}
+        </button>
       </form>
-    </div>
+    </section>
   );
 }

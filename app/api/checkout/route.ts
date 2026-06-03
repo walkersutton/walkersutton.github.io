@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { getRedis } from "@/lib/redis";
-import productsMetadata from "@/data/products.json";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,7 +37,6 @@ export async function POST(req: Request) {
     }
 
     const stripe = getStripe();
-    const redis = getRedis();
 
     const lineItems = [];
     const origin = req.headers.get("origin") || "https://walkersutton.com";
@@ -50,11 +47,7 @@ export async function POST(req: Request) {
         throw new Error(`Product ${item.productId} is not active`);
       }
 
-      const meta = productsMetadata[item.productId as keyof typeof productsMetadata];
-      const slug = meta?.slug || item.productId;
-
-      // Check stock
-      const inventory = (await redis.get<number>(`inventory:${slug}`)) || (await redis.get<number>(`inventory:${item.productId}`)) || 0;
+      const inventory = parseInt(stripeProduct.metadata?.inventory || "0", 10);
       if (inventory < item.quantity) {
         return NextResponse.json(
           { error: `Sorry, ${stripeProduct.name} is out of stock` },

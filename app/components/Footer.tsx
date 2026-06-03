@@ -1,63 +1,37 @@
-import Link from "next/link";
 import NewsletterForm from "./NewsletterForm";
-import ThickBorder from "./ThickBorder";
-
-const FOOTER_LINKS = {
-  main: [
-    {
-      label: "Instagram",
-      href: "https://instagram.com/bandiitb0y",
-      isExternal: true,
-    },
-    { label: "X", href: "https://x.com/walkercsutton", isExternal: true },
-    { label: "Contact", href: "mailto:walker@walkersutton.com" },
-    // {
-    //   label: "TikTok",
-    //   href: "https://www.tiktok.com/@bandiitb0y",
-    //   isExternal: true,
-    // },
-  ],
-};
-
-const FOOTER_LINK_CLASS = "nav-link hover-accent text-sm";
+const SOCIAL = [
+  {
+    label: "Instagram",
+    href: "https://instagram.com/bandiitb0y",
+    external: true,
+  },
+  { label: "X", href: "https://x.com/walkercsutton", external: true },
+  { label: "GitHub", href: "https://github.com/walkersutton", external: true },
+  { label: "Email", href: "mailto:walker@walkersutton.com", external: false },
+];
 
 export default function Footer() {
   return (
-    <footer className="w-full mt-8 border-t-5 border-neutral-800 dark:border-neutral-200 flex flex-col md:flex-row items-stretch bg-[var(--color-bg)] md:px-0">
-      <div className="flex-1 flex flex-col md:flex-row items-stretch">
-        <div className="flex-1 flex items-center py-4">
-          <NewsletterForm />
-        </div>
-        
-        {/* Mobile Separator */}
-        <div className="md:hidden">
-          <ThickBorder />
-        </div>
-      </div>
+    <footer
+      className="w-full max-w-[1080px] mx-auto mt-16 py-8 grid grid-cols-[minmax(260px,420px)_1fr] items-end gap-x-10 gap-y-6 max-[720px]:grid-cols-1"
+      style={{ borderTop: "1px solid var(--color-border-faint)" }}
+    >
+      <NewsletterForm />
 
-      <nav className="flex flex-wrap md:flex-nowrap items-center justify-center md:justify-end gap-x-12 md:gap-x-6 gap-y-8 py-4">
-        {FOOTER_LINKS.main.map((link) =>
-          link.isExternal ? (
-            <a
-              key={link.label}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${FOOTER_LINK_CLASS}`}
-            >
-              {link.label}
-            </a>
-          ) : (
-            <Link
-              key={link.label}
-              href={link.href}
-              className={`${FOOTER_LINK_CLASS}`}
-            >
-              {link.label}
-            </Link>
-          ),
-        )}
-      </nav>
+      <div className="flex flex-wrap items-center justify-end gap-6 max-[720px]:justify-start">
+        {SOCIAL.map(({ label, href, external }) => (
+          <a
+            key={label}
+            href={href}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noopener noreferrer" : undefined}
+            className="link-sweep text-[13px] no-underline"
+            style={{ color: "var(--color-text-faint)" }}
+          >
+            {label}
+          </a>
+        ))}
+      </div>
     </footer>
   );
 }

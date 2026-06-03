@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getRedis } from "@/lib/redis";
+import { Resend } from "resend";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,22 +22,23 @@ export async function POST(req: Request) {
     if (!email_address || !email_address.includes("@")) {
       return NextResponse.json(
         { error: "Please provide a valid email address" },
-        { status: 400, headers: corsHeaders }
+        { status: 400, headers: corsHeaders },
       );
     }
 
-    const redis = getRedis();
-    
-    // Store subscribers in a Redis Set (automatically handles uniqueness)
-    await redis.sadd("subscribers", email_address.trim().toLowerCase());
-    console.log(`New newsletter subscriber added: ${email_address}`);
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
+    await resend.contacts.create({
+      email: email_address.trim().toLowerCase(),
+      unsubscribed: false,
+    });
 
     return NextResponse.json({ success: true }, { headers: corsHeaders });
   } catch (error: any) {
     console.error("Newsletter subscription error:", error);
     return NextResponse.json(
       { error: error.message || "Internal Server Error" },
-      { status: 500, headers: corsHeaders }
+      { status: 500, headers: corsHeaders },
     );
   }
 }

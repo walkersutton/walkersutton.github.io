@@ -7,7 +7,7 @@ export default function CartSummary() {
   const { itemCount, isHydrated } = useCart();
 
   return (
-    <Link href="/store/bag" className="text-sm flex items-center group relative z-10">
+    <Link href="/goods/bag" className="text-sm flex items-center group relative z-10">
       <div
         className={`cart-counter w-8 h-8 bg-neutral-900 dark:bg-neutral-100 rounded-full flex items-center justify-center transition-all duration-300 group-active:scale-95 ${isHydrated ? "opacity-100" : "opacity-0"}`}
       >

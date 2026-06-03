@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
-import { getRedis } from "@/lib/redis";
-import productsMetadata from "@/data/products.json";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,17 +33,17 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       const cartMetadata = session.metadata?.cart;
-      const redis = getRedis();
+      const stripe = getStripe();
 
       if (cartMetadata) {
         const items = JSON.parse(cartMetadata) as { productId: string; quantity: number }[];
 
         for (const item of items) {
-          const meta = productsMetadata[item.productId as keyof typeof productsMetadata];
-          const slug = meta?.slug || item.productId;
-          
-          await redis.decrby(`inventory:${slug}`, item.quantity);
-          console.log(`Decremented inventory for ${slug} by ${item.quantity}`);
+          const product = await stripe.products.retrieve(item.productId);
+          const current = parseInt(product.metadata?.inventory || "0", 10);
+          const updated = Math.max(0, current - item.quantity);
+          await stripe.products.update(item.productId, { metadata: { inventory: String(updated) } });
+          console.log(`Updated inventory for ${item.productId}: ${current} → ${updated}`);
         }
       }
     }
