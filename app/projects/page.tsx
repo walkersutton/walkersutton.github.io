@@ -1,7 +1,6 @@
 import projects from "@/data/projects.json";
-import { ProjectRowList, type ProjectRowData } from "../components/ProjectRow";
+import { ProjectHomeGrid, type ProjectRowData } from "../components/ProjectRow";
 import PageContainer from "../components/PageContainer";
-import PageHero from "../components/PageHero";
 import SectionBar from "../components/SectionBar";
 
 export const metadata = { title: "Projects | Walker Sutton" };
@@ -13,11 +12,8 @@ export default function ProjectsPage() {
 
   return (
     <PageContainer>
-      <PageHero eyebrow="Things I've made — software & in the shop">
-        Projects.
-      </PageHero>
-      <SectionBar title="Everything" count={visible.length} />
-      <ProjectRowList digital={digital} physical={physical} />
+      {/* <SectionBar title="Projects" spacing="lg" /> */}
+      <ProjectHomeGrid digital={digital} physical={physical} />
     </PageContainer>
   );
 }

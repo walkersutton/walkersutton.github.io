@@ -28,12 +28,8 @@ export default function Button({
   variant = "primary",
   fullWidth = true,
 }: ButtonProps) {
-  const baseStyles = `relative overflow-x-hidden ${fullWidth ? "w-full" : ""} py-4 px-8 text-sm font-semibold tracking-widest uppercase enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center origin-center transition-all duration-200 enabled:active:scale-[0.98]`;
-
-  const variants = {
-    primary: "bg-[var(--color-text)] border-[var(--color-text)] border text-[var(--color-bg)] hover:bg-transparent hover:text-[var(--color-text)]",
-    secondary: "bg-transparent border border-[var(--color-text)] text-[var(--color-text)] hover:bg-[var(--color-text)] hover:text-[var(--color-bg)]",
-  };
+  const cls = variant === "primary" ? "btn-primary" : "btn-ghost";
+  const style = fullWidth ? undefined : { width: "auto" };
 
   const content = (
     <div className="flex items-center justify-center relative w-full h-full">
@@ -45,19 +41,8 @@ export default function Button({
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
         </div>
       )}
@@ -67,7 +52,7 @@ export default function Button({
 
   if (href) {
     return (
-      <Link href={href} className={`${baseStyles} ${variants[variant]} ${className}`}>
+      <Link href={href} className={`${cls} ${className}`} style={style}>
         {content}
       </Link>
     );
@@ -79,7 +64,8 @@ export default function Button({
       form={form}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+      className={`${cls} ${className}`}
+      style={style}
     >
       {content}
     </button>

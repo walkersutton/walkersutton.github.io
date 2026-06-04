@@ -38,23 +38,22 @@ export default function BagContent() {
 
   const shippingCost = getShippingPrice(shippingCountry, itemCount);
 
-  // Warm palette Stripe theming
   const stripeTheme = isDarkMode
     ? {
-        colorText: "#efebe1",
-        colorBackground: "#1c1810",
-        colorTextPlaceholder: "#655e50",
-        colorPrimary: "#efebe1",
+        colorText: "#fff",
+        colorBackground: "#111",
+        colorTextPlaceholder: "#555",
+        colorPrimary: "#fff",
         colorDanger: "#e05252",
-        borderColor: "rgba(255,250,238,0.15)",
+        borderColor: "rgba(255,255,255,0.12)",
       }
     : {
-        colorText: "#1c1a15",
-        colorBackground: "#fffdf8",
-        colorTextPlaceholder: "#a8a08f",
-        colorPrimary: "#1c1a15",
+        colorText: "#000",
+        colorBackground: "#f2f2f2",
+        colorTextPlaceholder: "#999",
+        colorPrimary: "#000",
         colorDanger: "#d94040",
-        borderColor: "rgba(28,24,16,0.14)",
+        borderColor: "rgba(0,0,0,0.12)",
       };
 
   if (items.length === 0) {
@@ -112,7 +111,7 @@ export default function BagContent() {
                   colorDanger: stripeTheme.colorDanger,
                   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
                   spacingUnit: "4px",
-                  borderRadius: "11px",
+                  borderRadius: "4px",
                 },
                 rules: {
                   ".Input": {

@@ -1,7 +1,7 @@
 import type React from "react";
 import projects from "@/data/projects.json";
 import { getAllPosts, getPostBySlug, generateExcerpt } from "@/lib/posts";
-import { ProjectRowList, type ProjectRowData } from "./components/ProjectRow";
+import { ProjectHomeGrid, type ProjectRowData } from "./components/ProjectRow";
 import PostItem from "./components/PostItem";
 import PageContainer from "./components/PageContainer";
 import SectionBar from "./components/SectionBar";
@@ -20,54 +20,53 @@ export default async function Home() {
     })
   );
 
+  const latestPost = posts[0];
+
   return (
     <PageContainer>
-      {/* Hero — custom layout with green dot + meta row */}
-      <section className="pt-14 pb-4 max-w-[800px]">
+      {/* Hero */}
+      <section className="pt-12 pb-4 max-w-[820px]">
         <div
-          className="flex flex-wrap gap-4 text-[13.5px] font-medium mb-6"
+          className="flex flex-wrap gap-4 text-[13px] font-medium mb-5"
           style={{ color: "var(--color-text-variant)" }}
         >
-          <span
-            className="inline-flex items-center gap-1.5"
-            style={{ color: "var(--color-text)" }}
-          >
-            <span
-              className="status-dot w-[7px] h-[7px] rounded-full shrink-0"
-              style={{ background: "#3bb56a" }}
-            />
-            Available for projects
-          </span>
-          <span>Maker &amp; engineer</span>
           <span>New York</span>
+          {latestPost && (
+            <a
+              href={latestPost.external_url ?? `/blog/${latestPost.slug}`}
+              target={latestPost.external_url ? "_blank" : undefined}
+              rel={latestPost.external_url ? "noopener noreferrer" : undefined}
+              style={{
+                color: "var(--color-text-variant)",
+                textDecoration: "underline",
+                textUnderlineOffset: "2px",
+                fontWeight: 500,
+              }}
+            >
+              New post: {latestPost.title} ↗
+            </a>
+          )}
         </div>
         <h1
-          className="text-[clamp(28px,4.4vw,47px)] font-semibold leading-[1.16] tracking-[-0.025em] m-0"
+          className="text-[clamp(26px,4vw,44px)] font-bold leading-[1.18] tracking-[-0.025em] m-0"
           style={{ color: "var(--color-text)", textWrap: "balance" } as React.CSSProperties}
         >
           I build{" "}
-          <span
-            className="underline decoration-4 underline-offset-[5px]"
-            style={{ textDecorationColor: "var(--accent)" }}
-          >
-            small, useful things
-          </span>{" "}
+          <span className="underline underline-offset-[4px]">small, useful things</span>{" "}
           — and write about what I learn along the way.
         </h1>
       </section>
 
       <SectionBar
         title="Projects"
-        count={visible.length}
         href="/projects"
         linkLabel="All projects →"
         spacing="lg"
       />
-      <ProjectRowList digital={digital} physical={physical} maxDigital={4} />
+      <ProjectHomeGrid digital={digital} physical={physical} maxDigital={4} />
 
       <SectionBar
         title="Writing"
-        count={postsMetadata.length}
         href="/blog"
         linkLabel="All writing →"
         spacing="lg"

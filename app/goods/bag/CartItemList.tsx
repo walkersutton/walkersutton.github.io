@@ -19,11 +19,11 @@ export default function CartItemList({ items, updateQuantity, onImageZoom }: Car
           {/* Thumbnail */}
           <div
             className="shop-img cursor-zoom-in"
-            style={{ width: 92, height: 92, borderRadius: 14, flexShrink: 0, position: "relative" }}
+            style={{ width: 92, height: 92, borderRadius: 6, flexShrink: 0, position: "relative" }}
             onClick={() => item.image && onImageZoom(item.image)}
           >
             {item.image && (
-              <Image src={item.image} alt={item.name} fill className="object-cover" style={{ borderRadius: 14 }} />
+              <Image src={item.image} alt={item.name} fill className="object-cover" style={{ borderRadius: 6 }} />
             )}
           </div>
 

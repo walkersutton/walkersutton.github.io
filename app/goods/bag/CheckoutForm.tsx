@@ -140,7 +140,7 @@ export default function CheckoutForm({
   }
 
   return (
-    <form id="checkout-form" onSubmit={handleSubmit} className="flex flex-col gap-12 w-full uppercase">
+    <form id="checkout-form" onSubmit={handleSubmit} className="flex flex-col gap-12 w-full">
       {/* Contact Info */}
       <section ref={emailRef}>
         <h2 className={`${sectionHeaderClass} mb-6`}>Contact Information</h2>
@@ -153,7 +153,7 @@ export default function CheckoutForm({
             placeholder="EMAIL ADDRESS"
             value={formData.email}
             onChange={handleEmailChange}
-            className="w-full border border-neutral-800 dark:border-neutral-200 p-4 text-sm focus:outline-none transition-all bg-white dark:bg-neutral-950 text-[var(--color-text)] uppercase tracking-wider placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
+            className="w-full border border-[rgba(0,0,0,0.12)] dark:border-[rgba(255,255,255,0.12)] p-[13px_15px] text-[14.5px] focus:outline-none bg-[var(--color-bg-sink)] text-[var(--color-text)] placeholder:text-[var(--color-text-faint)]"
           />
         </div>
       </section>

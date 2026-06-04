@@ -1,41 +1,54 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+
 export default function SectionBar({
   title,
-  count,
   href,
   linkLabel,
   spacing = "sm",
 }: {
   title: string;
-  count?: number;
   href?: string;
   linkLabel?: string;
   spacing?: "sm" | "lg";
 }) {
+  const [arrowHov, setArrowHov] = useState(false);
+
   return (
     <div
-      className={`flex items-baseline gap-3 ${spacing === "lg" ? "mt-16" : "mt-9"} mb-1 pb-3.5`}
-      style={{ borderBottom: "1px solid var(--color-rule)" }}
+      className={`flex items-baseline justify-between ${spacing === "lg" ? "mt-[52px]" : "mt-9"} mb-[14px]`}
     >
-      <h2
-        className="text-[17px] font-[680] tracking-[-0.01em] m-0"
-        style={{ color: "var(--color-text)" }}
+      <span
+        className="text-[13px] font-semibold tracking-[0.01em] inline-block pb-px"
+        style={{
+          color: "var(--color-text)",
+          borderBottom: "1.5px solid var(--color-text)",
+        }}
       >
         {title}
-      </h2>
-
-      {count !== undefined && (
-        <span className="text-[13px] font-semibold" style={{ color: "var(--accent)" }}>
-          {count}
-        </span>
-      )}
+      </span>
 
       {href && linkLabel && (
-        <a
+        <Link
           href={href}
-          className="ml-auto text-[14px] no-underline transition-colors duration-150 text-[var(--color-text-variant)] hover:text-[var(--accent)]"
+          className="text-[12px] no-underline inline-flex items-center gap-[3px] transition-colors duration-150"
+          style={{ color: arrowHov ? "var(--color-text)" : "var(--color-text-faint)" }}
+          onMouseEnter={() => setArrowHov(true)}
+          onMouseLeave={() => setArrowHov(false)}
         >
-          {linkLabel}
-        </a>
+          {linkLabel.replace(" →", "")}{" "}
+          <span
+            style={{
+              display: "inline-block",
+              transition: "transform 0.18s cubic-bezier(0.23,1,0.32,1)",
+              transform: arrowHov ? "translateX(3px)" : "none",
+            }}
+          >
+            →
+          </span>
+        </Link>
       )}
     </div>
   );

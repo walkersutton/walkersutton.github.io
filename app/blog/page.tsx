@@ -17,13 +17,13 @@ export default async function BlogPage() {
       const fullPost = await getPostBySlug(meta.slug);
       const excerpt = generateExcerpt(fullPost?.content ?? "", { length: 140 });
       return { ...meta, excerpt };
-    })
+    }),
   );
 
   return (
     <PageContainer>
       <PageHero eyebrow="Notes from the workbench">Writing.</PageHero>
-      <SectionBar title="All posts" count={posts.length} />
+      {/* <SectionBar title="All posts" /> */}
       <div className="flex flex-col">
         {posts.map((post) => (
           <PostItem

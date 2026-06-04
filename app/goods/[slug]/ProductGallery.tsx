@@ -20,7 +20,7 @@ export default function ProductGallery({ images, name }: ProductGalleryProps) {
             className="shop-img cursor-zoom-in"
             style={{
               aspectRatio: i === 0 ? "4/5" : "1/1",
-              borderRadius: 18,
+              borderRadius: 8,
               position: "relative",
             }}
             onClick={() => setZoomedImage(img)}
@@ -30,7 +30,7 @@ export default function ProductGallery({ images, name }: ProductGalleryProps) {
               alt={`${name} ${i + 1}`}
               fill
               className="object-cover"
-              style={{ borderRadius: 18 }}
+              style={{ borderRadius: 8 }}
               priority={i === 0}
             />
           </div>

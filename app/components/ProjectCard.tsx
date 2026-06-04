@@ -34,11 +34,17 @@ export function getVibrantColor(name: string) {
   return VIBRANT_COLORS[Math.abs(hash) % VIBRANT_COLORS.length];
 }
 
-export function ProjectGraphic({ name, blurb }: { name: string; blurb: string }) {
+export function ProjectGraphic({
+  name,
+  blurb,
+}: {
+  name: string;
+  blurb: string;
+}) {
   const bgColor = getVibrantColor(name);
-  
+
   return (
-    <div 
+    <div
       className="relative overflow-hidden flex flex-col justify-center p-8 min-h-[200px] h-full gap-2"
       style={{ backgroundColor: bgColor }}
     >
@@ -53,33 +59,32 @@ export function ProjectGraphic({ name, blurb }: { name: string; blurb: string })
   );
 }
 
-export default function ProjectCard({ 
-  project 
-}: { 
-  project: Project;
-}) {
+export default function ProjectCard({ project }: { project: Project }) {
   if (project.name.startsWith("hide")) return null;
 
   return (
     <div className="group relative flex flex-col h-full">
-      <Link
-        href={project.href}
-        className="flex flex-col gap-2 h-full"
-      >
+      <Link href={project.href} className="flex flex-col gap-2 h-full">
         <div className="relative overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
           {project.image ? (
-            <ProjectImage src={project.image} still={project.still} alt={project.name} />
+            <ProjectImage
+              src={project.image}
+              still={project.still}
+              alt={project.name}
+            />
           ) : (
             <ProjectGraphic name={project.name} blurb={project.blurb} />
           )}
-          
+
           {project.isSoldOut && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
-              <span className="text-lg uppercase tracking-widest font-bold text-white drop-shadow-md bg-black/20 px-4 py-1 rounded-sm">Sold Out</span>
+              <span className="text-lg uppercase tracking-widest font-bold text-white drop-shadow-md bg-black/20 px-4 py-1 rounded-sm">
+                Sold Out
+              </span>
             </div>
           )}
         </div>
-        
+
         {/* Text Area - perfectly matching /projects page original layout, with price support */}
         <div className="flex flex-col border-3 border-neutral-800 dark:border-neutral-200 px-3 py-3 mt-auto">
           <div className="flex items-baseline gap-2">
@@ -87,7 +92,9 @@ export default function ProjectCard({
               {project.name}
             </h3>
             {project.price ? (
-              <span className="text-sm ml-auto font-medium">{project.price}</span>
+              <span className="text-sm ml-auto font-medium">
+                {project.price}
+              </span>
             ) : (
               <p className="text-sm leading-snug ml-auto opacity-70">
                 {project.blurb}

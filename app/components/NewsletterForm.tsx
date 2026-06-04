@@ -2,42 +2,25 @@
 
 import { useState } from "react";
 
-const statusCopy = {
-  idle: "Occasional notes. No schedule.",
-  loading: "Adding you...",
-  success: "You are on the list.",
-  error: "Something went wrong. Try again.",
-};
-
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const showSubmit = email.trim().length > 0 || status !== "idle";
+  const [hovered, setHovered] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/api/add-newsletter`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email_address: email,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email_address: email }),
       });
-
       const resData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(resData.error || "Subscription failed");
-      }
-
+      if (!response.ok) throw new Error(resData.error || "Subscription failed");
       setStatus("success");
       setEmail("");
     } catch (err) {
@@ -47,15 +30,27 @@ export default function NewsletterForm() {
   };
 
   return (
-    <section
-      className="newsletter-signup w-full max-w-[420px]"
-      aria-label="Newsletter signup"
-    >
-      <form onSubmit={handleSubmit} className="newsletter-form">
+    <div>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "inline-flex",
+          alignItems: "stretch",
+          border: "1px solid var(--color-text)",
+          boxShadow: hovered
+            ? "1px 1px 0 0 var(--color-text)"
+            : "3px 3px 0 0 var(--color-text)",
+          transform: hovered ? "translate(2px, 2px)" : "none",
+          transition: "box-shadow 0.1s ease, transform 0.1s ease",
+          width: 300,
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
         <input
           aria-label="Email address"
           type="email"
-          placeholder="newsletter@signup.plz"
+          placeholder="your@email.com"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
@@ -63,23 +58,61 @@ export default function NewsletterForm() {
           }}
           required
           disabled={status === "loading" || status === "success"}
-          className="newsletter-input"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            border: 0,
+            background: "transparent",
+            fontFamily: "var(--font-sans)",
+            fontSize: 14,
+            color: "var(--color-text)",
+            outline: "none",
+            padding: "10px 12px",
+          }}
+        />
+        <div
+          style={{ width: 1, background: "var(--color-border)", flexShrink: 0 }}
         />
         <button
           type="submit"
-          aria-hidden={!showSubmit}
-          data-visible={showSubmit}
-          disabled={!showSubmit || status === "loading" || status === "success"}
-          tabIndex={showSubmit ? 0 : -1}
-          className="newsletter-button"
+          disabled={status === "loading" || status === "success"}
+          style={{
+            border: 0,
+            background: "transparent",
+            padding: "10px 14px",
+            cursor: status === "success" ? "default" : "pointer",
+            fontFamily: "var(--font-sans)",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--color-text-faint)",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+            transition: "color 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color =
+              "var(--color-text)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color =
+              "var(--color-text-faint)";
+          }}
         >
-          {status === "loading"
-            ? "Sending"
-            : status === "success"
-              ? "Joined"
+          {status === "success"
+            ? "Joined ✓"
+            : status === "loading"
+              ? "..."
               : "Subscribe"}
         </button>
       </form>
-    </section>
+      {status === "error" && (
+        <p
+          className="mt-2 text-[12px]"
+          style={{ color: "var(--color-text-faint)" }}
+        >
+          Something went wrong. Try again.
+        </p>
+      )}
+    </div>
   );
 }

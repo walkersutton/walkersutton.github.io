@@ -9,11 +9,10 @@ export interface PostItemProps {
   tag?: string;
 }
 
-function fmtShort(iso: string) {
+function fmtMonthYear(iso: string) {
   return new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
-    day: "2-digit",
   });
 }
 
@@ -32,15 +31,22 @@ export default function PostItem({
       rel={isExternal ? "noopener noreferrer" : undefined}
       className="post-row"
     >
-      {/* Left: date + tag */}
       <span>
-        {date && (
-          <span
-            className="block text-[13.5px]"
-            style={{ color: "var(--color-text-faint)" }}
+        <h3 className="post-title">
+          <span className="b b-bottom" />
+          <span className="b b-right" />
+          <span className="b b-top" />
+          <span className="b b-left" />
+          {title}
+          <span className="">{isExternal ? " ↗" : ""}</span>
+        </h3>
+        {excerpt && (
+          <p
+            className="text-[13.5px] leading-[1.5] m-0 max-w-[60ch]"
+            style={{ color: "var(--color-text-variant)" }}
           >
-            {fmtShort(date)}
-          </span>
+            {excerpt}
+          </p>
         )}
         {tag && (
           <span
@@ -52,30 +58,8 @@ export default function PostItem({
         )}
       </span>
 
-      {/* Middle: title + excerpt */}
-      <span>
-        <h3
-          className="text-[23px] font-semibold tracking-[-0.02em] m-0"
-          style={{ color: "var(--color-text)" }}
-        >
-          {title}
-        </h3>
-        {excerpt && (
-          <p
-            className="mt-2 text-[15px] leading-[1.55] max-w-[60ch]"
-            style={{ color: "var(--color-text-variant)" }}
-          >
-            {excerpt}
-          </p>
-        )}
-      </span>
-
-      {/* Right: arrow */}
-      <span
-        className="post-arrow text-[18px]"
-        style={{ color: "var(--color-text-faint)" }}
-      >
-        {isExternal ? "↗" : "→"}
+      <span className="post-meta">
+        {date && <span className="post-date">{fmtMonthYear(date)}</span>}
       </span>
     </Link>
   );

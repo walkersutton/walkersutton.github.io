@@ -8,8 +8,7 @@ export default function PageContainer({
   as?: "main" | "div";
 }) {
   return (
-    <Tag className="w-full max-w-[1080px] mx-auto pb-2">
-      {children}
-    </Tag>
+    // <Tag className="w-full max-w-[1080px] mx-auto pb-2">
+    <Tag className="w-full max-w-[880px] mx-auto pb-2">{children}</Tag>
   );
 }
