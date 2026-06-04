@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 type MapPoint = {
   lat: number;
@@ -14,6 +16,8 @@ type MapTrack = {
   name: string;
   coordinates: MapPoint[];
 };
+
+const DUMMY_KML_PATH = path.join(process.cwd(), "public", "trips", "dummy-mapshare.kml");
 
 const ENTITY_MAP: Record<string, string> = {
   amp: "&",
@@ -144,20 +148,44 @@ function parseKml(kml: string) {
   };
 }
 
-export async function GET() {
+async function loadDummyKml() {
+  const kml = await readFile(DUMMY_KML_PATH, "utf8");
+  const parsed = parseKml(kml);
+
+  return NextResponse.json(
+    {
+      configured: false,
+      sample: true,
+      fetchedAt: new Date().toISOString(),
+      ...parsed,
+    },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
+
+export async function GET(request: Request) {
   const feedUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
+  const forceDummy = new URL(request.url).searchParams.get("sample") === "1" || process.env.TRIPS_USE_DUMMY_KML === "true";
+
+  if (forceDummy) {
+    return loadDummyKml();
+  }
 
   if (!feedUrl) {
-    return NextResponse.json(
-      {
-        configured: false,
-        fetchedAt: new Date().toISOString(),
-        tracks: [],
-        points: [],
-        totalPoints: 0,
-      },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    try {
+      return await loadDummyKml();
+    } catch {
+      return NextResponse.json(
+        {
+          configured: false,
+          fetchedAt: new Date().toISOString(),
+          tracks: [],
+          points: [],
+          totalPoints: 0,
+        },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
   }
 
   try {

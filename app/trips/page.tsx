@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import PageContainer from "../components/PageContainer";
-import PageHero from "../components/PageHero";
 import TripMap from "./TripMap";
+import TripsIndex from "./TripsIndex";
 
 export const metadata: Metadata = {
   title: "Trips | Walker Sutton",
@@ -9,10 +8,8 @@ export const metadata: Metadata = {
 };
 
 export default function TripsPage() {
-  return (
-    <PageContainer>
-      <PageHero eyebrow="Backpacking updates">Trips.</PageHero>
-      <TripMap />
-    </PageContainer>
-  );
+  if (Boolean(process.env.GARMIN_MAPSHARE_KML_URL)) {
+    return <TripMap />;
+  }
+  return <TripsIndex />;
 }

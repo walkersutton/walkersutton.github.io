@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 @plugin "@tailwindcss/typography";
 
 @theme {
@@ -13,6 +14,8 @@
 :root {
   /* ── Accent: change this one value to retheme the entire site ── */
   --accent: #9b6cf0;
+  --accent-green: #3bb56a;
+  --header-glass-rgb: 246, 244, 238;
 
   /* Light mode — warm paper */
   --color-bg: #f6f4ee;
@@ -30,6 +33,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --header-glass-rgb: 19, 16, 9;
     --color-bg: #131009;
     --color-bg-paper: #1c1810;
     --color-bg-sink: #1a160e;
@@ -135,6 +139,85 @@
 .status-dot {
   animation: pulse-dot 2.8s ease-in-out infinite;
 }
+
+.trips-leaflet {
+  z-index: 0;
+  background: var(--color-bg-paper);
+  font-family: var(--font-sans);
+}
+
+.trips-leaflet .leaflet-control-attribution {
+  font-size: 11px;
+}
+
+.trips-leaflet .leaflet-interactive {
+  outline: none;
+}
+
+.ws-tip {
+  font-size: 12.5px !important;
+  font-weight: 500;
+  border: 1px solid var(--color-border) !important;
+  background: var(--color-bg-paper) !important;
+  color: var(--color-text) !important;
+  border-radius: 5px !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+}
+.ws-tip::before { display: none !important; }
+
+/* ── Live tracker — pulsing position marker ─────────────────── */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.65); opacity: 0.9; }
+  100% { transform: scale(3.4);  opacity: 0; }
+}
+@keyframes pulse-ring2 {
+  0%   { transform: scale(0.65); opacity: 0.55; }
+  100% { transform: scale(2.6);  opacity: 0; }
+}
+.trips-pulse-ring {
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  animation: pulse-ring 2.6s ease-out infinite;
+}
+.trips-pulse-ring2 {
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  animation: pulse-ring2 2.6s ease-out 0.5s infinite;
+}
+.trips-pulse-core {
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2.5px solid var(--color-bg);
+}
+
+/* ── Live badge dot ──────────────────────────────────────────── */
+.trips-live-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  flex-shrink: 0;
+  animation: pulse-dot 2.8s ease-in-out infinite;
+}
+
+/* ── Past trip rows in overlay card / sidebar ────────────────── */
+.trips-past-row:hover .trips-past-inner { transform: translateX(5px); }
+.trips-past-row:hover .trips-past-date  { transform: translateX(5px); }
+.trips-past-inner { transition: transform 0.18s cubic-bezier(0.23, 1, 0.32, 1); }
+.trips-past-date  { transition: transform 0.18s cubic-bezier(0.23, 1, 0.32, 1); }
+.trips-past-row:hover .trips-past-inner > div:first-child {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+/* ── Trip report — back link + nav ──────────────────────────── */
+.trip-back-link:hover { color: var(--accent) !important; }
+.trip-back-link:hover .trip-back-arrow { transform: translateX(-3px); }
+.trip-back-arrow { transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1); }
+.trip-nav-link:hover .trip-nav-name { color: var(--accent) !important; }
 
 /* ── Sweep underline — scales in from the left on hover ── */
 .link-sweep {

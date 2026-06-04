@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Document>
+    <name>Dummy Walker Trips MapShare Feed</name>
+    <Placemark>
+      <name>Enchanted Valley approach</name>
+      <description>Sample track for local /trips development.</description>
+      <gx:Track>
+        <when>2026-06-01T16:15:00Z</when>
+        <gx:coord>-123.92928 47.53062 185</gx:coord>
+        <when>2026-06-01T17:05:00Z</when>
+        <gx:coord>-123.92235 47.54262 236</gx:coord>
+        <when>2026-06-01T18:20:00Z</when>
+        <gx:coord>-123.91088 47.55371 310</gx:coord>
+        <when>2026-06-01T19:35:00Z</when>
+        <gx:coord>-123.89521 47.56184 372</gx:coord>
+        <when>2026-06-01T20:45:00Z</when>
+        <gx:coord>-123.87604 47.57238 445</gx:coord>
+        <when>2026-06-01T22:10:00Z</when>
+        <gx:coord>-123.85893 47.58491 533</gx:coord>
+        <when>2026-06-01T23:25:00Z</when>
+        <gx:coord>-123.84017 47.59452 612</gx:coord>
+      </gx:Track>
+    </Placemark>
+    <Placemark>
+      <name>Lunch by the Quinault</name>
+      <description><![CDATA[Paused near the river. Weather clear.]]></description>
+      <TimeStamp>
+        <when>2026-06-01T19:05:00Z</when>
+      </TimeStamp>
+      <Point>
+        <coordinates>-123.90364,47.55784,334</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Camp 1</name>
+      <description>First night test point.</description>
+      <TimeStamp>
+        <when>2026-06-02T02:30:00Z</when>
+      </TimeStamp>
+      <Point>
+        <coordinates>-123.83971,47.59482,618</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Anderson Pass climb</name>
+      <LineString>
+        <tessellate>1</tessellate>
+        <coordinates>
+          -123.83971,47.59482,618
+          -123.82634,47.60425,821
+          -123.80742,47.61309,1042
+          -123.78755,47.61874,1265
+          -123.76712,47.62361,1388
+        </coordinates>
+      </LineString>
+    </Placemark>
+    <Placemark>
+      <name>Pass check-in</name>
+      <description>Second day high point.</description>
+      <TimeStamp>
+        <when>2026-06-02T18:20:00Z</when>
+      </TimeStamp>
+      <Point>
+        <coordinates>-123.76712,47.62361,1388</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Lake basin camp</name>
+      <description>Latest sample position.</description>
+      <TimeStamp>
+        <when>2026-06-03T01:40:00Z</when>
+      </TimeStamp>
+      <Point>
+        <coordinates>-123.74866,47.63277,1124</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>

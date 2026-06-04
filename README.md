@@ -4,6 +4,8 @@
 
 The `/trips` page reads from `app/api/mapshare`, which fetches and parses a Garmin inReach MapShare KML feed server-side.
 
+For local previews without a Garmin feed, the API falls back to `public/trips/dummy-mapshare.kml`. To force the sample data while a feed is configured, open `/trips?sample=1` or set `TRIPS_USE_DUMMY_KML=true`.
+
 Set one of these environment variables in local/dev/Vercel:
 
 ```bash
