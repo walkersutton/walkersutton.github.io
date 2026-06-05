@@ -4,8 +4,9 @@ import PageHero from "../components/PageHero";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: "Services | Walker Sutton",
-  description: "Software engineering services — websites, web apps, and custom tools.",
+  title: "Work | Walker Sutton",
+  description:
+    "Software engineering services — websites, web apps, and custom tools.",
 };
 
 const SERVICES = [
@@ -22,8 +23,16 @@ const SERVICES = [
       "Custom CMS integration",
     ],
     examples: [
-      { name: "Vard", type: "No-code website builder for professional practices", href: "https://vard.app" },
-      { name: "The Inn at Orient", type: "Hospitality booking & presence site", href: "#" },
+      {
+        name: "Vard",
+        type: "No-code website builder for professional practices",
+        href: "https://vard.app",
+      },
+      {
+        name: "The Inn at Orient",
+        type: "Hospitality booking & presence site",
+        href: "#",
+      },
     ],
   },
   {
@@ -39,9 +48,21 @@ const SERVICES = [
       "API integrations",
     ],
     examples: [
-      { name: "Cyclemetry", type: "Cycling telemetry overlay tool", href: "https://github.com/walkersutton/cyclemetry" },
-      { name: "tog", type: "Browser extension · 1,000+ users", href: "https://chromewebstore.google.com/detail/pfemfkpbkkcgdmimaicpfbmhfjcefijn" },
-      { name: "Cadence Calculator", type: "Strava API integration", href: "https://github.com/walkersutton/cadence-calculator" },
+      {
+        name: "Cyclemetry",
+        type: "Cycling telemetry overlay tool",
+        href: "https://github.com/walkersutton/cyclemetry",
+      },
+      {
+        name: "tog",
+        type: "Browser extension · 1,000+ users",
+        href: "https://chromewebstore.google.com/detail/pfemfkpbkkcgdmimaicpfbmhfjcefijn",
+      },
+      {
+        name: "Cadence Calculator",
+        type: "Strava API integration",
+        href: "https://github.com/walkersutton/cadence-calculator",
+      },
     ],
   },
 ];
@@ -49,7 +70,9 @@ const SERVICES = [
 export default function ServicesPage() {
   return (
     <PageContainer>
-      <PageHero eyebrow="Available for projects">I build things for people.</PageHero>
+      <PageHero eyebrow="Available for projects">
+        I build things for people.
+      </PageHero>
 
       <div className="mt-16 flex flex-col">
         {SERVICES.map((service) => (
@@ -58,7 +81,10 @@ export default function ServicesPage() {
             className="py-14"
             style={{ borderTop: "1px solid var(--color-rule)" }}
           >
-            <div className="grid gap-10 items-start" style={{ gridTemplateColumns: "1fr 1.2fr" }}>
+            <div
+              className="grid gap-10 items-start"
+              style={{ gridTemplateColumns: "1fr 1.2fr" }}
+            >
               {/* Left */}
               <div>
                 <div
@@ -80,7 +106,9 @@ export default function ServicesPage() {
                   {service.description}
                 </p>
                 <ul className="pd-details">
-                  {service.details.map((d) => <li key={d}>{d}</li>)}
+                  {service.details.map((d) => (
+                    <li key={d}>{d}</li>
+                  ))}
                 </ul>
               </div>
 
@@ -98,7 +126,9 @@ export default function ServicesPage() {
                     const row = (
                       <div
                         className="flex items-baseline justify-between gap-4 py-4"
-                        style={{ borderBottom: "1px solid var(--color-border-faint)" }}
+                        style={{
+                          borderBottom: "1px solid var(--color-border-faint)",
+                        }}
                       >
                         <span
                           className={`text-[17px] font-semibold tracking-[-0.015em]${isSoon ? "" : " group-hover:underline"}`}
@@ -111,7 +141,10 @@ export default function ServicesPage() {
                         >
                           {ex.name}
                         </span>
-                        <span className="text-[13.5px] text-right shrink-0" style={{ color: "var(--color-text-faint)" }}>
+                        <span
+                          className="text-[13.5px] text-right shrink-0"
+                          style={{ color: "var(--color-text-faint)" }}
+                        >
                           {ex.type}
                         </span>
                       </div>
@@ -119,7 +152,14 @@ export default function ServicesPage() {
                     return isSoon ? (
                       <div key={ex.name}>{row}</div>
                     ) : (
-                      <a key={ex.name} href={ex.href} target="_blank" rel="noopener noreferrer" className="no-underline group" style={{ color: "inherit" }}>
+                      <a
+                        key={ex.name}
+                        href={ex.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="no-underline group"
+                        style={{ color: "inherit" }}
+                      >
                         {row}
                       </a>
                     );
@@ -132,7 +172,10 @@ export default function ServicesPage() {
       </div>
 
       {/* CTA */}
-      <div className="mt-4 pt-12 pb-16" style={{ borderTop: "1px solid var(--color-rule)" }}>
+      <div
+        className="mt-4 pt-12 pb-16"
+        style={{ borderTop: "1px solid var(--color-rule)" }}
+      >
         <p
           className="text-[clamp(28px,4vw,48px)] font-semibold tracking-[-0.025em] leading-[1.1] max-w-[18ch]"
           style={{ color: "var(--color-text)" }}
@@ -146,7 +189,10 @@ export default function ServicesPage() {
             Say hello →
           </a>
         </p>
-        <p className="mt-4 text-[15px]" style={{ color: "var(--color-text-faint)" }}>
+        <p
+          className="mt-4 text-[15px]"
+          style={{ color: "var(--color-text-faint)" }}
+        >
           walker@walkersutton.com · {SITE_CONFIG.city}
         </p>
       </div>
