@@ -8,7 +8,7 @@ export const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
   { href: "/trips", label: "Trips" },
-  { href: "/work", label: "Work" },
+  { href: "/work", label: "My Work" },
   { href: "/goods", label: "Goods" },
 ];
 

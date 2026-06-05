@@ -9,8 +9,6 @@ import { getLatestOverride } from "@/lib/live-state";
 
 export default async function Home() {
   const visible = projects.filter((p) => !p.hide) as ProjectRowData[];
-  const digital = visible.filter((p) => p.category !== "physical");
-  const physical = visible.filter((p) => p.category === "physical");
 
   const postsMetadata = getAllPosts().slice(0, 4);
   const posts = await Promise.all(
@@ -79,7 +77,7 @@ export default async function Home() {
         linkLabel="All projects →"
         spacing="lg"
       />
-      <ProjectHomeGrid digital={digital} physical={physical} maxDigital={4} />
+      <ProjectHomeGrid projects={visible} maxProjects={4} />
 
       <SectionBar
         title="Writing"

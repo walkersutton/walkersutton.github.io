@@ -2,7 +2,6 @@
   {
     "name": "Vard",
     "year": "2024",
-    "category": "digital",
     "hide": true,
     "href": "https://vard.app",
     "image": "/images/vard.gif",
@@ -12,7 +11,6 @@
   {
     "name": "Cyclemetry",
     "year": "Active",
-    "category": "digital",
     "href": "https://cyclemetry.walkersutton.com",
     "githubHref": "https://github.com/walkersutton/cyclemetry",
     "image": "/images/cyclemetry.gif",
@@ -22,7 +20,6 @@
   {
     "name": "facelapse",
     "year": "2018",
-    "category": "digital",
     "href": "https://github.com/walkersutton/facelapse",
     "image": "/images/facelapse.gif",
     "still": "/images/facelapse-still.jpg",
@@ -31,14 +28,12 @@
   {
     "name": "spac",
     "year": "2022",
-    "category": "digital",
     "href": "https://github.com/walkersutton/spac",
     "image": "/images/spac.gif",
     "blurb": "A quiet Caps Lock HUD for macOS."
   },
   {
     "name": "tog",
-    "category": "digital",
     "href": "https://chromewebstore.google.com/detail/pfemfkpbkkcgdmimaicpfbmhfjcefijn?utm_source=item-share-cb",
     "image": "/images/tog.gif",
     "blurb": "Flip the whole browser between light and dark in one click."
@@ -46,7 +41,6 @@
   {
     "name": "Cadence Calculator",
     "year": "2022",
-    "category": "digital",
     "href": "https://github.com/walkersutton/cadence-calculator",
     "image": "/images/cadence-calculator.gif",
     "blurb": "A Strava app that derives cadence for fixed-gear rides."
@@ -54,7 +48,6 @@
   {
     "name": "@wepollus",
     "year": "2020",
-    "category": "digital",
     "href": "https://x.com/wepollus",
     "image": "/images/wepollus.gif",
     "still": "/images/wepollus-still.jpg",
@@ -63,14 +56,12 @@
   {
     "name": "Home Server",
     "year": "2024",
-    "category": "physical",
     "href": "https://pcpartpicker.com/b/GPFgXL",
     "blurb": "A compact NAS in a Streacom DA2 — 56TB, mostly used parts."
   },
   {
     "name": "Bike Shelf",
     "year": "2023",
-    "category": "physical",
     "href": "#",
     "blurb": "A wall-mounted shelf that doubles as a stand for my track bike."
   }

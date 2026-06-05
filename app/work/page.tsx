@@ -4,7 +4,7 @@ import PageHero from "../components/PageHero";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const metadata: Metadata = {
-  title: "Work | Walker Sutton",
+  title: "My Work | Walker Sutton",
   description:
     "Software engineering services — websites, web apps, and custom tools.",
 };
