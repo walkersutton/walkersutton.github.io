@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getAllTripSlugs, getTripBySlug } from "@/lib/trips";
+import { getAllTripSlugs, getTripBySlug, buildTripEntries, fmtMiles, fmtFeet } from "@/lib/trips";
+import type { TripEntry, DayStat } from "@/lib/trips";
 import LeafletReportMapLoader from "./LeafletReportMapLoader";
+import TripReportLayout from "./TripReportLayout";
+import { getLiveEnabled } from "@/lib/live-state";
 
 export async function generateStaticParams() {
   return getAllTripSlugs().map((slug) => ({ slug }));
@@ -18,6 +21,13 @@ export async function generateMetadata(props: {
   return { title: `${trip.frontmatter.title} | Walker Sutton` };
 }
 
+function fmtNavMeta(entry: TripEntry): string {
+  const d = new Date(entry.date + "T12:00:00");
+  const month = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  const dist = entry.stats.split(" · ")[0];
+  return `${month} · ${dist}`;
+}
+
 export default async function TripReportPage(props: {
   params: Promise<{ slug: string }>;
 }) {
@@ -25,50 +35,25 @@ export default async function TripReportPage(props: {
   const trip = getTripBySlug(slug);
   if (!trip) notFound();
 
-  const { frontmatter: fm, content } = trip;
+  const { frontmatter: fm, tracks, waypoints, start, stats, dayStats, days, dates, dateStart, dateEnd, content } = trip;
+
+  // Prev/next from sorted trip list (desc by date — prev = older, next = newer)
+  const allEntries = buildTripEntries();
+  const idx = allEntries.findIndex((e) => e.href === `/trips/${slug}`);
+  const prevEntry = idx < allEntries.length - 1 ? allEntries[idx + 1] : null;
+  const nextEntry = idx > 0 ? allEntries[idx - 1] : null;
+
+  const isLive = await getLiveEnabled();
 
   return (
-    <main>
-      {/* ── Back bar ── */}
-      {/* <div
-        className="flex items-center"
-        style={{ height: 42, borderBottom: "1px solid var(--color-border-faint)" }}
-      >
-        <div
-          className="flex items-center justify-between w-full mx-auto"
-          style={{ maxWidth: 720, padding: "0 28px" }}
-        >
-          <Link href="/trips" className="trip-back-link inline-flex items-center gap-[6px] text-[13px] font-medium no-underline transition-colors duration-150" style={{ color: "var(--color-text-variant)" }}>
-            <span className="trip-back-arrow">←</span>
-            Trips
-          </Link>
-          <span
-            className="text-[11px] font-semibold uppercase tracking-[0.13em]"
-            style={{ color: "var(--color-text-faint)" }}
-          >
-            Trip report
-          </span>
-        </div>
-      </div> */}
-
-      {/* ── Full-bleed map ── */}
-      <div
-        style={{
-          width: "100vw",
-          marginLeft: "calc(-50vw + 50%)",
-          height: "60vh",
-          minHeight: 340,
-          maxHeight: 620,
-          position: "relative",
-        }}
-      >
-        <LeafletReportMapLoader
-          tracks={fm.tracks}
-          waypoints={fm.waypoints}
-          start={fm.start}
-        />
-      </div>
-
+    <TripReportLayout
+      isLive={isLive}
+      map={
+        start ? (
+          <LeafletReportMapLoader tracks={tracks} waypoints={waypoints} start={start} />
+        ) : null
+      }
+    >
       {/* ── Content below map ── */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 28px 96px" }}>
         {/* Title */}
@@ -99,7 +84,7 @@ export default async function TripReportPage(props: {
           className="flex items-center flex-wrap gap-4 text-[14px]"
           style={{ color: "var(--color-text-faint)" }}
         >
-          <span>{fm.dates}</span>
+          <span>{dates}</span>
           <span
             className="w-[3px] h-[3px] rounded-full shrink-0"
             style={{ background: "var(--color-text-faint)" }}
@@ -109,7 +94,7 @@ export default async function TripReportPage(props: {
             className="w-[3px] h-[3px] rounded-full shrink-0"
             style={{ background: "var(--color-text-faint)" }}
           />
-          <span>{fm.days} days</span>
+          <span>{days} days</span>
         </div>
 
         {/* Stats strip */}
@@ -122,10 +107,10 @@ export default async function TripReportPage(props: {
           }}
         >
           {[
-            { lbl: "Distance", val: fm.stats.distance },
-            { lbl: "Gained", val: fm.stats.gained },
-            { lbl: "Lost", val: fm.stats.lost },
-            { lbl: "Days", val: String(fm.days) },
+            { lbl: "Distance", val: stats.distance },
+            { lbl: "Gained", val: stats.gained },
+            { lbl: "Lost", val: stats.lost },
+            { lbl: "Days", val: String(days) },
           ].map((s, i) => (
             <div
               key={s.lbl}
@@ -166,9 +151,9 @@ export default async function TripReportPage(props: {
               className="text-[13px] font-medium leading-[1.3]"
               style={{ color: "var(--color-text-variant)" }}
             >
-              {fm.dateStart}
+              {dateStart}
               <br />
-              {fm.dateEnd}
+              {dateEnd}
             </div>
           </div>
         </div>
@@ -185,43 +170,47 @@ export default async function TripReportPage(props: {
           <MDXRemote
             source={content}
             components={{
-              DayMarker,
+              DayMarker: makeDayMarker(dayStats),
               p: Paragraph,
             }}
           />
 
           {/* Waypoints */}
-          <h3
-            className="text-[13px] font-semibold uppercase tracking-[0.08em]"
-            style={{
-              color: "var(--color-text-faint)",
-              marginTop: 36,
-              marginBottom: 12,
-            }}
-          >
-            Waypoints
-          </h3>
-          {fm.waypoints.map((wpt) => (
-            <div
-              key={wpt.name}
-              className="flex gap-[14px] items-baseline py-3"
-              style={{ borderTop: "1px solid var(--color-border-faint)" }}
-            >
-              <div
-                className="text-[13px] font-semibold tracking-[-0.01em] shrink-0"
-                style={{ color: "var(--color-text)", minWidth: 140 }}
+          {waypoints.length > 0 && (
+            <>
+              <h3
+                className="text-[13px] font-semibold uppercase tracking-[0.08em]"
+                style={{
+                  color: "var(--color-text-faint)",
+                  marginTop: 36,
+                  marginBottom: 12,
+                }}
               >
-                {wpt.name}
-              </div>
-              <div
-                className="text-[13px]"
-                style={{ color: "var(--color-text-faint)" }}
-              >
-                {wpt.desc}
-              </div>
-            </div>
-          ))}
-          <div style={{ borderTop: "1px solid var(--color-border-faint)" }} />
+                Waypoints
+              </h3>
+              {waypoints.map((wpt) => (
+                <div
+                  key={wpt.name}
+                  className="flex gap-[14px] items-baseline py-3"
+                  style={{ borderTop: "1px solid var(--color-border-faint)" }}
+                >
+                  <div
+                    className="text-[13px] font-semibold tracking-[-0.01em] shrink-0"
+                    style={{ color: "var(--color-text)", minWidth: 140 }}
+                  >
+                    {wpt.name}
+                  </div>
+                  <div
+                    className="text-[13px]"
+                    style={{ color: "var(--color-text-faint)" }}
+                  >
+                    {wpt.desc}
+                  </div>
+                </div>
+              ))}
+              <div style={{ borderTop: "1px solid var(--color-border-faint)" }} />
+            </>
+          )}
         </div>
 
         {/* Trip navigation */}
@@ -233,9 +222,9 @@ export default async function TripReportPage(props: {
             borderTop: "1px solid var(--color-rule)",
           }}
         >
-          {fm.prev ? (
+          {prevEntry ? (
             <Link
-              href={fm.prev.href}
+              href={prevEntry.href}
               className="trip-nav-link flex flex-col gap-1 no-underline"
               style={{ maxWidth: "45%" }}
             >
@@ -249,21 +238,21 @@ export default async function TripReportPage(props: {
                 className="trip-nav-name text-[15px] font-semibold tracking-[-0.01em] transition-colors duration-150"
                 style={{ color: "var(--color-text)" }}
               >
-                {fm.prev.name}
+                {prevEntry.name}
               </div>
               <div
                 className="text-[12px]"
                 style={{ color: "var(--color-text-faint)" }}
               >
-                {fm.prev.meta}
+                {fmtNavMeta(prevEntry)}
               </div>
             </Link>
           ) : (
             <div />
           )}
-          {fm.next ? (
+          {nextEntry ? (
             <Link
-              href={fm.next.href}
+              href={nextEntry.href}
               className="trip-nav-link flex flex-col gap-1 no-underline items-end text-right"
               style={{ maxWidth: "45%" }}
             >
@@ -277,13 +266,13 @@ export default async function TripReportPage(props: {
                 className="trip-nav-name text-[15px] font-semibold tracking-[-0.01em] transition-colors duration-150"
                 style={{ color: "var(--color-text)" }}
               >
-                {fm.next.name}
+                {nextEntry.name}
               </div>
               <div
                 className="text-[12px]"
                 style={{ color: "var(--color-text-faint)" }}
               >
-                {fm.next.meta}
+                {fmtNavMeta(nextEntry)}
               </div>
             </Link>
           ) : (
@@ -291,26 +280,63 @@ export default async function TripReportPage(props: {
           )}
         </nav>
       </div>
-    </main>
+    </TripReportLayout>
   );
 }
 
 // ── MDX components ─────────────────────────────────────────────────
-function DayMarker({ label, subtitle }: { label: string; subtitle: string }) {
-  return (
-    <div
-      className="inline-flex items-baseline gap-[10px] text-[11px] font-semibold uppercase tracking-[0.11em] mb-[10px]"
-      style={{ color: "var(--color-text-faint)", marginTop: 36 }}
-    >
-      {label}
-      <span
-        className="text-[13px] font-semibold tracking-[-0.01em] normal-case"
-        style={{ color: "var(--color-text)" }}
-      >
-        {subtitle}
-      </span>
-    </div>
-  );
+
+function parseDayNumbers(label: string): number[] {
+  const single = label.match(/^Days?\s+(\d+)$/i);
+  if (single) return [parseInt(single[1])];
+  const range = label.match(/^Days?\s+(\d+)[–\-](\d+)$/i);
+  if (range) {
+    const s = parseInt(range[1]);
+    const e = parseInt(range[2]);
+    return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+  }
+  return [];
+}
+
+function makeDayMarker(dayStats: DayStat[]) {
+  return function DayMarker({ label, subtitle }: { label: string; subtitle: string }) {
+    const days = parseDayNumbers(label);
+    let distKm = 0, gainM = 0, lossM = 0;
+    for (const d of days) {
+      const s = dayStats[d - 1];
+      if (s) { distKm += s.distKm; gainM += s.gainM; lossM += s.lossM; }
+    }
+    const hasStats = dayStats.length > 0 && (distKm > 0 || gainM > 0);
+
+    return (
+      <div style={{ marginTop: 36, marginBottom: 10 }}>
+        <div
+          className="inline-flex items-baseline gap-[10px] text-[11px] font-semibold uppercase tracking-[0.11em]"
+          style={{ color: "var(--color-text-faint)" }}
+        >
+          {label}
+          <span
+            className="text-[13px] font-semibold tracking-[-0.01em] normal-case"
+            style={{ color: "var(--color-text)" }}
+          >
+            {subtitle}
+          </span>
+        </div>
+        {hasStats && (
+          <div
+            className="flex items-center gap-[6px] text-[12px] mt-[5px]"
+            style={{ color: "var(--color-text-faint)" }}
+          >
+            <span>{fmtMiles(distKm)}</span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>↑ {fmtFeet(gainM)}</span>
+            <span style={{ opacity: 0.4 }}>·</span>
+            <span>↓ {fmtFeet(lossM)}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 }
 
 function Paragraph({ children }: { children: React.ReactNode }) {

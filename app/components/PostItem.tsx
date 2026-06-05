@@ -25,21 +25,23 @@ export default function PostItem({
   tag,
 }: PostItemProps) {
   return (
-    <Link
-      href={href}
-      target={isExternal ? "_blank" : undefined}
-      rel={isExternal ? "noopener noreferrer" : undefined}
-      className="post-row"
-    >
+    <div className="post-row">
       <span>
-        <h3 className="post-title">
-          <span className="b b-bottom" />
-          <span className="b b-right" />
-          <span className="b b-top" />
-          <span className="b b-left" />
-          {title}
-          <span className="">{isExternal ? " ↗" : ""}</span>
-        </h3>
+        <Link
+          href={href}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+          style={{ textDecoration: "none", color: "inherit" }}
+        >
+          <h3 className="post-title">
+            <span className="b b-bottom" />
+            <span className="b b-right" />
+            <span className="b b-top" />
+            <span className="b b-left" />
+            {title}
+            <span>{isExternal ? " ↗" : ""}</span>
+          </h3>
+        </Link>
         {excerpt && (
           <p
             className="text-[13.5px] leading-[1.5] m-0 max-w-[60ch]"
@@ -61,6 +63,6 @@ export default function PostItem({
       <span className="post-meta">
         {date && <span className="post-date">{fmtMonthYear(date)}</span>}
       </span>
-    </Link>
+    </div>
   );
 }

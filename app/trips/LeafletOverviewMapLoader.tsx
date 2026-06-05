@@ -13,9 +13,16 @@ type TripEntry = {
   name: string;
   region: string;
   date: string;
+  href: string;
   coords: [number, number][];
 };
 
-export default function LeafletOverviewMapLoader({ trips }: { trips: TripEntry[] }) {
-  return <LeafletOverviewMap trips={trips} />;
+export default function LeafletOverviewMapLoader({
+  trips,
+  hoveredTrip,
+}: {
+  trips: TripEntry[];
+  hoveredTrip?: string | null;
+}) {
+  return <LeafletOverviewMap trips={trips} hoveredTrip={hoveredTrip} />;
 }

@@ -5,6 +5,7 @@ import ProductGallery from "./ProductGallery";
 import PageContainer from "@/app/components/PageContainer";
 import { Metadata } from "next";
 import { getGoodsProduct, getGoodsProducts, formatPriceNoCents } from "@/lib/products";
+import { SITE_CONFIG } from "@/lib/config";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -75,7 +76,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <BuyButton product={product} />
 
           <p className="pd-reassure">
-            Ships in 3–5 days from New York · Free returns within 30 days
+            Ships in 3–5 days from {SITE_CONFIG.city} · Free returns within 30 days
           </p>
         </div>
       </div>

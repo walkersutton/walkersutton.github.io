@@ -1,8 +1,6 @@
 import { getAllPosts, getPostBySlug, generateExcerpt } from "@/lib/posts";
 import PostItem from "../components/PostItem";
 import PageContainer from "../components/PageContainer";
-import PageHero from "../components/PageHero";
-import SectionBar from "../components/SectionBar";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const metadata = {
@@ -22,8 +20,7 @@ export default async function BlogPage() {
 
   return (
     <PageContainer>
-      <PageHero eyebrow="Notes from the workbench">Writing.</PageHero>
-      {/* <SectionBar title="All posts" /> */}
+      {/* <PageHero eyebrow="Notes from the workbench">Writing.</PageHero> */}
       <div className="flex flex-col">
         {posts.map((post) => (
           <PostItem

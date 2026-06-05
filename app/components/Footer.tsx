@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import NewsletterForm from "./NewsletterForm";
 
 function InstagramIcon() {
@@ -33,7 +33,7 @@ function SocialLink({
 }: {
   label: string;
   href: string;
-  icon: () => JSX.Element;
+  icon: () => React.ReactElement;
 }) {
   const [hovered, setHovered] = useState(false);
   return (

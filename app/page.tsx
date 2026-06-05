@@ -17,7 +17,7 @@ export default async function Home() {
       const full = await getPostBySlug(meta.slug);
       const excerpt = generateExcerpt(full?.content ?? "", { length: 140 });
       return { ...meta, excerpt };
-    })
+    }),
   );
 
   const latestPost = posts[0];
@@ -30,29 +30,39 @@ export default async function Home() {
           className="flex flex-wrap gap-4 text-[13px] font-medium mb-5"
           style={{ color: "var(--color-text-variant)" }}
         >
-          <span>New York</span>
           {latestPost && (
             <a
               href={latestPost.external_url ?? `/blog/${latestPost.slug}`}
               target={latestPost.external_url ? "_blank" : undefined}
               rel={latestPost.external_url ? "noopener noreferrer" : undefined}
+              className="border-animate"
               style={{
                 color: "var(--color-text-variant)",
-                textDecoration: "underline",
-                textUnderlineOffset: "2px",
+                textDecoration: "none",
                 fontWeight: 500,
               }}
             >
-              New post: {latestPost.title} ↗
+              <span className="b b-bottom" />
+              <span className="b b-right" />
+              <span className="b b-top" />
+              <span className="b b-left" />
+              the latest: {latestPost.title} ↗
             </a>
           )}
         </div>
         <h1
           className="text-[clamp(26px,4vw,44px)] font-bold leading-[1.18] tracking-[-0.025em] m-0"
-          style={{ color: "var(--color-text)", textWrap: "balance" } as React.CSSProperties}
+          style={
+            {
+              color: "var(--color-text)",
+              textWrap: "balance",
+            } as React.CSSProperties
+          }
         >
           I build{" "}
-          <span className="underline underline-offset-[4px]">small, useful things</span>{" "}
+          <span className="underline underline-offset-[4px]">
+            small, useful things
+          </span>{" "}
           — and write about what I learn along the way.
         </h1>
       </section>

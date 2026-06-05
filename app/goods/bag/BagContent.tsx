@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, type Appearance } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { getShippingPrice } from "@/lib/shipping";
 import CartItemList from "./CartItemList";
@@ -102,7 +102,7 @@ export default function BagContent() {
             stripe={stripePromise}
             options={{
               appearance: {
-                theme: "none" as any,
+                theme: "none" as Appearance["theme"],
                 variables: {
                   colorPrimary: stripeTheme.colorPrimary,
                   colorBackground: stripeTheme.colorBackground,

@@ -16,6 +16,7 @@ export type ReportWaypoint = {
 export type ReportTrack = {
   id: string;
   coords: [number, number][];
+  label?: string;
 };
 
 type Props = {
@@ -84,7 +85,7 @@ export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
       style={{ height: "100%", width: "100%" }}
       center={[47.58, -123.74]}
       zoom={10}
-      scrollWheelZoom={false}
+      scrollWheelZoom
       zoomControl={false}
       dragging
       touchZoom
@@ -98,7 +99,7 @@ export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
       <ZoomControl />
       <FitBounds tracks={tracks} />
 
-      {tracks.map((track) => (
+      {tracks.map((track, i) => (
         <Fragment key={track.id}>
           <Polyline
             positions={track.coords as LatLngExpression[]}
@@ -106,8 +107,14 @@ export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
           />
           <Polyline
             positions={track.coords as LatLngExpression[]}
-            pathOptions={{ color: "var(--accent)", weight: 5, lineCap: "round" }}
-          />
+            pathOptions={{ color: "#000", weight: 5, lineCap: "round", opacity: i % 2 === 0 ? 1 : 0.8 }}
+          >
+            {track.label && (
+              <Tooltip sticky className="ws-tip">
+                <strong>{track.label}</strong>
+              </Tooltip>
+            )}
+          </Polyline>
         </Fragment>
       ))}
 

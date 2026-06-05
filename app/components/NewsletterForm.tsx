@@ -8,6 +8,7 @@ export default function NewsletterForm() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +38,16 @@ export default function NewsletterForm() {
           display: "inline-flex",
           alignItems: "stretch",
           border: "1px solid var(--color-text)",
-          boxShadow: hovered
-            ? "1px 1px 0 0 var(--color-text)"
-            : "3px 3px 0 0 var(--color-text)",
-          transform: hovered ? "translate(2px, 2px)" : "none",
+          boxShadow: pressed
+            ? "none"
+            : hovered
+              ? "1px 1px 0 0 var(--color-text)"
+              : "3px 3px 0 0 var(--color-text)",
+          transform: pressed
+            ? "translate(3px, 3px)"
+            : hovered
+              ? "translate(2px, 2px)"
+              : "none",
           transition: "box-shadow 0.1s ease, transform 0.1s ease",
           width: 300,
         }}
@@ -96,7 +103,10 @@ export default function NewsletterForm() {
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLButtonElement).style.color =
               "var(--color-text-faint)";
+            setPressed(false);
           }}
+          onMouseDown={() => setPressed(true)}
+          onMouseUp={() => setPressed(false)}
         >
           {status === "success"
             ? "Joined ✓"

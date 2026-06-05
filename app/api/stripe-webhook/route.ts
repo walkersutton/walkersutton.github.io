@@ -49,8 +49,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ received: true }, { headers: corsHeaders });
-  } catch (err: any) {
-    console.error(`Webhook Error: ${err.message}`);
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400, headers: corsHeaders });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error(`Webhook Error: ${message}`);
+    return NextResponse.json({ error: `Webhook Error: ${message}` }, { status: 400, headers: corsHeaders });
   }
 }

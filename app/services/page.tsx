@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import PageContainer from "../components/PageContainer";
 import PageHero from "../components/PageHero";
+import { SITE_CONFIG } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Services | Walker Sutton",
@@ -146,7 +147,7 @@ export default function ServicesPage() {
           </a>
         </p>
         <p className="mt-4 text-[15px]" style={{ color: "var(--color-text-faint)" }}>
-          walker@walkersutton.com · New York
+          walker@walkersutton.com · {SITE_CONFIG.city}
         </p>
       </div>
     </PageContainer>

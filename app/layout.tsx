@@ -21,12 +21,18 @@ export const metadata: Metadata = {
 import { CartProvider } from "@/context/CartContext";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import LiveBannerWrapper from "./trips/LiveBannerWrapper";
+import { getLiveEnabled } from "@/lib/live-state";
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isLive = await getLiveEnabled();
+
   return (
     <html
       lang="en"
@@ -41,6 +47,11 @@ export default function RootLayout({
         className={`bg-[var(--color-bg)] text-[var(--color-text)] antialiased overflow-x-hidden px-4 md:px-8 md:overflow-x-visible min-h-screen flex flex-col`}
       >
         <CartProvider>
+          {isLive && (
+            <div className="-mx-4 md:-mx-8" style={{ position: "relative", zIndex: 60 }}>
+              <LiveBannerWrapper />
+            </div>
+          )}
           <Header />
           <div className="flex-grow">{children}</div>
           <Footer />

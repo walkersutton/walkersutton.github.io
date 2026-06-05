@@ -1,27 +1,62 @@
 "use client";
 
-import { Fragment, useEffect, useMemo } from "react";
-import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CircleMarker,
+  MapContainer,
+  Polyline,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
+import { useRouter } from "next/navigation";
 
 type TripEntry = {
   name: string;
   region: string;
   date: string;
+  href: string;
   coords: [number, number][];
 };
 
-function FitBounds({ coords }: { coords: LatLngExpression[] }) {
+function MapController({ coords }: { coords: LatLngExpression[] }) {
   const map = useMap();
+  const minZoom = useRef<number | null>(null);
+
   useEffect(() => {
     if (coords.length > 1) {
       map.fitBounds(coords as LatLngBoundsExpression, { padding: [40, 60], maxZoom: 9 });
+      map.once("moveend", () => { minZoom.current = map.getZoom(); });
     }
   }, [coords, map]);
+
+  useEffect(() => {
+    const el = map.getContainer();
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        map.zoomIn();
+      } else if (e.deltaY > 0 && (minZoom.current === null || map.getZoom() > minZoom.current)) {
+        map.zoomOut();
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [map]);
+
   return null;
 }
 
-export default function LeafletOverviewMap({ trips }: { trips: TripEntry[] }) {
+export default function LeafletOverviewMap({
+  trips,
+  hoveredTrip,
+}: {
+  trips: TripEntry[];
+  hoveredTrip?: string | null;
+}) {
+  const router = useRouter();
+  const [mapHoveredTrip, setMapHoveredTrip] = useState<string | null>(null);
   const allCoords = useMemo(
     () => trips.flatMap((t) => t.coords as LatLngExpression[]),
     [trips],
@@ -47,20 +82,39 @@ export default function LeafletOverviewMap({ trips }: { trips: TripEntry[] }) {
         maxZoom={17}
         subdomains={["a", "b", "c"] as string[]}
       />
-      <FitBounds coords={allCoords} />
+      <MapController coords={allCoords} />
 
-      {trips.map((trip, i) => {
+      {trips.map((trip) => {
         const positions = trip.coords as LatLngExpression[];
-        const opacity = i === 0 ? 1 : i === 1 ? 0.72 : 0.52;
+        const effectiveHover = mapHoveredTrip ?? hoveredTrip;
+        const isHovered = effectiveHover === trip.name;
+        const hasHover = effectiveHover != null;
+        const opacity = hasHover ? (isHovered ? 1 : 0.25) : 0.5;
         return (
           <Fragment key={trip.name}>
             <Polyline
               positions={positions}
-              pathOptions={{ color: "rgba(255,255,255,0.85)", weight: 9, lineCap: "round" }}
+              pathOptions={{
+                color: "rgba(255,255,255,0.85)",
+                weight: 9,
+                lineCap: "round",
+                opacity,
+              }}
             />
             <Polyline
               positions={positions}
-              pathOptions={{ color: "#1a1a1a", weight: 4, opacity, lineCap: "round" }}
+              pathOptions={{
+                color: "#1a1a1a",
+                weight: 4,
+                opacity,
+                lineCap: "round",
+              }}
+              className="trips-map-route"
+              eventHandlers={{
+                click: () => router.push(trip.href),
+                mouseover: () => setMapHoveredTrip(trip.name),
+                mouseout: () => setMapHoveredTrip(null),
+              }}
             >
               <Tooltip sticky className="ws-tip">
                 <strong>{trip.name}</strong>

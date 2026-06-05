@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import PostItem from "../components/PostItem";
-import { TRIPS } from "./TripsIndex";
+import type { TripEntry } from "@/lib/trips";
 
 type MapPoint = {
   lat: number;
@@ -180,9 +180,11 @@ function Val({ children }: { children: React.ReactNode }) {
 function StatsPanel({
   data,
   stats,
+  trips,
 }: {
   data: MapShareResponse;
   stats: ReturnType<typeof computeStats>;
+  trips: TripEntry[];
 }) {
   const tripName =
     data.tracks[0]?.name ?? (data.sample ? "Sample Track" : "Active Trip");
@@ -230,7 +232,7 @@ function StatsPanel({
       <div style={sectionStyle}>
         <div
           className="grid gap-x-[10px] gap-y-[14px]"
-          style={{ gridTemplateColumns: "1fr 1fr" }}
+          style={{ gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))" }}
         >
           <div>
             <Lbl>Distance</Lbl>
@@ -286,7 +288,7 @@ function StatsPanel({
       <div style={{ ...sectionStyle, borderBottom: "none" }}>
         <Lbl>Past trips</Lbl>
         <div className="mt-[10px] flex flex-col">
-          {TRIPS.map((trip) => (
+          {trips.map((trip) => (
             <PostItem
               key={trip.name}
               title={trip.name}
@@ -302,9 +304,9 @@ function StatsPanel({
 }
 
 // ── Main component ────────────────────────────────────────────────
-export default function TripMap() {
+export default function TripMap({ trips }: { trips: TripEntry[] }) {
   const [data, setData] = useState<MapShareResponse>(EMPTY);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+  const [, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
 
@@ -362,24 +364,22 @@ export default function TripMap() {
         />
       </div>
 
-      {/* Glass overlay card */}
+      {/* Glass overlay card — bottom sheet on mobile, side card on desktop */}
       <div
-        className="absolute overflow-y-auto"
+        className="absolute overflow-y-auto
+          bottom-0 left-0 right-0 max-h-[45vh]
+          sm:bottom-auto sm:right-auto sm:top-[85px] sm:left-[20px] sm:w-[272px] sm:max-h-[calc(100vh-71px-28px)]"
         style={{
           background: "rgba(var(--header-glass-rgb), 0.86)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           border: "1px solid var(--color-border-faint)",
           boxShadow: "0 8px 32px rgba(0,0,0,0.09)",
-          top: 71 + 14,
-          left: 20,
-          width: 272,
-          maxHeight: "calc(100vh - 71px - 28px)",
           scrollbarWidth: "none",
           zIndex: 10,
         }}
       >
-        <StatsPanel data={data} stats={stats} />
+        <StatsPanel data={data} stats={stats} trips={trips} />
       </div>
     </div>
   );

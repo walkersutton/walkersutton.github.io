@@ -54,13 +54,15 @@
   gap: 0 24px;
   padding: 16px 10px;
   border-bottom: 1px solid var(--color-border-faint);
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
   align-items: baseline;
 }
 .post-row:first-child {
   border-top: 1px solid var(--color-border-faint);
+}
+
+/* ── Map route clickable paths ───────────────── */
+.trips-map-route {
+  cursor: pointer;
 }
 
 /* ── Post title border-draw animation ─────── */
@@ -75,7 +77,6 @@
   display: inline-block;
   padding: 2px 6px;
   margin-left: -6px;
-  cursor: pointer;
   box-shadow: 0 0 0 0 var(--color-text);
   transition: box-shadow 0.12s ease 0s;
 }
@@ -145,6 +146,35 @@
   transition: transform 0.1s ease 0.4s;
 }
 .post-title:hover {
+  box-shadow: 3px 3px 0 0 var(--color-text);
+  transition: box-shadow 0.18s ease 0.46s;
+}
+
+.border-animate {
+  position: relative;
+  display: inline-block;
+  padding: 2px 6px;
+  margin-left: -6px;
+  box-shadow: 0 0 0 0 var(--color-text);
+  transition: box-shadow 0.12s ease 0s;
+}
+.border-animate:hover .b-bottom {
+  transform: scaleX(1);
+  transition: transform 0.15s ease 0s;
+}
+.border-animate:hover .b-right {
+  transform: scaleY(1);
+  transition: transform 0.1s ease 0.15s;
+}
+.border-animate:hover .b-top {
+  transform: scaleX(1);
+  transition: transform 0.15s ease 0.25s;
+}
+.border-animate:hover .b-left {
+  transform: scaleY(1);
+  transition: transform 0.1s ease 0.4s;
+}
+.border-animate:hover {
   box-shadow: 3px 3px 0 0 var(--color-text);
   transition: box-shadow 0.18s ease 0.46s;
 }
@@ -253,6 +283,12 @@
   border-radius: 50%;
   background: var(--accent);
   border: 2.5px solid var(--color-bg);
+}
+
+/* ── Live ticker banner ──────────────────────────────────────── */
+@keyframes live-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 /* ── Live badge dot ──────────────────────────────────────────── */
@@ -426,6 +462,25 @@
   padding: 3px 7px;
 }
 
+/* Shared offset-border card image box */
+.card-image-box {
+  position: relative;
+  overflow: hidden;
+  border: 3px solid var(--color-text);
+  box-shadow: 9px 9px 0 0 var(--color-text);
+  transition:
+    box-shadow 0.1s ease,
+    transform 0.1s ease;
+}
+.card-link:hover .card-image-box {
+  box-shadow: 3px 3px 0 0 var(--color-text);
+  transform: translate(2px, 2px);
+}
+.card-link:active .card-image-box {
+  box-shadow: none;
+  transform: translate(5px, 5px);
+}
+
 /* Store grid */
 .shop-grid {
   display: grid;
@@ -433,23 +488,9 @@
   gap: 28px;
 }
 .shop-card {
-  cursor: pointer;
   text-decoration: none;
   color: inherit;
   display: block;
-}
-.shop-card .shop-img {
-  aspect-ratio: 1 / 1;
-  margin-bottom: 12px;
-  border: 1px solid var(--color-text);
-  box-shadow: 3px 3px 0 0 var(--color-text);
-  transition:
-    box-shadow 0.1s ease,
-    transform 0.1s ease;
-}
-.shop-card:hover .shop-img {
-  box-shadow: 1px 1px 0 0 var(--color-text);
-  transform: translate(2px, 2px);
 }
 .shop-card-meta {
   display: flex;
@@ -462,8 +503,10 @@
   font-weight: 600;
   letter-spacing: -0.015em;
   color: var(--color-text);
+  text-decoration: none;
+  width: fit-content;
 }
-.shop-card:hover .shop-card-name {
+.shop-card-name:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
 }

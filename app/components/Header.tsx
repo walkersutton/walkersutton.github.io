@@ -14,9 +14,11 @@ export const NAV_LINKS = [
 
 interface HeaderProps {
   variant?: "glass";
+  topOffset?: number;
+  sticky?: boolean;
 }
 
-export default function Header({ variant }: HeaderProps = {}) {
+export default function Header({ variant, topOffset = 0, sticky = false }: HeaderProps = {}) {
   const isGlass = variant === "glass";
   const pathname = usePathname();
   const active =
@@ -27,6 +29,7 @@ export default function Header({ variant }: HeaderProps = {}) {
   const indicatorRef = useRef<HTMLDivElement>(null);
   const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initializedRef = useRef(false);
+  const indicatorPosRef = useRef({ left: 0, width: 0 });
 
   useEffect(() => {
     setMenuOpen(false);
@@ -35,13 +38,34 @@ export default function Header({ variant }: HeaderProps = {}) {
   function setIndicator(left: number, width: number, transition: string) {
     const ind = indicatorRef.current;
     if (!ind) return;
+    indicatorPosRef.current = { left, width };
     ind.style.transition = transition;
     ind.style.width = width + "px";
     ind.style.transform = `translateX(${left}px)`;
+    ind.style.boxShadow = "2px 2px 0 0 var(--color-text)";
     ind.style.opacity = "1";
   }
 
-  function moveIndicatorTo(el: HTMLElement) {
+  function pressIndicator() {
+    const ind = indicatorRef.current;
+    if (!ind) return;
+    const { left } = indicatorPosRef.current;
+    ind.style.transition = "transform 0.07s ease, box-shadow 0.07s ease";
+    ind.style.transform = `translateX(${left + 2}px) translateY(2px)`;
+    ind.style.boxShadow = "0 0 0 0 var(--color-text)";
+  }
+
+  function releaseIndicator() {
+    const ind = indicatorRef.current;
+    if (!ind) return;
+    const { left, width } = indicatorPosRef.current;
+    ind.style.transition = "transform 0.1s ease, box-shadow 0.1s ease";
+    ind.style.transform = `translateX(${left}px)`;
+    ind.style.width = width + "px";
+    ind.style.boxShadow = "2px 2px 0 0 var(--color-text)";
+  }
+
+  function moveIndicatorTo(el: HTMLElement, _depressOnSettle: boolean = false) {
     const nav = navRef.current;
     const ind = indicatorRef.current;
     if (!nav || !ind || !el) return;
@@ -81,11 +105,20 @@ export default function Header({ variant }: HeaderProps = {}) {
 
   useEffect(() => {
     const nav = navRef.current;
+    const ind = indicatorRef.current;
     if (!nav) return;
     const activeBtn = nav.querySelector<HTMLElement>(`[data-href="${active}"]`);
     if (activeBtn) {
       initializedRef.current = false;
-      requestAnimationFrame(() => moveIndicatorTo(activeBtn));
+      requestAnimationFrame(() => moveIndicatorTo(activeBtn, false));
+    } else if (ind) {
+      if (pendingTimerRef.current) {
+        clearTimeout(pendingTimerRef.current);
+        pendingTimerRef.current = null;
+      }
+      initializedRef.current = false;
+      ind.style.transition = "none";
+      ind.style.opacity = "0";
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
@@ -119,6 +152,9 @@ export default function Header({ variant }: HeaderProps = {}) {
     <nav
       ref={navRef}
       className="ml-auto hidden sm:flex gap-1 relative"
+      onMouseEnter={() => {
+        if (!active) initializedRef.current = false;
+      }}
       onMouseLeave={() => {
         const nav = navRef.current;
         const ind = indicatorRef.current;
@@ -127,7 +163,7 @@ export default function Header({ variant }: HeaderProps = {}) {
           `[data-href="${active}"]`,
         );
         if (activeBtn) {
-          moveIndicatorTo(activeBtn);
+          moveIndicatorTo(activeBtn, false);
         } else if (ind) {
           if (pendingTimerRef.current) {
             clearTimeout(pendingTimerRef.current);
@@ -162,11 +198,14 @@ export default function Header({ variant }: HeaderProps = {}) {
             className="text-[13px] font-medium no-underline transition-colors duration-150"
             style={{
               padding: "4px 10px",
-              color: "var(--color-text-variant)",
+              color: "var(--color-text)",
               position: "relative",
               zIndex: 1,
             }}
             onMouseEnter={(e) => moveIndicatorTo(e.currentTarget)}
+            onMouseDown={pressIndicator}
+            onMouseUp={releaseIndicator}
+            onMouseLeave={releaseIndicator}
           >
             {label}
           </Link>
@@ -178,29 +217,89 @@ export default function Header({ variant }: HeaderProps = {}) {
   if (isGlass) {
     return (
       <div
-        className="absolute left-0 right-0 top-0 z-10"
+        className={`${sticky ? "sticky" : "absolute"} left-0 right-0 z-20`}
         style={{
-          height: 71,
+          top: topOffset,
           background: "rgba(var(--header-glass-rgb), 0.86)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
         }}
       >
-        <div
-          className="flex items-center gap-6 mx-auto px-4 md:px-8"
-          style={{ maxWidth: 1080, height: 70 }}
-        >
-          {logo}
-          {desktopNav}
+        <div className="px-4 md:px-8">
+          <div className="w-full max-w-[1080px] mx-auto flex items-center gap-6 h-[70px]">
+            {logo}
+            {desktopNav}
+            <button
+              className="ml-auto sm:hidden p-1.5 -mr-1"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Toggle menu"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--color-text)",
+              }}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <line
+                  x1="3"
+                  y1="11"
+                  x2="19"
+                  y2="11"
+                  style={{
+                    transformOrigin: "11px 11px",
+                    transform: menuOpen ? "rotate(45deg)" : "translateY(-4px)",
+                    transition: "transform 0.25s ease",
+                  }}
+                />
+                <line
+                  x1="3"
+                  y1="11"
+                  x2="19"
+                  y2="11"
+                  style={{
+                    transformOrigin: "11px 11px",
+                    transform: menuOpen ? "rotate(-45deg)" : "translateY(4px)",
+                    transition: "transform 0.25s ease",
+                  }}
+                />
+              </svg>
+            </button>
+          </div>
         </div>
         <div style={{ height: 1, background: "var(--color-border-faint)" }} />
+        {menuOpen && (
+          <nav className="sm:hidden flex flex-col px-4 md:px-8">
+            {NAV_LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="py-4 text-[17px] font-medium no-underline border-b"
+                style={{
+                  color: "var(--color-text-variant)",
+                  borderColor: "var(--color-border-faint)",
+                }}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
     );
   }
 
   return (
     <header className="w-full max-w-[1080px] mx-auto">
-      <div className="flex items-center gap-6 py-[18px]">
+      <div className="flex items-center gap-6 h-[70px]">
         {logo}
         {desktopNav}
 
@@ -255,7 +354,6 @@ export default function Header({ variant }: HeaderProps = {}) {
       {menuOpen && (
         <nav className="sm:hidden flex flex-col">
           {NAV_LINKS.map(({ href, label }) => {
-            const isActive = active === href;
             return (
               <Link
                 key={href}

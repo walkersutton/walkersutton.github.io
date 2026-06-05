@@ -1,7 +1,6 @@
 import projects from "@/data/projects.json";
 import { ProjectHomeGrid, type ProjectRowData } from "../components/ProjectRow";
 import PageContainer from "../components/PageContainer";
-import SectionBar from "../components/SectionBar";
 
 export const metadata = { title: "Projects | Walker Sutton" };
 
