@@ -4,7 +4,7 @@ import { useState } from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import PostItem from "../components/PostItem";
-import LeafletOverviewMapLoader from "./LeafletOverviewMapLoader";
+import LeafletOverviewMapLoader from "@/app/components/LeafletOverviewMapLoader";
 import type { TripEntry } from "@/lib/trips";
 
 const MAP_VH = 55;
@@ -47,7 +47,7 @@ export default function TripsIndex({ trips }: { trips: TripEntry[] }) {
             className="text-[13px] font-semibold tracking-[0.01em]"
             style={{ color: "var(--color-text)" }}
           >
-            Past trips
+            Trip Reports
           </span>
           <span
             className="text-[12px] font-semibold"

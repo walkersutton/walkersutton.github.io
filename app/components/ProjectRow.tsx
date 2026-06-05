@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import CardImageBox from "./CardImageBox";
 
 export interface ProjectRowData {
   name: string;
+  slug?: string;
   year?: string;
-  href: string;
+  href?: string;
   blurb: string;
   image?: string;
   still?: string;
@@ -15,15 +17,14 @@ export interface ProjectRowData {
 function ProjectCardItem({ project }: { project: ProjectRowData }) {
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const soon = project.href === "#";
+  const soon = !project.slug && project.href === "#";
   // const soon = true;
   const imgSrc =
     hovered && project.image
       ? project.image
       : (project.still ?? project.image);
-  const linkProps = soon
-    ? { href: undefined as unknown as string }
-    : { href: project.href, target: "_blank", rel: "noopener noreferrer" };
+  const internalHref = project.slug ? `/projects/${project.slug}` : null;
+  const externalHref = !project.slug && project.href && project.href !== "#" ? project.href : null;
 
   const handlers = soon ? {} : {
     onMouseEnter: () => setHovered(true),
@@ -38,70 +39,65 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
     ? { boxShadow: "3px 3px 0 0 var(--color-text)", transform: "translate(2px, 2px)" }
     : {};
 
+  const baseLinkStyle = {
+    cursor: soon ? "default" : "pointer",
+    textDecoration: "none",
+  } as React.CSSProperties;
+
+  const link = (children: React.ReactNode, style?: React.CSSProperties, className?: string) => {
+    const s = { ...baseLinkStyle, ...style };
+    if (soon) return <span className={className} style={s}>{children}</span>;
+    if (internalHref) return <Link href={internalHref} className={className} style={s} {...handlers}>{children}</Link>;
+    return <a href={externalHref!} target="_blank" rel="noopener noreferrer" className={className} style={s} {...handlers}>{children}</a>;
+  };
+
   return (
     <div className="block break-inside-avoid mb-5">
-      {imgSrc && (
-        <a
-          {...linkProps}
-          {...handlers}
-          className="block"
-          style={{
-            cursor: soon ? "default" : "pointer",
-            textDecoration: "none",
-            marginBottom: 10,
-          }}
-        >
-          <CardImageBox style={imageBoxStyle}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imgSrc}
-              alt={project.name}
+      {imgSrc && link(
+        <CardImageBox style={imageBoxStyle}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imgSrc}
+            alt={project.name}
+            style={{ width: "100%", height: "auto", display: "block" }}
+          />
+          {soon && (
+            <div
               style={{
-                width: "100%",
-                height: "auto",
-                display: "block",
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: "var(--color-text)",
+                color: "var(--color-bg)",
+                fontSize: 10,
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                padding: "6px 10px",
+                textAlign: "center",
               }}
-            />
-            {soon && (
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  background: "var(--color-text)",
-                  color: "var(--color-bg)",
-                  fontSize: 10,
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  padding: "6px 10px",
-                  textAlign: "center",
-                }}
-              >
-                In progress
-              </div>
-            )}
-          </CardImageBox>
-        </a>
+            >
+              In progress
+            </div>
+          )}
+        </CardImageBox>,
+        { marginBottom: 10 },
+        "block",
       )}
       <div className="flex flex-col gap-[3px]">
-        <a
-          {...linkProps}
-          {...handlers}
-          style={{
+        {link(
+          project.name,
+          {
             fontSize: 16,
             fontWeight: 700,
             letterSpacing: "-0.015em",
             color: soon ? "var(--color-text-faint)" : "var(--color-text)",
             textDecoration: hovered && !soon ? "underline" : "none",
             textUnderlineOffset: "2px",
-            cursor: soon ? "default" : "pointer",
             width: "fit-content",
-          }}
-        >
-          {project.name}
-        </a>
+          },
+        )}
         <span
           style={{
             fontSize: 13,

@@ -22,8 +22,8 @@ import { CartProvider } from "@/context/CartContext";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import HideOnTrips from "./components/HideOnTrips";
-import LiveBannerWrapper from "./trips/LiveBannerWrapper";
-import { getLiveEnabled, getBannerText } from "@/lib/live-state";
+import Banner from "./components/Banner";
+import { getBannerEnabled, getBannerText, getBannerLink, getLiveEnabled } from "@/lib/live-state";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +32,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isLive = await getLiveEnabled();
-  const bannerText = await getBannerText();
+  const [bannerEnabled, bannerText, bannerLink, isLive] = await Promise.all([
+    getBannerEnabled(),
+    getBannerText(),
+    getBannerLink(),
+    getLiveEnabled(),
+  ]);
 
   return (
     <html
@@ -49,12 +53,12 @@ export default async function RootLayout({
         className={`bg-[var(--color-bg)] text-[var(--color-text)] antialiased overflow-x-hidden px-4 md:px-8 md:overflow-x-visible min-h-screen flex flex-col`}
       >
         <CartProvider>
-          {isLive && (
+          {bannerEnabled && (
             <div className="-mx-4 md:-mx-8" style={{ position: "relative", zIndex: 60 }}>
-              <LiveBannerWrapper text={bannerText} />
+              <Banner text={bannerText} href={bannerLink} />
             </div>
           )}
-          <HideOnTrips>
+          <HideOnTrips hideOnHome={isLive}>
             <Header />
           </HideOnTrips>
           <div className="flex-grow">{children}</div>

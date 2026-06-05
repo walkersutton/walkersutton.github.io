@@ -1,11 +1,8 @@
 import Link from "next/link";
 
-export default function LiveBanner({ text }: { text: string }) {
+export default function Banner({ text, href }: { text: string; href: string }) {
   return (
-    <Link
-      href="/trips/live"
-      style={{ textDecoration: "none", display: "block" }}
-    >
+    <Link href={href} style={{ textDecoration: "none", display: "block" }}>
       <div
         style={{
           background: "var(--color-text)",
@@ -22,7 +19,6 @@ export default function LiveBanner({ text }: { text: string }) {
           className="text-[11px] font-semibold uppercase tracking-[0.13em]"
           style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
         >
-          <span className="trips-live-dot" />
           {text}
         </span>
       </div>

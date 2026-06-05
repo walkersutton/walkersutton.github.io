@@ -1,21 +1,7 @@
 import { NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-
-type MapPoint = {
-  lat: number;
-  lng: number;
-  elevation?: number;
-  time?: string;
-  name?: string;
-  description?: string;
-};
-
-type MapTrack = {
-  id: string;
-  name: string;
-  coordinates: MapPoint[];
-};
+import type { MapPoint, MapTrack } from "@/app/trips/mapshare";
 
 const DUMMY_KML_PATH = path.join(process.cwd(), "public", "trips", "dummy-mapshare.kml");
 

@@ -4,27 +4,15 @@ import L from "leaflet";
 import { Fragment, useEffect, useMemo } from "react";
 import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
-
-type MapPoint = {
-  lat: number;
-  lng: number;
-  elevation?: number;
-  time?: string;
-  name?: string;
-  description?: string;
-};
-
-type MapTrack = {
-  id: string;
-  name: string;
-  coordinates: MapPoint[];
-};
+import type { MapPoint, MapTrack } from "./mapshare";
 
 type LeafletTripMapProps = {
   tracks: MapTrack[];
   points: MapPoint[];
   latestPoint?: MapPoint;
   zoomPosition?: "topright" | "topleft" | "bottomright" | "bottomleft";
+  interactive?: boolean;
+  showZoom?: boolean;
 };
 
 const DEFAULT_CENTER: LatLngExpression = [47.594, -123.84];
@@ -73,7 +61,14 @@ function usePulseIcon() {
   }), []);
 }
 
-export default function LeafletTripMap({ tracks, points, latestPoint, zoomPosition = "topright" }: LeafletTripMapProps) {
+export default function LeafletTripMap({
+  tracks,
+  points,
+  latestPoint,
+  zoomPosition = "topright",
+  interactive = true,
+  showZoom = true,
+}: LeafletTripMapProps) {
   const pulseIcon = usePulseIcon();
   const waypoints = useMemo(() => {
     if (!latestPoint) return points;
@@ -86,9 +81,12 @@ export default function LeafletTripMap({ tracks, points, latestPoint, zoomPositi
       style={{ height: "100%", width: "100%" }}
       center={latestPoint ? toLL(latestPoint) : DEFAULT_CENTER}
       zoom={11}
-      scrollWheelZoom
-      dragging
-      touchZoom
+      scrollWheelZoom={interactive}
+      dragging={interactive}
+      touchZoom={interactive}
+      doubleClickZoom={interactive}
+      boxZoom={interactive}
+      keyboard={interactive}
       zoomControl={false}
     >
       <TileLayer
@@ -97,7 +95,7 @@ export default function LeafletTripMap({ tracks, points, latestPoint, zoomPositi
         maxZoom={17}
         subdomains={["a", "b", "c"] as string[]}
       />
-      <ZoomControl position={zoomPosition} />
+      {showZoom && <ZoomControl position={zoomPosition} />}
       <FitBounds tracks={tracks} points={points} latestPoint={latestPoint} />
 
       {tracks.map((track) => {

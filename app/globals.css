@@ -179,6 +179,60 @@
   transition: box-shadow 0.18s ease 0.46s;
 }
 
+/* Section heading link: at rest reads as an underlined heading. On hover the
+   word "All" wipes in from the left, then the offset border draws around it. */
+.section-link {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  padding: 2px 3px;
+  margin-left: -3px;
+  text-decoration: none;
+  box-shadow: 0 0 0 0 var(--color-text);
+  transition: box-shadow 0.12s ease 0s;
+}
+/* "all " starts collapsed + shifted left, then eases in on hover. */
+.section-all {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    max-width 0.34s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.26s ease,
+    transform 0.34s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.section-link:hover .section-all {
+  max-width: 2.3em;
+  opacity: 1;
+  transform: translateX(0);
+}
+/* The bottom edge is permanent — it reads as the heading's underline at rest
+   and becomes the bottom of the button on hover. */
+.section-link .b-bottom {
+  transform: scaleX(1);
+}
+/* On hover, wrap the remaining three sides (right → top → left, matching the
+   standard offset border) after the "all" reveal lands. */
+.section-link:hover .b-right {
+  transform: scaleY(1);
+  transition: transform 0.15s ease 0s;
+}
+.section-link:hover .b-top {
+  transform: scaleX(1);
+  transition: transform 0.15s ease 0.15s;
+}
+.section-link:hover .b-left {
+  transform: scaleY(1);
+  transition: transform 0.1s ease 0.3s;
+}
+.section-link:hover {
+  box-shadow: 3px 3px 0 0 var(--color-text);
+  transition: box-shadow 0.18s ease 0.36s;
+}
+
 .post-meta {
   display: flex;
   flex-direction: column;

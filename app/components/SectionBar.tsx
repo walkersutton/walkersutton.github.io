@@ -1,55 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 export default function SectionBar({
   title,
   href,
-  linkLabel,
   spacing = "sm",
 }: {
   title: string;
   href?: string;
-  linkLabel?: string;
   spacing?: "sm" | "lg";
 }) {
-  const [arrowHov, setArrowHov] = useState(false);
+  const wrapper = `flex items-baseline ${spacing === "lg" ? "mt-[52px]" : "mt-9"} mb-[14px]`;
+
+  if (!href) {
+    return (
+      <div className={wrapper}>
+        <span
+          className="text-[13px] font-semibold tracking-[0.01em] inline-block pb-px"
+          style={{
+            color: "var(--color-text)",
+            borderBottom: "1.5px solid var(--color-text)",
+          }}
+        >
+          {title}
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`flex items-baseline justify-between ${spacing === "lg" ? "mt-[52px]" : "mt-9"} mb-[14px]`}
-    >
-      <span
-        className="text-[13px] font-semibold tracking-[0.01em] inline-block pb-px"
-        style={{
-          color: "var(--color-text)",
-          borderBottom: "1.5px solid var(--color-text)",
-        }}
+    <div className={wrapper}>
+      <Link
+        href={href}
+        aria-label={`All ${title}`}
+        className="section-link text-[13px] font-semibold tracking-[0.01em]"
+        style={{ color: "var(--color-text)" }}
       >
-        {title}
-      </span>
-
-      {href && linkLabel && (
-        <Link
-          href={href}
-          className="text-[12px] no-underline inline-flex items-center gap-[3px] transition-colors duration-150"
-          style={{ color: arrowHov ? "var(--color-text)" : "var(--color-text-faint)" }}
-          onMouseEnter={() => setArrowHov(true)}
-          onMouseLeave={() => setArrowHov(false)}
-        >
-          {linkLabel.replace(" →", "")}{" "}
-          <span
-            style={{
-              display: "inline-block",
-              transition: "transform 0.18s cubic-bezier(0.23,1,0.32,1)",
-              transform: arrowHov ? "translateX(3px)" : "none",
-            }}
-          >
-            →
-          </span>
-        </Link>
-      )}
+        <span className="b b-bottom" />
+        <span className="b b-right" />
+        <span className="b b-top" />
+        <span className="b b-left" />
+        <span className="section-all" aria-hidden="true">
+          all&nbsp;
+        </span>
+        <span>{title}</span>
+      </Link>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import path from "path";
 const STATE_FILE = path.join(process.cwd(), "data", "live-state.json");
 const DEFAULT_BANNER_TEXT = "Walker is currently on trail";
 
-type LiveState = { enabled: boolean; bannerText?: string; latestText?: string; latestHref?: string; activeTripName?: string };
+type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string };
 
 function edgeConfigId(): string | null {
   const url = process.env.EDGE_CONFIG;
@@ -40,6 +40,25 @@ export async function getLiveEnabled(): Promise<boolean> {
   return readLocalState().enabled ?? !!process.env.GARMIN_MAPSHARE_KML_URL;
 }
 
+export async function getBannerEnabled(): Promise<boolean> {
+  if (process.env.EDGE_CONFIG) {
+    try {
+      const { get } = await import("@vercel/edge-config");
+      const value = await get<boolean>("bannerEnabled");
+      if (typeof value === "boolean") return value;
+    } catch {
+      // fall through to local fallback
+    }
+  }
+
+  return readLocalState().bannerEnabled ?? false;
+}
+
+export async function setBannerEnabled(enabled: boolean): Promise<void> {
+  if (await edgePatch([{ operation: "upsert", key: "bannerEnabled", value: enabled }])) return;
+  writeLocalState({ bannerEnabled: enabled });
+}
+
 export async function getBannerText(): Promise<string> {
   if (process.env.EDGE_CONFIG) {
     try {
@@ -52,6 +71,25 @@ export async function getBannerText(): Promise<string> {
   }
 
   return readLocalState().bannerText ?? DEFAULT_BANNER_TEXT;
+}
+
+export async function getBannerLink(): Promise<string> {
+  if (process.env.EDGE_CONFIG) {
+    try {
+      const { get } = await import("@vercel/edge-config");
+      const value = await get<string>("bannerLink");
+      if (typeof value === "string" && value) return value;
+    } catch {
+      // fall through to local fallback
+    }
+  }
+
+  return readLocalState().bannerLink ?? "/";
+}
+
+export async function setBannerLink(link: string): Promise<void> {
+  if (await edgePatch([{ operation: "upsert", key: "bannerLink", value: link }])) return;
+  writeLocalState({ bannerLink: link });
 }
 
 async function edgePatch(items: { operation: string; key: string; value: unknown }[]) {

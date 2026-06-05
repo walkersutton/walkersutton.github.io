@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signToken, verifyToken } from "@/lib/admin-auth";
-import { setLiveEnabled, setBannerText, setLatestOverride, setActiveTripName } from "@/lib/live-state";
+import { setLiveEnabled, setBannerEnabled, setBannerText, setBannerLink, setLatestOverride, setActiveTripName } from "@/lib/live-state";
 
 async function assertAuth() {
   const store = await cookies();
@@ -44,11 +44,26 @@ export async function setLive(enabled: boolean) {
   revalidatePath("/", "layout");
 }
 
+export async function setBanner(enabled: boolean) {
+  await assertAuth();
+  await setBannerEnabled(enabled);
+  revalidatePath("/", "layout");
+}
+
 export async function saveBannerText(formData: FormData) {
   await assertAuth();
   const text = (formData.get("bannerText") as string | null) ?? "";
   if (text.trim()) {
     await setBannerText(text);
+    revalidatePath("/", "layout");
+  }
+}
+
+export async function saveBannerLink(formData: FormData) {
+  await assertAuth();
+  const link = (formData.get("bannerLink") as string | null)?.trim() ?? "";
+  if (link) {
+    await setBannerLink(link);
     revalidatePath("/", "layout");
   }
 }

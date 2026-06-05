@@ -1,9 +1,11 @@
 "use client";
 
+import L from "leaflet";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   CircleMarker,
   MapContainer,
+  Marker,
   Polyline,
   TileLayer,
   Tooltip,
@@ -20,16 +22,38 @@ type TripEntry = {
   coords: [number, number][];
 };
 
-function MapController({ coords }: { coords: LatLngExpression[] }) {
+function usePulseIcon() {
+  return useMemo(
+    () =>
+      L.divIcon({
+        className: "",
+        html: `<div style="position:relative;width:16px;height:16px">
+      <div class="trips-pulse-ring" style="position:absolute;top:-6px;left:-6px;right:-6px;bottom:-6px"></div>
+      <div class="trips-pulse-ring2" style="position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px"></div>
+      <div class="trips-pulse-core" style="position:absolute;top:2px;left:2px;right:2px;bottom:2px"></div>
+    </div>`,
+        iconSize: [16, 16] as L.PointExpression,
+        iconAnchor: [8, 8] as L.PointExpression,
+      }),
+    [],
+  );
+}
+
+function MapController({ coords, fitMinZoom = 0 }: { coords: LatLngExpression[]; fitMinZoom?: number }) {
   const map = useMap();
   const minZoom = useRef<number | null>(null);
 
   useEffect(() => {
     if (coords.length > 1) {
       map.fitBounds(coords as LatLngBoundsExpression, { padding: [40, 60], maxZoom: 9 });
-      map.once("moveend", () => { minZoom.current = map.getZoom(); });
+      map.once("moveend", () => {
+        if (fitMinZoom && map.getZoom() < fitMinZoom) {
+          map.setZoom(fitMinZoom);
+        }
+        minZoom.current = map.getZoom();
+      });
     }
-  }, [coords, map]);
+  }, [coords, map, fitMinZoom]);
 
   useEffect(() => {
     const el = map.getContainer();
@@ -51,16 +75,27 @@ function MapController({ coords }: { coords: LatLngExpression[] }) {
 export default function LeafletOverviewMap({
   trips,
   hoveredTrip,
+  fitMinZoom = 0,
+  liveTrack,
+  liveLatest,
 }: {
   trips: TripEntry[];
   hoveredTrip?: string | null;
+  fitMinZoom?: number;
+  liveTrack?: [number, number][];
+  liveLatest?: { lat: number; lng: number };
 }) {
   const router = useRouter();
+  const pulseIcon = usePulseIcon();
   const [mapHoveredTrip, setMapHoveredTrip] = useState<string | null>(null);
+  const livePositions = (liveTrack ?? []) as LatLngExpression[];
+  const hasLive = livePositions.length > 0;
   const allCoords = useMemo(
     () => trips.flatMap((t) => t.coords as LatLngExpression[]),
     [trips],
   );
+  // When a live trip is present, focus the map on it; otherwise frame all trips.
+  const focusCoords = hasLive ? livePositions : allCoords;
 
   return (
     <MapContainer
@@ -82,9 +117,11 @@ export default function LeafletOverviewMap({
         maxZoom={17}
         subdomains={["a", "b", "c"] as string[]}
       />
-      <MapController coords={allCoords} />
+      <MapController coords={focusCoords} fitMinZoom={fitMinZoom} />
 
-      {trips.map((trip) => {
+      {/* While a trip is live, show only its route — hide the past trips. */}
+      {!hasLive &&
+        trips.map((trip) => {
         const positions = trip.coords as LatLngExpression[];
         const effectiveHover = mapHoveredTrip ?? hoveredTrip;
         const isHovered = effectiveHover === trip.name;
@@ -138,6 +175,37 @@ export default function LeafletOverviewMap({
           </Fragment>
         );
       })}
+
+      {hasLive && (
+        <>
+          <Polyline
+            positions={livePositions}
+            pathOptions={{
+              color: "rgba(255,255,255,0.9)",
+              weight: 10,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
+          <Polyline
+            positions={livePositions}
+            pathOptions={{
+              color: "var(--accent-green)",
+              weight: 4.5,
+              lineCap: "round",
+              lineJoin: "round",
+            }}
+          />
+        </>
+      )}
+
+      {liveLatest && (
+        <Marker
+          position={[liveLatest.lat, liveLatest.lng]}
+          icon={pulseIcon}
+          zIndexOffset={1000}
+        />
+      )}
     </MapContainer>
   );
 }

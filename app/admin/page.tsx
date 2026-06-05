@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/admin-auth";
-import { getLiveEnabled, getBannerText, getLatestOverride, getActiveTripName } from "@/lib/live-state";
-import { logout, setLive, saveBannerText, saveLatestOverride, saveActiveTripName } from "./actions";
+import { getLiveEnabled, getBannerEnabled, getBannerText, getBannerLink, getLatestOverride, getActiveTripName } from "@/lib/live-state";
+import { logout, setLive, setBanner, saveBannerText, saveBannerLink, saveLatestOverride, saveActiveTripName } from "./actions";
 import LoginForm from "./LoginForm";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +71,9 @@ export default async function AdminPage() {
   }
 
   const isLive = await getLiveEnabled();
+  const isBannerEnabled = await getBannerEnabled();
   const bannerText = await getBannerText();
+  const bannerLink = await getBannerLink();
   const latestOverride = await getLatestOverride();
   const activeTripName = await getActiveTripName();
 
@@ -118,11 +120,39 @@ export default async function AdminPage() {
         <button type="submit" style={BTN(false)}>Save</button>
       </form>
 
+      <div style={ROW}>
+        <span style={LABEL}>Banner</span>
+        <form action={setBanner.bind(null, true)}>
+          <button type="submit" style={BTN(isBannerEnabled)}>On</button>
+        </form>
+        <form action={setBanner.bind(null, false)}>
+          <button type="submit" style={BTN(!isBannerEnabled)}>Off</button>
+        </form>
+      </div>
+
       <form action={saveBannerText} style={ROW}>
         <span style={LABEL}>Banner text</span>
         <input
           name="bannerText"
           defaultValue={bannerText}
+          style={{
+            flex: 1,
+            fontSize: 12,
+            fontFamily: "inherit",
+            padding: "6px 10px",
+            border: "1.5px solid var(--color-text)",
+            background: "transparent",
+            color: "var(--color-text)",
+          }}
+        />
+        <button type="submit" style={BTN(false)}>Save</button>
+      </form>
+
+      <form action={saveBannerLink} style={ROW}>
+        <span style={LABEL}>Banner link</span>
+        <input
+          name="bannerLink"
+          defaultValue={bannerLink}
           style={{
             flex: 1,
             fontSize: 12,

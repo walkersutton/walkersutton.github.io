@@ -20,9 +20,23 @@ type TripEntry = {
 export default function LeafletOverviewMapLoader({
   trips,
   hoveredTrip,
+  fitMinZoom,
+  liveTrack,
+  liveLatest,
 }: {
   trips: TripEntry[];
   hoveredTrip?: string | null;
+  fitMinZoom?: number;
+  liveTrack?: [number, number][];
+  liveLatest?: { lat: number; lng: number };
 }) {
-  return <LeafletOverviewMap trips={trips} hoveredTrip={hoveredTrip} />;
+  return (
+    <LeafletOverviewMap
+      trips={trips}
+      hoveredTrip={hoveredTrip}
+      fitMinZoom={fitMinZoom}
+      liveTrack={liveTrack}
+      liveLatest={liveLatest}
+    />
+  );
 }
