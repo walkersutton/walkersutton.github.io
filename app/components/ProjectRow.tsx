@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import type React from "react";
 import Link from "next/link";
 import CardImageBox from "./CardImageBox";
 
@@ -15,76 +13,108 @@ export interface ProjectRowData {
 }
 
 function ProjectCardItem({ project }: { project: ProjectRowData }) {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
   const soon = !project.slug && project.href === "#";
-  // const soon = true;
-  const imgSrc =
-    hovered && project.image
-      ? project.image
-      : (project.still ?? project.image);
+  const stillSrc = project.still ?? project.image;
+  const hasHoverImage =
+    Boolean(project.still) &&
+    Boolean(project.image) &&
+    project.still !== project.image;
   const internalHref = project.slug ? `/projects/${project.slug}` : null;
-  const externalHref = !project.slug && project.href && project.href !== "#" ? project.href : null;
-
-  const handlers = soon ? {} : {
-    onMouseEnter: () => setHovered(true),
-    onMouseLeave: () => { setHovered(false); setPressed(false); },
-    onMouseDown: () => setPressed(true),
-    onMouseUp: () => setPressed(false),
-  };
-
-  const imageBoxStyle: React.CSSProperties = soon ? {} : pressed
-    ? { boxShadow: "none", transform: "translate(5px, 5px)" }
-    : hovered
-    ? { boxShadow: "3px 3px 0 0 var(--color-text)", transform: "translate(2px, 2px)" }
-    : {};
+  const externalHref =
+    !project.slug && project.href && project.href !== "#" ? project.href : null;
 
   const baseLinkStyle = {
     cursor: soon ? "default" : "pointer",
-    textDecoration: "none",
   } as React.CSSProperties;
 
-  const link = (children: React.ReactNode, style?: React.CSSProperties, className?: string) => {
+  const link = (
+    children: React.ReactNode,
+    style?: React.CSSProperties,
+    className?: string,
+  ) => {
     const s = { ...baseLinkStyle, ...style };
-    if (soon) return <span className={className} style={s}>{children}</span>;
-    if (internalHref) return <Link href={internalHref} className={className} style={s} {...handlers}>{children}</Link>;
-    return <a href={externalHref!} target="_blank" rel="noopener noreferrer" className={className} style={s} {...handlers}>{children}</a>;
+    if (soon)
+      return (
+        <span className={className} style={s}>
+          {children}
+        </span>
+      );
+    if (internalHref)
+      return (
+        <Link href={internalHref} className={className} style={s}>
+          {children}
+        </Link>
+      );
+    return (
+      <a
+        href={externalHref!}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        style={s}
+      >
+        {children}
+      </a>
+    );
   };
 
   return (
-    <div className="block break-inside-avoid mb-5">
-      {imgSrc && link(
-        <CardImageBox style={imageBoxStyle}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imgSrc}
-            alt={project.name}
-            style={{ width: "100%", height: "auto", display: "block" }}
-          />
-          {soon && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: "var(--color-text)",
-                color: "var(--color-bg)",
-                fontSize: 10,
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                padding: "6px 10px",
-                textAlign: "center",
-              }}
-            >
-              In progress
-            </div>
-          )}
-        </CardImageBox>,
-        { marginBottom: 10 },
-        "block",
-      )}
+    <div className="project-card block break-inside-avoid mb-5">
+      {stillSrc &&
+        link(
+          <CardImageBox>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={stillSrc}
+              alt={project.name}
+              style={{ width: "100%", height: "auto", display: "block" }}
+            />
+            {hasHoverImage && (
+              // Keep the GIF mounted so hover only changes presentation, not src.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={project.image}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+                className="project-card-gif"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                  pointerEvents: "none",
+                }}
+              />
+            )}
+            {soon && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: "var(--color-text)",
+                  color: "var(--color-bg)",
+                  fontSize: 10,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  padding: "6px 10px",
+                  textAlign: "center",
+                }}
+              >
+                In progress
+              </div>
+            )}
+          </CardImageBox>,
+          { marginBottom: 10, textDecoration: "none" },
+          "project-card-trigger card-link block",
+        )}
       <div className="flex flex-col gap-[3px]">
         {link(
           project.name,
@@ -93,10 +123,10 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
             fontWeight: 700,
             letterSpacing: "-0.015em",
             color: soon ? "var(--color-text-faint)" : "var(--color-text)",
-            textDecoration: hovered && !soon ? "underline" : "none",
             textUnderlineOffset: "2px",
             width: "fit-content",
           },
+          soon ? undefined : "project-card-trigger project-card-title",
         )}
         <span
           style={{

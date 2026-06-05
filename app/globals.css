@@ -179,9 +179,18 @@
   transition: box-shadow 0.18s ease 0.46s;
 }
 
-/* Section heading link: at rest reads as an underlined heading. On hover the
-   word "All" wipes in from the left, then the offset border draws around it. */
-.section-link {
+/* Reusable underline-to-button hover. At rest the element shows a permanent
+   bottom edge (reads as an underline). On hover the other three sides wrap in
+   (right -> top -> left) and an offset shadow lands, forming a button.
+
+   Usage: add `underline-border` to a link/button and nest the four edge spans
+   as its first children:
+     <a class="underline-border">
+       <span class="b b-bottom" /><span class="b b-right" />
+       <span class="b b-top" /><span class="b b-left" />
+       label
+     </a> */
+.underline-border {
   position: relative;
   display: inline-flex;
   align-items: baseline;
@@ -191,11 +200,62 @@
   box-shadow: 0 0 0 0 var(--color-text);
   transition: box-shadow 0.12s ease 0s;
 }
-/* "all " starts collapsed + shifted left, then eases in on hover. */
+.underline-border .b-bottom {
+  transform: scaleX(1); /* permanent bottom edge = the underline at rest */
+}
+.underline-border:hover .b-right {
+  transform: scaleY(1);
+  transition: transform 0.15s ease 0s;
+}
+.underline-border:hover .b-top {
+  transform: scaleX(1);
+  transition: transform 0.15s ease 0.15s;
+}
+.underline-border:hover .b-left {
+  transform: scaleY(1);
+  transition: transform 0.1s ease 0.3s;
+}
+.underline-border:hover {
+  box-shadow: 3px 3px 0 0 var(--color-text);
+  transition: box-shadow 0.18s ease 0.36s;
+}
+
+/* Section heading: a real underline at rest (true thickness, skip-ink gaps
+   around descenders like the "j", hugs only the text), crossfading into the
+   offset-border button on hover. Pair `section-link` with `border-animate`. */
+.section-link {
+  padding: 4px 6px 5px;
+  margin-left: -6px;
+}
+.section-title {
+  text-decoration: underline;
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 2px;
+  text-decoration-skip-ink: auto;
+  text-decoration-color: var(--color-text);
+  transition: text-decoration-color 0.12s ease;
+}
+/* On hover the native underline fades as the box's bottom edge takes over. */
+.section-link:hover .section-title {
+  text-decoration-color: transparent;
+}
+/* Match the box edges to the underline thickness so the swap is seamless. */
+.section-link .b-bottom,
+.section-link .b-top {
+  height: 2.5px;
+}
+.section-link .b-left,
+.section-link .b-right {
+  width: 2.5px;
+}
+
+/* Leading "all " word that wipes in from the left on hover. inline-flex (not
+   inline-block) so the baseline comes from the inner text, keeping it aligned
+   with the title — an overflow:hidden inline-block would baseline on its bottom
+   edge and ride up. */
 .section-all {
-  display: inline-block;
+  display: inline-flex;
   overflow: hidden;
-  white-space: nowrap;
   max-width: 0;
   opacity: 0;
   transform: translateX(-4px);
@@ -204,33 +264,14 @@
     opacity 0.26s ease,
     transform 0.34s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+.section-all-in {
+  flex: none;
+  white-space: nowrap;
+}
 .section-link:hover .section-all {
   max-width: 2.3em;
   opacity: 1;
   transform: translateX(0);
-}
-/* The bottom edge is permanent — it reads as the heading's underline at rest
-   and becomes the bottom of the button on hover. */
-.section-link .b-bottom {
-  transform: scaleX(1);
-}
-/* On hover, wrap the remaining three sides (right → top → left, matching the
-   standard offset border) after the "all" reveal lands. */
-.section-link:hover .b-right {
-  transform: scaleY(1);
-  transition: transform 0.15s ease 0s;
-}
-.section-link:hover .b-top {
-  transform: scaleX(1);
-  transition: transform 0.15s ease 0.15s;
-}
-.section-link:hover .b-left {
-  transform: scaleY(1);
-  transition: transform 0.1s ease 0.3s;
-}
-.section-link:hover {
-  box-shadow: 3px 3px 0 0 var(--color-text);
-  transition: box-shadow 0.18s ease 0.36s;
 }
 
 .post-meta {
@@ -341,8 +382,12 @@
 
 /* ── Live ticker banner ──────────────────────────────────────── */
 @keyframes live-ticker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 /* ── Live badge dot ──────────────────────────────────────────── */
@@ -534,6 +579,20 @@
   box-shadow: none;
   transform: translate(5px, 5px);
 }
+.project-card:has(.project-card-trigger:hover) .card-image-box {
+  box-shadow: 3px 3px 0 0 var(--color-text);
+  transform: translate(2px, 2px);
+}
+.project-card-gif {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.project-card:has(.project-card-trigger:hover) .project-card-gif {
+  opacity: 1;
+}
+.project-card:has(.project-card-trigger:hover) .project-card-title {
+  text-decoration: underline;
+}
 
 /* Store grid */
 .shop-grid {
@@ -560,7 +619,11 @@
   text-decoration: none;
   width: fit-content;
 }
-.shop-card-name:hover {
+.shop-card:has(.goods-card-trigger:hover) .card-image-box {
+  box-shadow: 3px 3px 0 0 var(--color-text);
+  transform: translate(2px, 2px);
+}
+.shop-card:has(.goods-card-trigger:hover) .shop-card-name {
   text-decoration: underline;
   text-underline-offset: 2px;
 }

@@ -17,10 +17,10 @@ export default function SectionBar({
     return (
       <div className={wrapper}>
         <span
-          className="text-[13px] font-semibold tracking-[0.01em] inline-block pb-px"
+          className="text-4xl font-semibold tracking-[0.01em] inline-block pb-px"
           style={{
             color: "var(--color-text)",
-            borderBottom: "1.5px solid var(--color-text)",
+            borderBottom: "2.5px solid var(--color-text)",
           }}
         >
           {title}
@@ -34,7 +34,7 @@ export default function SectionBar({
       <Link
         href={href}
         aria-label={`All ${title}`}
-        className="section-link text-[13px] font-semibold tracking-[0.01em]"
+        className="border-animate section-link text-4xl font-semibold tracking-[0.01em] leading-none"
         style={{ color: "var(--color-text)" }}
       >
         <span className="b b-bottom" />
@@ -42,9 +42,9 @@ export default function SectionBar({
         <span className="b b-top" />
         <span className="b b-left" />
         <span className="section-all" aria-hidden="true">
-          all&nbsp;
+          <span className="section-all-in">all&nbsp;</span>
         </span>
-        <span>{title}</span>
+        <span className="section-title">{title}</span>
       </Link>
     </div>
   );

@@ -17,7 +17,9 @@ import {
 export default async function Home() {
   const visible = getAllProjects()
     .filter((p) => !p.hide)
-    .sort((a, b) => Number(b.year ?? 0) - Number(a.year ?? 0)) as ProjectRowData[];
+    .sort(
+      (a, b) => Number(b.year ?? 0) - Number(a.year ?? 0),
+    ) as ProjectRowData[];
   const allTrips = buildTripEntries();
   const recentTrips = allTrips.slice(0, 3);
 
@@ -61,26 +63,30 @@ export default async function Home() {
         <section className="pt-12 pb-4 max-w-[820px]">
           <div
             className="flex flex-wrap gap-4 text-[13px] font-medium mb-5"
-            style={{ color: "var(--color-text-variant)" }}
+            style={{ color: "var(--color-text)" }}
           >
             {latestText && latestHref && (
-              <a
-                href={latestHref}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
-                className="border-animate"
-                style={{
-                  color: "var(--color-text-variant)",
-                  textDecoration: "none",
-                  fontWeight: 500,
-                }}
-              >
-                <span className="b b-bottom" />
-                <span className="b b-right" />
-                <span className="b b-top" />
-                <span className="b b-left" />
-                the latest: {latestText} ↗
-              </a>
+              <span>
+                the latest:&nbsp;&nbsp;
+                <a
+                  href={latestHref}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  style={{
+                    color: "var(--color-text)",
+                    textDecoration: "none",
+                    fontWeight: 500,
+                  }}
+                >
+                  <span className="underline-border">
+                    <span className="b b-bottom" />
+                    <span className="b b-right" />
+                    <span className="b b-top" />
+                    <span className="b b-left" />
+                    {latestText} ↗
+                  </span>{" "}
+                </a>
+              </span>
             )}
           </div>
           <h1

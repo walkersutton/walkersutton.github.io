@@ -15,7 +15,7 @@ export default function GoodsCard({ slug, name, image, price, isSoldOut, details
   const href = `/goods/${slug}`;
   return (
     <div className="shop-card" data-soldout={isSoldOut}>
-      <Link href={href} className="card-link block" style={{ marginBottom: 12 }}>
+      <Link href={href} className="card-link goods-card-trigger block" style={{ marginBottom: 12 }}>
         <CardImageBox style={{ aspectRatio: "1 / 1" }}>
           {image && (
             <Image src={image} alt={name} fill className="object-cover" />
@@ -24,7 +24,7 @@ export default function GoodsCard({ slug, name, image, price, isSoldOut, details
         </CardImageBox>
       </Link>
       <div className="shop-card-meta">
-        <Link href={href} className="shop-card-name">{name}</Link>
+        <Link href={href} className="shop-card-name goods-card-trigger">{name}</Link>
         <span className="shop-card-price">{isSoldOut ? "Sold out" : price}</span>
       </div>
       {details && <div className="shop-card-detail">{details}</div>}
