@@ -6,7 +6,6 @@ import { getAllTripSlugs, getTripBySlug, buildTripEntries, fmtMiles, fmtFeet } f
 import type { TripEntry, DayStat } from "@/lib/trips";
 import LeafletReportMapLoader from "./LeafletReportMapLoader";
 import TripReportLayout from "./TripReportLayout";
-import { getLiveEnabled } from "@/lib/live-state";
 
 export async function generateStaticParams() {
   return getAllTripSlugs().map((slug) => ({ slug }));
@@ -43,11 +42,8 @@ export default async function TripReportPage(props: {
   const prevEntry = idx < allEntries.length - 1 ? allEntries[idx + 1] : null;
   const nextEntry = idx > 0 ? allEntries[idx - 1] : null;
 
-  const isLive = await getLiveEnabled();
-
   return (
     <TripReportLayout
-      isLive={isLive}
       map={
         start ? (
           <LeafletReportMapLoader tracks={tracks} waypoints={waypoints} start={start} />

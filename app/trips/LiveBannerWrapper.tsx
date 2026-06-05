@@ -5,8 +5,10 @@ import LiveBanner from "./LiveBanner";
 
 export default function LiveBannerWrapper() {
   const pathname = usePathname();
-  // Trips routes render their own banner inside their scroll container so it
-  // scrolls away with the content instead of staying pinned to the viewport.
-  if (pathname?.startsWith("/trips")) return null;
+  // The live page is itself the full-screen live map, so the banner is redundant
+  // there. Everywhere else the banner is a single persistent instance rendered by
+  // the root layout, so it never remounts (and the marquee never restarts) when
+  // navigating between pages — including across the /trips boundary.
+  if (pathname === "/trips/live") return null;
   return <LiveBanner />;
 }

@@ -1,52 +1,41 @@
 "use client";
 
-import { useEffect } from "react";
 import Header from "../../components/Header";
-import LiveBanner from "../LiveBanner";
 
+// The glass header overlays this much of the map's top; the map is sized taller
+// by the same amount so the visible map below the header stays ~60vh.
 const HEADER_H = 71;
 
 export default function TripReportLayout({
   map,
   children,
-  isLive,
 }: {
   map: React.ReactNode;
   children: React.ReactNode;
-  isLive?: boolean;
 }) {
-  const totalTopOffset = HEADER_H;
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
-
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, background: "var(--color-bg)" }}>
-      {/* Single scroll container — banner, header, and map all live in flow here
-          so they scroll away with the content instead of staying pinned. */}
+    // Full-bleed so the map runs edge to edge; flows in the normal page scroll so
+    // the header scrolls away with the content (and the persistent banner in the
+    // root layout never remounts when navigating in/out of this route).
+    <div
+      className="-mx-4 md:-mx-8"
+      style={{ position: "relative", background: "var(--color-bg)" }}
+    >
+      {/* Glass header overlays the top of the map and scrolls away with the page */}
+      <Header variant="glass" />
+
+      {/* Map — sits behind the glass header */}
       <div
         style={{
-          position: "absolute",
-          inset: 0,
-          overflowY: "auto",
-          scrollbarWidth: "none",
+          height: `calc(60vh + ${HEADER_H}px)`,
+          minHeight: 340,
+          maxHeight: 620,
         }}
       >
-        {/* Banner in flow so it scrolls away with the content */}
-        {isLive && <LiveBanner />}
-        <Header variant="glass" topOffset={isLive ? 36 : 0} />
-
-        {/* Map — starts at top:0, sits behind glass header + banner */}
-        <div style={{ height: `calc(60vh + ${totalTopOffset}px)`, minHeight: 340, maxHeight: 620 }}>
-          {map}
-        </div>
-
-        {children}
+        {map}
       </div>
+
+      {children}
     </div>
   );
 }

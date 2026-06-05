@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 import { CartProvider } from "@/context/CartContext";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import HideOnTrips from "./components/HideOnTrips";
 import LiveBannerWrapper from "./trips/LiveBannerWrapper";
 import { getLiveEnabled } from "@/lib/live-state";
 
@@ -52,9 +53,13 @@ export default async function RootLayout({
               <LiveBannerWrapper />
             </div>
           )}
-          <Header />
+          <HideOnTrips>
+            <Header />
+          </HideOnTrips>
           <div className="flex-grow">{children}</div>
-          <Footer />
+          <HideOnTrips>
+            <Footer />
+          </HideOnTrips>
         </CartProvider>
       </body>
     </html>
