@@ -51,8 +51,6 @@ export default function NewsletterForm() {
           transition: "box-shadow 0.1s ease, transform 0.1s ease",
           width: 300,
         }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       >
         <input
           aria-label="Email address"
@@ -91,18 +89,14 @@ export default function NewsletterForm() {
             fontFamily: "var(--font-sans)",
             fontSize: 13,
             fontWeight: 600,
-            color: "var(--color-text-faint)",
+            color: "var(--color-text)",
             whiteSpace: "nowrap",
             flexShrink: 0,
             transition: "color 0.15s",
           }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color =
-              "var(--color-text)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.color =
-              "var(--color-text-faint)";
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => {
+            setHovered(false);
             setPressed(false);
           }}
           onMouseDown={() => setPressed(true)}

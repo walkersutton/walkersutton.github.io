@@ -13,7 +13,8 @@
     "name": "Cyclemetry",
     "year": "Active",
     "category": "digital",
-    "href": "https://github.com/walkersutton/cyclemetry",
+    "href": "https://cyclemetry.walkersutton.com",
+    "githubHref": "https://github.com/walkersutton/cyclemetry",
     "image": "/images/cyclemetry.gif",
     "still": "/images/cyclemetry-still.jpg",
     "blurb": "Cycling telemetry video overlays from your ride data."

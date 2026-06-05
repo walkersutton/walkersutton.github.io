@@ -5,6 +5,7 @@ import { ProjectHomeGrid, type ProjectRowData } from "./components/ProjectRow";
 import PostItem from "./components/PostItem";
 import PageContainer from "./components/PageContainer";
 import SectionBar from "./components/SectionBar";
+import { getLatestOverride } from "@/lib/live-state";
 
 export default async function Home() {
   const visible = projects.filter((p) => !p.hide) as ProjectRowData[];
@@ -21,6 +22,11 @@ export default async function Home() {
   );
 
   const latestPost = posts[0];
+  const latestOverride = await getLatestOverride();
+
+  const latestText = latestOverride?.text ?? (latestPost ? latestPost.title : null);
+  const latestHref = latestOverride?.href ?? (latestPost ? (latestPost.external_url ?? `/blog/${latestPost.slug}`) : null);
+  const isExternal = latestOverride ? !latestOverride.href.startsWith("/") : !!latestPost?.external_url;
 
   return (
     <PageContainer>
@@ -30,11 +36,11 @@ export default async function Home() {
           className="flex flex-wrap gap-4 text-[13px] font-medium mb-5"
           style={{ color: "var(--color-text-variant)" }}
         >
-          {latestPost && (
+          {latestText && latestHref && (
             <a
-              href={latestPost.external_url ?? `/blog/${latestPost.slug}`}
-              target={latestPost.external_url ? "_blank" : undefined}
-              rel={latestPost.external_url ? "noopener noreferrer" : undefined}
+              href={latestHref}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
               className="border-animate"
               style={{
                 color: "var(--color-text-variant)",
@@ -46,7 +52,7 @@ export default async function Home() {
               <span className="b b-right" />
               <span className="b b-top" />
               <span className="b b-left" />
-              the latest: {latestPost.title} ↗
+              the latest: {latestText} ↗
             </a>
           )}
         </div>

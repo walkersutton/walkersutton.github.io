@@ -1,5 +1,6 @@
 "use client";
 
+import Footer from "../../components/Footer";
 import Header from "../../components/Header";
 
 // The glass header overlays this much of the map's top; the map is sized taller
@@ -36,6 +37,10 @@ export default function TripReportLayout({
       </div>
 
       {children}
+
+      <div className="px-4 md:px-8">
+        <Footer />
+      </div>
     </div>
   );
 }

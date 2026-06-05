@@ -18,7 +18,11 @@ interface HeaderProps {
   sticky?: boolean;
 }
 
-export default function Header({ variant, topOffset = 0, sticky = false }: HeaderProps = {}) {
+export default function Header({
+  variant,
+  topOffset = 0,
+  sticky = false,
+}: HeaderProps = {}) {
   const isGlass = variant === "glass";
   const pathname = usePathname();
   const active =
@@ -220,7 +224,8 @@ export default function Header({ variant, topOffset = 0, sticky = false }: Heade
         className={`${sticky ? "sticky" : "absolute"} left-0 right-0 z-20`}
         style={{
           top: topOffset,
-          background: "rgba(var(--header-glass-rgb), 0.86)",
+          // background: "rgba(var(--header-glass-rgb), 0.86)",
+          background: "rgba(var(--header-glass-rgb), 0.69)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
         }}

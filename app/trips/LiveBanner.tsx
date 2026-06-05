@@ -1,9 +1,9 @@
 import Link from "next/link";
 
-const SEGMENT = "  ·  Walker is currently on trail  ·  View live route ↗  ·  ";
-
-export default function LiveBanner() {
-  const text = SEGMENT.repeat(6);
+export default function LiveBanner({ text }: { text: string }) {
+  // const segment = `  ·  ${text}  ·  View live route ↗  ·  `;
+  const segment = text;
+  const ticker = segment.repeat(25);
 
   return (
     <Link
@@ -25,8 +25,8 @@ export default function LiveBanner() {
         <div
           style={{
             display: "inline-flex",
-            whiteSpace: "nowrap",
-            animation: "live-ticker 150s linear infinite",
+            whiteSpace: "pre",
+            animation: "live-ticker 100s linear infinite",
           }}
         >
           {[0, 1].map((i) => (
@@ -36,8 +36,8 @@ export default function LiveBanner() {
               style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
             >
               <span className="trips-live-dot" />
-              LIVE
-              {text}
+              {/* LIVE */}
+              {ticker}
             </span>
           ))}
         </div>

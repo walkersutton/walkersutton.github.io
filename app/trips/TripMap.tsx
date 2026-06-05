@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import PostItem from "../components/PostItem";
@@ -181,13 +182,17 @@ function StatsPanel({
   data,
   stats,
   trips,
+  isOnTrip,
+  activeTripName,
 }: {
   data: MapShareResponse;
   stats: ReturnType<typeof computeStats>;
   trips: TripEntry[];
+  isOnTrip: boolean;
+  activeTripName: string;
 }) {
   const tripName =
-    data.tracks[0]?.name ?? (data.sample ? "Sample Track" : "Active Trip");
+    data.tracks[0]?.name ?? (data.sample ? "Sample Track" : activeTripName);
   const updatedText = fmtUpdated(data.latestPoint?.time);
   const latestDesc =
     data.latestPoint?.description ?? data.points[0]?.description;
@@ -205,13 +210,15 @@ function StatsPanel({
           borderBottom: "1px solid var(--color-border-faint)",
         }}
       >
-        <div
-          className="inline-flex items-center gap-[6px] text-[10.5px] font-semibold uppercase tracking-[0.13em] mb-[6px]"
-          style={{ color: "var(--accent-green)" }}
-        >
-          <span className="trips-live-dot" />
-          Live
-        </div>
+        {isOnTrip && (
+          <div
+            className="inline-flex items-center gap-[6px] text-[10.5px] font-semibold uppercase tracking-[0.13em] mb-[6px]"
+            style={{ color: "var(--accent-green)" }}
+          >
+            <span className="trips-live-dot" />
+            Live
+          </div>
+        )}
         <div
           className="text-[20px] font-semibold tracking-[-0.02em] leading-[1.1] mb-[3px]"
           style={{ color: "var(--color-text)" }}
@@ -288,7 +295,7 @@ function StatsPanel({
       <div style={{ ...sectionStyle, borderBottom: "none" }}>
         <Lbl>Past trips</Lbl>
         <div className="mt-[10px] flex flex-col">
-          {trips.map((trip) => (
+          {trips.slice(0, 2).map((trip) => (
             <PostItem
               key={trip.name}
               title={trip.name}
@@ -298,13 +305,20 @@ function StatsPanel({
             />
           ))}
         </div>
+        <Link
+          href="/trips"
+          className="text-[12px] font-medium mt-[10px] inline-block"
+          style={{ color: "var(--color-text-faint)", textDecoration: "underline", textUnderlineOffset: "2px" }}
+        >
+          View all trips
+        </Link>
       </div>
     </>
   );
 }
 
 // ── Main component ────────────────────────────────────────────────
-export default function TripMap({ trips }: { trips: TripEntry[] }) {
+export default function TripMap({ trips, isOnTrip = false, activeTripName = "Active Trip" }: { trips: TripEntry[]; isOnTrip?: boolean; activeTripName?: string }) {
   const [data, setData] = useState<MapShareResponse>(EMPTY);
   const [, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
@@ -379,7 +393,7 @@ export default function TripMap({ trips }: { trips: TripEntry[] }) {
           zIndex: 10,
         }}
       >
-        <StatsPanel data={data} stats={stats} trips={trips} />
+        <StatsPanel data={data} stats={stats} trips={trips} isOnTrip={isOnTrip} activeTripName={activeTripName} />
       </div>
     </div>
   );

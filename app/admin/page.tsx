@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/admin-auth";
-import { getLiveEnabled } from "@/lib/live-state";
-import { logout, setLive } from "./actions";
+import { getLiveEnabled, getBannerText, getLatestOverride, getActiveTripName } from "@/lib/live-state";
+import { logout, setLive, saveBannerText, saveLatestOverride, saveActiveTripName } from "./actions";
 import LoginForm from "./LoginForm";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +71,9 @@ export default async function AdminPage() {
   }
 
   const isLive = await getLiveEnabled();
+  const bannerText = await getBannerText();
+  const latestOverride = await getLatestOverride();
+  const activeTripName = await getActiveTripName();
 
   return (
     <div style={{ maxWidth: 480, padding: "64px 0" }}>
@@ -88,7 +91,7 @@ export default async function AdminPage() {
       </p>
 
       <div style={ROW}>
-        <span style={LABEL}>Live banner</span>
+        <span style={LABEL}>On trip</span>
         <form action={setLive.bind(null, true)}>
           <button type="submit" style={BTN(isLive)}>On</button>
         </form>
@@ -96,6 +99,76 @@ export default async function AdminPage() {
           <button type="submit" style={BTN(!isLive)}>Off</button>
         </form>
       </div>
+
+      <form action={saveActiveTripName} style={ROW}>
+        <span style={LABEL}>Active trip</span>
+        <input
+          name="activeTripName"
+          defaultValue={activeTripName}
+          style={{
+            flex: 1,
+            fontSize: 12,
+            fontFamily: "inherit",
+            padding: "6px 10px",
+            border: "1.5px solid var(--color-text)",
+            background: "transparent",
+            color: "var(--color-text)",
+          }}
+        />
+        <button type="submit" style={BTN(false)}>Save</button>
+      </form>
+
+      <form action={saveBannerText} style={ROW}>
+        <span style={LABEL}>Banner text</span>
+        <input
+          name="bannerText"
+          defaultValue={bannerText}
+          style={{
+            flex: 1,
+            fontSize: 12,
+            fontFamily: "inherit",
+            padding: "6px 10px",
+            border: "1.5px solid var(--color-text)",
+            background: "transparent",
+            color: "var(--color-text)",
+          }}
+        />
+        <button type="submit" style={BTN(false)}>Save</button>
+      </form>
+
+      <form action={saveLatestOverride} style={{ padding: "14px 0", borderBottom: "1px solid var(--color-border-faint)", display: "flex", flexDirection: "column", gap: 10 }}>
+        <span style={LABEL}>Latest</span>
+        <input
+          name="latestText"
+          placeholder="Text (leave blank to auto)"
+          defaultValue={latestOverride?.text ?? ""}
+          style={{
+            fontSize: 12,
+            fontFamily: "inherit",
+            padding: "6px 10px",
+            border: "1.5px solid var(--color-text)",
+            background: "transparent",
+            color: "var(--color-text)",
+          }}
+        />
+        <div style={{ display: "flex", gap: 10 }}>
+          <input
+            name="latestHref"
+            placeholder="Link URL (leave blank to auto)"
+            defaultValue={latestOverride?.href ?? ""}
+            style={{
+              flex: 1,
+              fontSize: 12,
+              fontFamily: "inherit",
+              padding: "6px 10px",
+              border: "1.5px solid var(--color-text)",
+              background: "transparent",
+              color: "var(--color-text)",
+            }}
+          />
+          <button type="submit" style={BTN(false)}>Save</button>
+        </div>
+      </form>
 
       <div style={{ marginTop: 48 }}>
         <form action={logout}>

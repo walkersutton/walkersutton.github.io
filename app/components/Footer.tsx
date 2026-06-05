@@ -1,11 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import NewsletterForm from "./NewsletterForm";
 
 function InstagramIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
       <circle cx="12" cy="12" r="4.5" />
       <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none" />
@@ -22,7 +31,11 @@ function XIcon() {
 }
 
 const SOCIAL = [
-  { label: "Instagram", href: "https://instagram.com/bandiitb0y", icon: InstagramIcon },
+  {
+    label: "Instagram",
+    href: "https://instagram.com/bandiitb0y",
+    icon: InstagramIcon,
+  },
   { label: "X", href: "https://x.com/walkercsutton", icon: XIcon },
 ];
 
@@ -35,7 +48,6 @@ function SocialLink({
   href: string;
   icon: () => React.ReactElement;
 }) {
-  const [hovered, setHovered] = useState(false);
   return (
     <a
       href={href}
@@ -44,11 +56,8 @@ function SocialLink({
       aria-label={label}
       className="no-underline flex items-center"
       style={{
-        color: hovered ? "var(--color-text)" : "var(--color-text-faint)",
         transition: "color 0.15s ease",
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <Icon />
     </a>

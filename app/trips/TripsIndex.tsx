@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Footer from "../components/Footer";
 import Header from "../components/Header";
 import PostItem from "../components/PostItem";
 import LeafletOverviewMapLoader from "./LeafletOverviewMapLoader";
@@ -72,6 +73,10 @@ export default function TripsIndex({ trips }: { trips: TripEntry[] }) {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="px-4 md:px-8">
+        <Footer />
       </div>
     </div>
   );

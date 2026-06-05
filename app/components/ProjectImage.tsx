@@ -56,6 +56,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
 
   if (!isGif || isTouchDevice) {
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
         alt={alt}
@@ -80,6 +81,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
       <canvas ref={canvasRef} className="hidden" />
       
       {/* Base Image (Static Frame or Still) - Defines the container size */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={still || src}
         alt=""
@@ -89,6 +91,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
 
       {/* Visible Static Frame / Placeholder */}
       {staticFrame && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={staticFrame}
           alt={alt}
@@ -98,6 +101,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
 
       {/* Animated Overlay - Only load if hovered or after some background loading logic if desired */}
       {/* For now, we always start loading the GIF in background via useEffect, but only show it here on hover */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={isHovered ? "active" : "inactive"}
         src={src}

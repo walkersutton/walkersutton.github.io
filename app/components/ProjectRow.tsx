@@ -32,6 +32,7 @@ function SubLabel({ children }: { children: React.ReactNode }) {
 
 function ProjectCardItem({ project }: { project: ProjectRowData }) {
   const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
   const soon = project.href === "#";
   // const soon = true;
   const imgSrc = hovered && project.image ? project.image : (project.still ?? project.image);
@@ -39,20 +40,32 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
     ? { href: undefined as unknown as string }
     : { href: project.href, target: "_blank", rel: "noopener noreferrer" };
 
+  const handlers = soon ? {} : {
+    onMouseEnter: () => setHovered(true),
+    onMouseLeave: () => { setHovered(false); setPressed(false); },
+    onMouseDown: () => setPressed(true),
+    onMouseUp: () => setPressed(false),
+  };
+
+  const imageBoxStyle: React.CSSProperties = soon ? {} : pressed
+    ? { boxShadow: "none", transform: "translate(5px, 5px)" }
+    : hovered
+    ? { boxShadow: "3px 3px 0 0 var(--color-text)", transform: "translate(2px, 2px)" }
+    : {};
+
   return (
-    <div className="block">
+    <div className="block break-inside-avoid mb-5">
       <a
         {...linkProps}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className={soon ? "block" : "block card-link"}
+        {...handlers}
+        className="block"
         style={{
           cursor: soon ? "default" : "pointer",
           textDecoration: "none",
           marginBottom: 10,
         }}
       >
-        <CardImageBox>
+        <CardImageBox style={imageBoxStyle}>
           {imgSrc && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -90,8 +103,7 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
       <div className="flex flex-col gap-[3px]">
         <a
           {...linkProps}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
+          {...handlers}
           style={{
             fontSize: 16,
             fontWeight: 700,
@@ -168,7 +180,7 @@ export function ProjectHomeGrid({
       {digital.length > 0 && (
         <>
           <SubLabel>Digital</SubLabel>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
+          <div className="columns-1 sm:columns-2 gap-x-5">
             {displayDigital.map((p) => (
               <ProjectCardItem key={p.name} project={p} />
             ))}

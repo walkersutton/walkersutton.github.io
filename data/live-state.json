@@ -1,3 +1,7 @@
 {
-  "enabled": true
+  "enabled": true,
+  "bannerText": "on trail     ",
+  "latestText": "new insta",
+  "latestHref": "https://instagram.com/bandiitb0y",
+  "activeTripName": "hike round the 'ol woods"
 }
