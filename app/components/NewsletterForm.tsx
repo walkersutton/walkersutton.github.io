@@ -103,7 +103,7 @@ export default function NewsletterForm() {
           onMouseUp={() => setPressed(false)}
         >
           {status === "success"
-            ? "Joined ✓"
+            ? "Subscribed ✓"
             : status === "loading"
               ? "..."
               : "Subscribe"}

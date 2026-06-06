@@ -69,10 +69,7 @@ function SocialLink({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="no-underline flex items-center"
-      style={{
-        transition: "color 0.15s ease",
-      }}
+      className="no-underline flex items-center transition-[color,transform] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-90 motion-reduce:transition-none"
     >
       <Icon />
     </a>

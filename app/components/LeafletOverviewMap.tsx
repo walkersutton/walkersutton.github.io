@@ -123,6 +123,8 @@ export default function LeafletOverviewMap({
       {!hasLive &&
         trips.map((trip) => {
         const positions = trip.coords as LatLngExpression[];
+        if (positions.length === 0) return null;
+
         const effectiveHover = mapHoveredTrip ?? hoveredTrip;
         const isHovered = effectiveHover === trip.name;
         const hasHover = effectiveHover != null;

@@ -27,11 +27,11 @@ export default function Header({
   const active =
     NAV_LINKS.find((l) => pathname?.startsWith(l.href))?.href ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
-  const [bonesAnim, setBonesAnim] = useState<"spinRetract" | null>(null);
+  const [bonesPhase, setBonesPhase] = useState<"spin" | "retract" | null>(null);
+  const hoveringLogoRef = useRef(false);
 
   const navRef = useRef<HTMLElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
-  const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initializedRef = useRef(false);
   const indicatorPosRef = useRef({ left: 0, width: 0 });
 
@@ -69,7 +69,7 @@ export default function Header({
     ind.style.boxShadow = "2px 2px 0 0 var(--color-text)";
   }
 
-  function moveIndicatorTo(el: HTMLElement, _depressOnSettle: boolean = false) {
+  function moveIndicatorTo(el: HTMLElement) {
     const nav = navRef.current;
     const ind = indicatorRef.current;
     if (!nav || !ind || !el) return;
@@ -83,28 +83,12 @@ export default function Header({
       initializedRef.current = true;
       return;
     }
-    if (pendingTimerRef.current) {
-      clearTimeout(pendingTimerRef.current);
-      pendingTimerRef.current = null;
-    }
-    const indRect = ind.getBoundingClientRect();
-    const curLeft = indRect.left - navRect.left;
-    const curWidth = indRect.width;
-    const stretchLeft = Math.min(curLeft, targetLeft);
-    const stretchRight = Math.max(curLeft + curWidth, targetLeft + targetWidth);
+    // Slide straight to the target in one smooth move — no stretch-and-settle.
     setIndicator(
-      stretchLeft,
-      stretchRight - stretchLeft,
-      "transform 0.18s ease, width 0.18s ease",
+      targetLeft,
+      targetWidth,
+      "transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), width 0.2s cubic-bezier(0.22, 1, 0.36, 1)",
     );
-    pendingTimerRef.current = setTimeout(() => {
-      setIndicator(
-        targetLeft,
-        targetWidth,
-        "transform 0.16s ease, width 0.16s ease",
-      );
-      pendingTimerRef.current = null;
-    }, 170);
   }
 
   useEffect(() => {
@@ -114,12 +98,8 @@ export default function Header({
     const activeBtn = nav.querySelector<HTMLElement>(`[data-href="${active}"]`);
     if (activeBtn) {
       initializedRef.current = false;
-      requestAnimationFrame(() => moveIndicatorTo(activeBtn, false));
+      requestAnimationFrame(() => moveIndicatorTo(activeBtn));
     } else if (ind) {
-      if (pendingTimerRef.current) {
-        clearTimeout(pendingTimerRef.current);
-        pendingTimerRef.current = null;
-      }
       initializedRef.current = false;
       ind.style.transition = "none";
       ind.style.opacity = "0";
@@ -141,7 +121,9 @@ export default function Header({
       href="/"
       className="logo-link flex items-center gap-[9px] no-underline shrink-0"
       style={{ color: "var(--color-text)" }}
-      onClick={() => setBonesAnim("spinRetract")}
+      onClick={() => setBonesPhase("spin")}
+      onMouseEnter={() => { hoveringLogoRef.current = true; }}
+      onMouseLeave={() => { hoveringLogoRef.current = false; }}
     >
       <svg
         viewBox="0 0 100 115"
@@ -150,8 +132,14 @@ export default function Header({
         aria-hidden="true"
       >
         <g
-          className={`crossbones${bonesAnim === "spinRetract" ? " spin-retract" : ""}`}
-          onAnimationEnd={() => setBonesAnim(null)}
+          className={`crossbones${bonesPhase === "spin" ? " spin" : ""}${bonesPhase === "retract" ? " retract" : ""}`}
+          onAnimationEnd={() =>
+            setBonesPhase((prev) =>
+              // After the spin: if the cursor left, hand off to the retract
+              // animation; otherwise the :hover rule holds the bones out.
+              prev === "spin" && !hoveringLogoRef.current ? "retract" : null,
+            )
+          }
         >
           <line x1="-15" y1="15" x2="115" y2="105" stroke="currentColor" strokeWidth="17" strokeLinecap="round" />
           <circle cx="-15" cy="15" r="13" fill="currentColor" />
@@ -188,12 +176,8 @@ export default function Header({
           `[data-href="${active}"]`,
         );
         if (activeBtn) {
-          moveIndicatorTo(activeBtn, false);
+          moveIndicatorTo(activeBtn);
         } else if (ind) {
-          if (pendingTimerRef.current) {
-            clearTimeout(pendingTimerRef.current);
-            pendingTimerRef.current = null;
-          }
           ind.style.transition = "opacity 0.15s ease";
           ind.style.opacity = "0";
         }

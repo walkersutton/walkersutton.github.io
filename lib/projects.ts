@@ -8,6 +8,7 @@ export interface ProjectMetadata {
   name: string;
   slug: string;
   year?: string;
+  date?: string; // ISO date (YYYY-MM-DD) — used for sitemap lastModified
   hide?: boolean;
   href?: string;
   githubUrl?: string;

@@ -149,6 +149,11 @@
   box-shadow: 3px 3px 0 0 var(--color-text);
   transition: box-shadow 0.18s ease 0.46s;
 }
+.post-title:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 var(--color-text);
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
+}
 
 .border-animate {
   position: relative;
@@ -177,6 +182,11 @@
 .border-animate:hover {
   box-shadow: 3px 3px 0 0 var(--color-text);
   transition: box-shadow 0.18s ease 0.46s;
+}
+.border-animate:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 var(--color-text);
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
 }
 
 /* Reusable underline-to-button hover. At rest the element shows a permanent
@@ -219,13 +229,18 @@
   box-shadow: 3px 3px 0 0 var(--color-text);
   transition: box-shadow 0.18s ease 0.36s;
 }
+.underline-border:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 var(--color-text);
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
+}
 
 /* Section heading: a real underline at rest (true thickness, skip-ink gaps
    around descenders like the "j", hugs only the text), crossfading into the
    offset-border button on hover. Pair `section-link` with `border-animate`. */
 .section-link {
-  padding: 4px 6px 5px;
-  margin-left: -6px;
+  padding: 7px 10px 8px;
+  margin-left: -10px;
 }
 .section-title {
   text-decoration: underline;
@@ -578,6 +593,13 @@
 .card-link:active .card-image-box {
   box-shadow: none;
   transform: translate(5px, 5px);
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
+}
+.project-card:has(.project-card-trigger:active) .card-image-box,
+.shop-card:has(.goods-card-trigger:active) .card-image-box {
+  box-shadow: none;
+  transform: translate(5px, 5px);
+  transition: transform 0.07s ease, box-shadow 0.07s ease;
 }
 .project-card:has(.project-card-trigger:hover) .card-image-box {
   box-shadow: 3px 3px 0 0 var(--color-text);
@@ -1085,14 +1107,36 @@
   transform: scale(1);
 }
 
-/* Spin, then shrink back behind the skull — the reverse of the spring-out
-   "appear" the bones do on hover (scale 1 → 0 with an easeInBack anticipation). */
-.crossbones.spin-retract {
-  animation: bones-spin-retract 0.9s forwards;
+/* Pure spin on click — ends at scale(1), so it never forces the bones to hide.
+   Whether they retract afterward is decided by hover state alone: if the cursor
+   is still over the logo the :hover rule holds them at scale(1) (no visual jump,
+   since the spin lands there); otherwise the base rule springs them to scale(0). */
+.crossbones.spin {
+  animation: bones-spin 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes bones-spin-retract {
-  0%   { transform: scale(1) rotate(0deg);   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-  61%  { transform: scale(1) rotate(360deg); animation-timing-function: cubic-bezier(0.36, 0, 0.66, -0.56); }
-  100% { transform: scale(0) rotate(360deg); }
+@keyframes bones-spin {
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+/* When the spin finishes and the cursor has already left, a removed animation
+   wouldn't transition (the underlying value was scale(0) all along), so the bones
+   would flash out. A dedicated keyframe animation scales them out smoothly from
+   where the spin left them, with a touch of easeInBack anticipation. */
+.crossbones.retract {
+  animation: bones-retract 0.35s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+}
+
+@keyframes bones-retract {
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(0) rotate(0deg);
+  }
 }
