@@ -58,9 +58,7 @@ export default async function RootLayout({
               <Banner text={bannerText} href={bannerLink} />
             </div>
           )}
-          <HideOnTrips hideOnHome={isLive}>
-            <Header />
-          </HideOnTrips>
+          <Header homeGlass={isLive} />
           <div className="flex-grow">{children}</div>
           <HideOnTrips>
             <Footer />

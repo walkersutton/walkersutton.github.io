@@ -1,10 +1,10 @@
 "use client";
 
 import Footer from "../../components/Footer";
-import Header from "../../components/Header";
 
-// The glass header overlays this much of the map's top; the map is sized taller
-// by the same amount so the visible map below the header stays ~60vh.
+// Height of the persistent glass header (h-[70px] row + 1px bottom border). The
+// map is pulled up by this amount so it sits *behind* the translucent header,
+// letting the glass overlay the map from the top instead of starting below it.
 const HEADER_H = 71;
 
 export default function TripReportLayout({
@@ -20,17 +20,14 @@ export default function TripReportLayout({
     // root layout never remounts when navigating in/out of this route).
     <div
       className="-mx-4 md:-mx-8"
-      style={{ position: "relative", background: "var(--color-bg)" }}
+      style={{ position: "relative", background: "var(--color-bg)", marginTop: -HEADER_H }}
     >
-      {/* Glass header overlays the top of the map and scrolls away with the page */}
-      <Header variant="glass" />
-
-      {/* Map — sits behind the glass header */}
+      {/* Map — runs up behind the sticky glass layout header */}
       <div
         style={{
           height: `calc(60vh + ${HEADER_H}px)`,
-          minHeight: 340,
-          maxHeight: 620,
+          minHeight: 340 + HEADER_H,
+          maxHeight: 620 + HEADER_H,
         }}
       >
         {map}

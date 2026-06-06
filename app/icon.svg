@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#000" />
+  <g transform="matrix(.92 0 0 .92 18 11)">
+    <path
+      fill="#fff"
+      d="M50 6 C25 6 5 26 5 51 C5 68 14 82 27 89.5 L27 111 L35 111 L65 111 L73 111 L73 89.5 C86 82 95 68 95 51 C95 26 75 6 50 6Z"
+    />
+    <circle cx="33" cy="53" r="10" fill="#000" />
+    <circle cx="67" cy="53" r="10" fill="#000" />
+  </g>
+</svg>

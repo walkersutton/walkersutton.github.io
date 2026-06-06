@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import Header from "./Header";
 import LeafletOverviewMapLoader from "./LeafletOverviewMapLoader";
 import { useMapShare } from "../trips/useMapShare";
 import { formatUpdated } from "../trips/mapshare";
 import type { TripEntry } from "@/lib/trips";
+
+// Height of the persistent glass header (h-[70px] row + 1px bottom border). The
+// hero map is pulled up by this amount so it sits *behind* the translucent
+// header (glass on the home page while live), matching the /trips overlay.
+const HEADER_H = 71;
 
 // The full-bleed /trips overview map, reused as the home page hero while a trip
 // is live — the current trip's track is overlaid and the map frames it, with
@@ -34,14 +38,16 @@ export default function HomeTripsHero({
   return (
     <div
       className="-mx-4 md:-mx-8 relative"
-      style={{ background: "var(--color-bg)" }}
+      style={{ background: "var(--color-bg)", marginTop: -HEADER_H }}
     >
-      <Header variant="glass" />
+      {/* Map runs up behind the persistent sticky layout header, which goes
+          glass on the home page while live (see Header autoGlass) and overlays
+          the map. */}
       <div
         style={{
           width: "100%",
-          height: "min(52vh, 520px)",
-          minHeight: 300,
+          height: `calc(min(52vh, 520px) + ${HEADER_H}px)`,
+          minHeight: 300 + HEADER_H,
         }}
       >
         <LeafletOverviewMapLoader

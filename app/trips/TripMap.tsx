@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import Header from "../components/Header";
 import PostItem from "../components/PostItem";
 import type { TripEntry } from "@/lib/trips";
 import { useMapShare } from "./useMapShare";
@@ -235,7 +234,9 @@ export default function TripMap({
         background: "var(--color-bg-sink)",
       }}
     >
-      <Header variant="glass" />
+      {/* No header here — the persistent layout header (auto-glass on /trips)
+          sits above this overlay (z-55 > z-50), staying a single instance so
+          the crossbones <g> survives navigation to/from the live map. */}
 
       {/* Full-bleed map */}
       <div style={{ position: "absolute", inset: 0 }}>

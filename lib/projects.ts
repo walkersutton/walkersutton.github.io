@@ -10,7 +10,7 @@ export interface ProjectMetadata {
   year?: string;
   hide?: boolean;
   href?: string;
-  githubHref?: string;
+  githubUrl?: string;
   image?: string;
   still?: string;
   blurb: string;
@@ -43,7 +43,10 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
 
   for (const candidate of candidates) {
     const p = path.join(projectsDirectory, candidate);
-    if (fs.existsSync(p)) { actualPath = p; break; }
+    if (fs.existsSync(p)) {
+      actualPath = p;
+      break;
+    }
   }
 
   if (!actualPath) {
@@ -51,7 +54,10 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
       if (!fileName.endsWith(".md") && !fileName.endsWith(".mdx")) continue;
       const p = path.join(projectsDirectory, fileName);
       const { data } = matter(fs.readFileSync(p, "utf8"));
-      if (data.slug === slug) { actualPath = p; break; }
+      if (data.slug === slug) {
+        actualPath = p;
+        break;
+      }
     }
   }
 

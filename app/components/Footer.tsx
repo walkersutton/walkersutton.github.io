@@ -2,6 +2,7 @@
 
 import React from "react";
 import NewsletterForm from "./NewsletterForm";
+import chronicallyOnline from "@/data/chronicallyOnline.json";
 
 function InstagramIcon() {
   return (
@@ -30,14 +31,28 @@ function XIcon() {
   );
 }
 
-const SOCIAL = [
-  {
-    label: "Instagram",
-    href: "https://instagram.com/bandiitb0y",
-    icon: InstagramIcon,
-  },
-  { label: "X", href: "https://x.com/walkercsutton", icon: XIcon },
-];
+function YouTubeIcon() {
+  return (
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.08 0 12 0 12s0 3.92.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14c.5-1.88.5-5.8.5-5.8s0-3.92-.5-5.8ZM9.6 15.57V8.43L15.82 12 9.6 15.57Z" />
+    </svg>
+  );
+}
+
+// Maps a social's name (as it appears in chronicallyOnline.json) to its icon.
+// Only names present here can render; the JSON's `footer: true` flag controls
+// which of those are actually shown.
+const ICONS: Record<string, () => React.ReactElement> = {
+  Instagram: InstagramIcon,
+  X: XIcon,
+  YouTube: YouTubeIcon,
+};
+
+const SOCIAL = (
+  chronicallyOnline as { name: string; href: string; footer?: boolean }[]
+)
+  .filter((s) => s.footer && ICONS[s.name])
+  .map((s) => ({ label: s.name, href: s.href, icon: ICONS[s.name] }));
 
 function SocialLink({
   label,

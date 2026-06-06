@@ -28,7 +28,10 @@ export default async function ProjectPage(props: {
 
   const eyebrow = (
     <>
-      <Link href="/projects" style={{ color: "inherit", textDecoration: "none" }}>
+      <Link
+        href="/projects"
+        style={{ color: "inherit", textDecoration: "none" }}
+      >
         Projects
       </Link>
       {" / "}
@@ -39,7 +42,14 @@ export default async function ProjectPage(props: {
   const header = (
     <>
       {metadata.blurb && (
-        <p style={{ fontSize: 18, color: "var(--color-text-variant)", lineHeight: 1.5, marginBottom: 0 }}>
+        <p
+          style={{
+            fontSize: 18,
+            color: "var(--color-text-variant)",
+            lineHeight: 1.5,
+            marginBottom: 0,
+          }}
+        >
           {metadata.blurb}
         </p>
       )}
@@ -53,7 +63,9 @@ export default async function ProjectPage(props: {
       >
         {metadata.year && (
           <span>
-            <span className="font-semibold uppercase tracking-[0.1em] text-[10px] mr-2">Year</span>
+            <span className="font-semibold uppercase tracking-[0.1em] text-[10px] mr-2">
+              Year
+            </span>
             {metadata.year}
           </span>
         )}
@@ -62,17 +74,25 @@ export default async function ProjectPage(props: {
             href={metadata.href}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: "var(--color-text)", textDecoration: "underline", textUnderlineOffset: 2 }}
+            style={{
+              color: "var(--color-text)",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
           >
             Live site ↗
           </a>
         )}
-        {metadata.githubHref && (
+        {metadata.githubUrl && (
           <a
-            href={metadata.githubHref}
+            href={metadata.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: "var(--color-text)", textDecoration: "underline", textUnderlineOffset: 2 }}
+            style={{
+              color: "var(--color-text)",
+              textDecoration: "underline",
+              textUnderlineOffset: 2,
+            }}
           >
             GitHub ↗
           </a>
@@ -93,7 +113,11 @@ export default async function ProjectPage(props: {
   );
 
   return (
-    <ContentPageLayout eyebrow={eyebrow} title={metadata.name} content={content}>
+    <ContentPageLayout
+      eyebrow={eyebrow}
+      title={metadata.name}
+      content={content}
+    >
       {header}
     </ContentPageLayout>
   );

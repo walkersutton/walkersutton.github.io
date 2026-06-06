@@ -13,21 +13,21 @@ export const NAV_LINKS = [
 ];
 
 interface HeaderProps {
-  variant?: "glass";
   topOffset?: number;
   sticky?: boolean;
+  homeGlass?: boolean;
 }
 
 export default function Header({
-  variant,
   topOffset = 0,
   sticky = false,
+  homeGlass = false,
 }: HeaderProps = {}) {
-  const isGlass = variant === "glass";
   const pathname = usePathname();
   const active =
     NAV_LINKS.find((l) => pathname?.startsWith(l.href))?.href ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [bonesAnim, setBonesAnim] = useState<"spinRetract" | null>(null);
 
   const navRef = useRef<HTMLElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -127,18 +127,39 @@ export default function Header({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
+  // The single persistent header goes glass on trips routes and on the home page
+  // while live, so it overlays the full-bleed maps (trips overview, live map,
+  // home hero) rather than each view embedding its own instance — this keeps the
+  // crossbones <g> and nav indicator mounted across all navigation.
+  const isGlass =
+    !!pathname?.startsWith("/trips") || (homeGlass && pathname === "/");
+  // Glass headers stick to the top; non-glass headers defer to the sticky prop.
+  const isSticky = sticky || isGlass;
+
   const logo = (
     <Link
       href="/"
-      className="flex items-center gap-[9px] no-underline shrink-0"
+      className="logo-link flex items-center gap-[9px] no-underline shrink-0"
       style={{ color: "var(--color-text)" }}
+      onClick={() => setBonesAnim("spinRetract")}
     >
       <svg
         viewBox="0 0 100 115"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: "block", width: 19, height: 22, flexShrink: 0 }}
+        style={{ display: "block", width: 19, height: 22, flexShrink: 0, overflow: "visible" }}
         aria-hidden="true"
       >
+        <g
+          className={`crossbones${bonesAnim === "spinRetract" ? " spin-retract" : ""}`}
+          onAnimationEnd={() => setBonesAnim(null)}
+        >
+          <line x1="-15" y1="15" x2="115" y2="105" stroke="currentColor" strokeWidth="17" strokeLinecap="round" />
+          <circle cx="-15" cy="15" r="13" fill="currentColor" />
+          <circle cx="115" cy="105" r="13" fill="currentColor" />
+          <line x1="115" y1="15" x2="-15" y2="105" stroke="currentColor" strokeWidth="17" strokeLinecap="round" />
+          <circle cx="115" cy="15" r="13" fill="currentColor" />
+          <circle cx="-15" cy="105" r="13" fill="currentColor" />
+        </g>
         <path
           d="M50 6 C25 6 5 26 5 51 C5 68 14 82 27 89.5 L27 111 L35 111 L65 111 L73 111 L73 89.5 C86 82 95 68 95 51 C95 26 75 6 50 6Z"
           fill="currentColor"
@@ -218,163 +239,113 @@ export default function Header({
     </nav>
   );
 
-  if (isGlass) {
-    return (
-      <div
-        className={`${sticky ? "sticky" : "absolute"} left-0 right-0 z-20`}
-        style={{
-          top: topOffset,
-          // background: "rgba(var(--header-glass-rgb), 0.86)",
-          background: "rgba(var(--header-glass-rgb), 0.69)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-        }}
+  const mobileMenuButton = (
+    <button
+      className="ml-auto sm:hidden p-1.5 -mr-1"
+      onClick={() => setMenuOpen((o) => !o)}
+      aria-label="Toggle menu"
+      style={{
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "var(--color-text)",
+      }}
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 22 22"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
       >
-        <div className="px-4 md:px-8">
-          <div className="w-full max-w-[1080px] mx-auto flex items-center gap-6 h-[70px]">
-            {logo}
-            {desktopNav}
-            <button
-              className="ml-auto sm:hidden p-1.5 -mr-1"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Toggle menu"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--color-text)",
-              }}
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line
-                  x1="3"
-                  y1="11"
-                  x2="19"
-                  y2="11"
-                  style={{
-                    transformOrigin: "11px 11px",
-                    transform: menuOpen ? "rotate(45deg)" : "translateY(-4px)",
-                    transition: "transform 0.25s ease",
-                  }}
-                />
-                <line
-                  x1="3"
-                  y1="11"
-                  x2="19"
-                  y2="11"
-                  style={{
-                    transformOrigin: "11px 11px",
-                    transform: menuOpen ? "rotate(-45deg)" : "translateY(4px)",
-                    transition: "transform 0.25s ease",
-                  }}
-                />
-              </svg>
-            </button>
+        <line
+          x1="3"
+          y1="11"
+          x2="19"
+          y2="11"
+          style={{
+            transformOrigin: "11px 11px",
+            transform: menuOpen ? "rotate(45deg)" : "translateY(-4px)",
+            transition: "transform 0.25s ease",
+          }}
+        />
+        <line
+          x1="3"
+          y1="11"
+          x2="19"
+          y2="11"
+          style={{
+            transformOrigin: "11px 11px",
+            transform: menuOpen ? "rotate(-45deg)" : "translateY(4px)",
+            transition: "transform 0.25s ease",
+          }}
+        />
+      </svg>
+    </button>
+  );
+
+  // Unified DOM structure: both glass and non-glass use identical element types at
+  // every depth so React reconciles in place on mode change. This keeps the
+  // crossbones <g> element mounted through navigation, preserving CSS animations.
+  return (
+    <>
+      <div
+        className={isGlass
+          ? `${isSticky ? "sticky" : "absolute"} left-0 right-0 z-[55] -mx-4 md:-mx-8`
+          : undefined}
+        style={isGlass
+          ? {
+              top: topOffset,
+              background: "rgba(var(--header-glass-rgb), 0.69)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+            }
+          : undefined}
+      >
+        <div className={isGlass ? "px-4 md:px-8" : undefined}>
+          <div className="w-full max-w-[1080px] mx-auto">
+            <div className="flex items-center gap-6 h-[70px]">
+              {logo}
+              {desktopNav}
+              {mobileMenuButton}
+            </div>
+            {!isGlass && (
+              <div className="h-px" style={{ background: "var(--color-border)" }} />
+            )}
           </div>
         </div>
-        <div style={{ height: 1, background: "var(--color-border-faint)" }} />
-        {menuOpen && (
-          <nav className="sm:hidden flex flex-col px-4 md:px-8">
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="py-4 text-[17px] font-medium no-underline border-b"
-                style={{
-                  color: "var(--color-text-variant)",
-                  borderColor: "var(--color-border-faint)",
-                }}
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
+        {isGlass && (
+          <div style={{ height: 1, background: "var(--color-border-faint)" }} />
         )}
       </div>
-    );
-  }
-
-  return (
-    <header className="w-full max-w-[1080px] mx-auto">
-      <div className="flex items-center gap-6 h-[70px]">
-        {logo}
-        {desktopNav}
-
-        <button
-          className="ml-auto sm:hidden p-1.5 -mr-1"
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label="Toggle menu"
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--color-text)",
-          }}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <line
-              x1="3"
-              y1="11"
-              x2="19"
-              y2="11"
-              style={{
-                transformOrigin: "11px 11px",
-                transform: menuOpen ? "rotate(45deg)" : "translateY(-4px)",
-                transition: "transform 0.25s ease",
-              }}
-            />
-            <line
-              x1="3"
-              y1="11"
-              x2="19"
-              y2="11"
-              style={{
-                transformOrigin: "11px 11px",
-                transform: menuOpen ? "rotate(-45deg)" : "translateY(4px)",
-                transition: "transform 0.25s ease",
-              }}
-            />
-          </svg>
-        </button>
-      </div>
-
-      <div className="h-px" style={{ background: "var(--color-border)" }} />
-
       {menuOpen && (
-        <nav className="sm:hidden flex flex-col">
-          {NAV_LINKS.map(({ href, label }) => {
-            return (
-              <Link
-                key={href}
-                href={href}
-                className="py-4 text-[17px] font-medium no-underline border-b"
-                style={{
-                  color: "var(--color-text-variant)",
-                  borderColor: "var(--color-border-faint)",
-                }}
-              >
-                {label}
-              </Link>
-            );
-          })}
+        <nav
+          className={`sm:hidden flex flex-col ${isGlass ? "px-4 md:px-8" : ""}`}
+          style={isGlass
+            ? {
+                background: "rgba(var(--header-glass-rgb), 0.69)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+              }
+            : undefined}
+        >
+          {NAV_LINKS.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="py-4 text-[17px] font-medium no-underline border-b"
+              style={{
+                color: "var(--color-text-variant)",
+                borderColor: "var(--color-border-faint)",
+              }}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
       )}
-    </header>
+    </>
   );
 }
