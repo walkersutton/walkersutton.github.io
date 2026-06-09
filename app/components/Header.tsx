@@ -27,7 +27,7 @@ export default function Header({
   const active =
     NAV_LINKS.find((l) => pathname?.startsWith(l.href))?.href ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
-  const [bonesPhase, setBonesPhase] = useState<"spin" | "retract" | null>(null);
+  const [bonesPhase, setBonesPhase] = useState<"spin-cw" | "spin-ccw" | "retract" | null>(null);
   const hoveringLogoRef = useRef(false);
 
   const navRef = useRef<HTMLElement>(null);
@@ -121,7 +121,7 @@ export default function Header({
       href="/"
       className="logo-link flex items-center gap-[9px] no-underline shrink-0"
       style={{ color: "var(--color-text)" }}
-      onClick={() => setBonesPhase("spin")}
+      onClick={() => setBonesPhase(Math.random() < 0.5 ? "spin-cw" : "spin-ccw")}
       onMouseEnter={() => { hoveringLogoRef.current = true; }}
       onMouseLeave={() => { hoveringLogoRef.current = false; }}
     >
@@ -132,12 +132,12 @@ export default function Header({
         aria-hidden="true"
       >
         <g
-          className={`crossbones${bonesPhase === "spin" ? " spin" : ""}${bonesPhase === "retract" ? " retract" : ""}`}
+          className={`crossbones${bonesPhase === "spin-cw" ? " spin-cw" : bonesPhase === "spin-ccw" ? " spin-ccw" : ""}${bonesPhase === "retract" ? " retract" : ""}`}
           onAnimationEnd={() =>
             setBonesPhase((prev) =>
               // After the spin: if the cursor left, hand off to the retract
               // animation; otherwise the :hover rule holds the bones out.
-              prev === "spin" && !hoveringLogoRef.current ? "retract" : null,
+              (prev === "spin-cw" || prev === "spin-ccw") && !hoveringLogoRef.current ? "retract" : null,
             )
           }
         >

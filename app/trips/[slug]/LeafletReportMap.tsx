@@ -75,6 +75,23 @@ function ZoomControl() {
   return null;
 }
 
+function WheelZoomFix() {
+  const map = useMap();
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = (map as any).scrollWheelZoom;
+    if (!handler) return;
+    const orig = handler._onWheelScroll.bind(handler);
+    handler._onWheelScroll = function(e: WheelEvent) {
+      orig(e);
+      const rect = map.getContainer().getBoundingClientRect();
+      handler._lastMousePos = L.point(e.clientX - rect.left, e.clientY - rect.top);
+    };
+    return () => { handler._onWheelScroll = orig; };
+  }, [map]);
+  return null;
+}
+
 export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
   const startIcon = useStartIcon();
   const wptIcon = useWaypointIcon();
@@ -97,6 +114,7 @@ export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
         subdomains={["a", "b", "c"] as string[]}
       />
       <ZoomControl />
+      <WheelZoomFix />
       <FitBounds tracks={tracks} />
 
       {tracks.map((track, i) => (

@@ -13,7 +13,7 @@
 
 :root {
   /* ── Accent: change this one value to retheme the entire site ── */
-  --accent: #9b6cf0;
+  --accent: var(--color-text);
   --accent-green: #3bb56a;
   --header-glass-rgb: 246, 244, 238;
 
@@ -381,17 +381,17 @@
 }
 .trips-pulse-ring {
   border-radius: 50%;
-  border: 2px solid var(--accent);
+  border: 2px solid var(--accent-green);
   animation: pulse-ring 2.6s ease-out infinite;
 }
 .trips-pulse-ring2 {
   border-radius: 50%;
-  border: 1.5px solid var(--accent);
+  border: 1.5px solid var(--accent-green);
   animation: pulse-ring2 2.6s ease-out 0.5s infinite;
 }
 .trips-pulse-core {
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--accent-green);
   border: 2.5px solid var(--color-bg);
 }
 
@@ -813,9 +813,8 @@
 }
 .pd-gallery .shop-img {
   aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  border: 1px solid var(--color-text);
-  box-shadow: 3px 3px 0 0 var(--color-text);
+  border: 3px solid var(--color-text);
+  box-shadow: 6px 6px 0 0 var(--color-text);
 }
 .pd-gallery .shop-img:first-child {
   aspect-ratio: 4 / 5;
@@ -1111,17 +1110,22 @@
    Whether they retract afterward is decided by hover state alone: if the cursor
    is still over the logo the :hover rule holds them at scale(1) (no visual jump,
    since the spin lands there); otherwise the base rule springs them to scale(0). */
-.crossbones.spin {
-  animation: bones-spin 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.crossbones.spin-cw {
+  animation: bones-spin-cw 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes bones-spin {
-  from {
-    transform: scale(1) rotate(0deg);
-  }
-  to {
-    transform: scale(1) rotate(360deg);
-  }
+.crossbones.spin-ccw {
+  animation: bones-spin-ccw 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes bones-spin-cw {
+  from { transform: scale(1) rotate(0deg); }
+  to   { transform: scale(1) rotate(360deg); }
+}
+
+@keyframes bones-spin-ccw {
+  from { transform: scale(1) rotate(0deg); }
+  to   { transform: scale(1) rotate(-360deg); }
 }
 
 /* When the spin finishes and the cursor has already left, a removed animation

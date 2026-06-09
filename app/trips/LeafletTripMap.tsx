@@ -48,6 +48,23 @@ function ZoomControl({ position }: { position: NonNullable<LeafletTripMapProps["
   return null;
 }
 
+function WheelZoomFix() {
+  const map = useMap();
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handler = (map as any).scrollWheelZoom;
+    if (!handler) return;
+    const orig = handler._onWheelScroll.bind(handler);
+    handler._onWheelScroll = function(e: WheelEvent) {
+      orig(e);
+      const rect = map.getContainer().getBoundingClientRect();
+      handler._lastMousePos = L.point(e.clientX - rect.left, e.clientY - rect.top);
+    };
+    return () => { handler._onWheelScroll = orig; };
+  }, [map]);
+  return null;
+}
+
 function usePulseIcon() {
   return useMemo(() => L.divIcon({
     className: "",
@@ -96,6 +113,7 @@ export default function LeafletTripMap({
         subdomains={["a", "b", "c"] as string[]}
       />
       {showZoom && <ZoomControl position={zoomPosition} />}
+      <WheelZoomFix />
       <FitBounds tracks={tracks} points={points} latestPoint={latestPoint} />
 
       {tracks.map((track) => {
@@ -103,7 +121,7 @@ export default function LeafletTripMap({
         return (
           <Fragment key={track.id}>
             <Polyline positions={pos} pathOptions={{ color: "rgba(255,255,255,0.9)", weight: 12, lineCap: "round", lineJoin: "round" }} />
-            <Polyline positions={pos} pathOptions={{ color: "var(--accent)", weight: 5, lineCap: "round", lineJoin: "round" }} />
+            <Polyline positions={pos} pathOptions={{ color: "var(--accent-green)", weight: 5, lineCap: "round", lineJoin: "round" }} />
           </Fragment>
         );
       })}

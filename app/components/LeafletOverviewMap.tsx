@@ -59,10 +59,14 @@ function MapController({ coords, fitMinZoom = 0 }: { coords: LatLngExpression[];
     const el = map.getContainer();
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const latlng = map.containerPointToLatLng(
+        L.point(e.clientX - rect.left, e.clientY - rect.top),
+      );
       if (e.deltaY < 0) {
-        map.zoomIn();
+        map.setZoomAround(latlng, map.getZoom() + 1);
       } else if (e.deltaY > 0 && (minZoom.current === null || map.getZoom() > minZoom.current)) {
-        map.zoomOut();
+        map.setZoomAround(latlng, map.getZoom() - 1);
       }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
