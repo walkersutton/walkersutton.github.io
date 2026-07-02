@@ -23,33 +23,52 @@ export default function NewsletterForm() {
       const resData = await response.json();
       if (!response.ok) throw new Error(resData.error || "Subscription failed");
       setStatus("success");
-      setEmail("");
     } catch (err) {
       console.error("Newsletter error:", err);
       setStatus("error");
     }
   };
 
+  const isSuccess = status === "success";
+  const isLoading = status === "loading";
+  const isDone = isSuccess || isLoading;
+
   return (
-    <div>
+    <div className="w-full max-w-[300px] mx-auto sm:mx-0 sm:w-[300px]">
+      <style>{`
+        @keyframes newsletter-spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes newsletter-check {
+          from { opacity: 0; transform: translateY(2px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <form
         onSubmit={handleSubmit}
         style={{
           display: "inline-flex",
           alignItems: "stretch",
-          border: "1px solid var(--color-text)",
-          boxShadow: pressed
-            ? "none"
-            : hovered
-              ? "1px 1px 0 0 var(--color-text)"
-              : "3px 3px 0 0 var(--color-text)",
-          transform: pressed
-            ? "translate(3px, 3px)"
-            : hovered
-              ? "translate(2px, 2px)"
-              : "none",
-          transition: "box-shadow 0.1s ease, transform 0.1s ease",
-          width: 300,
+          border: isSuccess
+            ? "1px solid var(--color-border)"
+            : "1px solid var(--color-text)",
+          background: "transparent",
+          boxShadow:
+            isDone || pressed
+              ? "none"
+              : hovered
+                ? "1px 1px 0 0 var(--color-text)"
+                : "3px 3px 0 0 var(--color-text)",
+          transform:
+            pressed || isDone
+              ? "translate(3px, 3px)"
+              : hovered
+                ? "translate(2px, 2px)"
+                : "none",
+          transition:
+            "box-shadow 0.15s ease, transform 0.15s ease, border-color 0.25s ease",
+          width: "100%",
+          maxWidth: 300,
         }}
       >
         <input
@@ -62,7 +81,7 @@ export default function NewsletterForm() {
             if (status === "error") setStatus("idle");
           }}
           required
-          disabled={status === "loading" || status === "success"}
+          disabled={isDone}
           style={{
             flex: 1,
             minWidth: 0,
@@ -70,29 +89,40 @@ export default function NewsletterForm() {
             background: "transparent",
             fontFamily: "var(--font-sans)",
             fontSize: 14,
-            color: "var(--color-text)",
+            color: isSuccess ? "var(--color-text-variant)" : "var(--color-text)",
             outline: "none",
             padding: "10px 12px",
+            transition: "color 0.25s ease",
           }}
         />
         <div
-          style={{ width: 1, background: "var(--color-border)", flexShrink: 0 }}
+          style={{
+            width: 1,
+            background: isSuccess ? "var(--color-border)" : "var(--color-text)",
+            flexShrink: 0,
+            transition: "background 0.25s ease",
+          }}
         />
         <button
           type="submit"
-          disabled={status === "loading" || status === "success"}
+          disabled={isDone}
           style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            width: 124,
             border: 0,
             background: "transparent",
             padding: "10px 14px",
-            cursor: status === "success" ? "default" : "pointer",
+            cursor: isDone ? "default" : "pointer",
             fontFamily: "var(--font-sans)",
             fontSize: 13,
             fontWeight: 600,
             color: "var(--color-text)",
             whiteSpace: "nowrap",
             flexShrink: 0,
-            transition: "color 0.15s",
+            transition: "color 0.25s ease",
           }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => {
@@ -102,11 +132,47 @@ export default function NewsletterForm() {
           onMouseDown={() => setPressed(true)}
           onMouseUp={() => setPressed(false)}
         >
-          {status === "success"
-            ? "Subscribed ✓"
-            : status === "loading"
-              ? "..."
-              : "Subscribe"}
+          {isSuccess ? (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                animation: "newsletter-check 0.25s ease both",
+              }}
+            >
+              Subscribed
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3.5 8.5l3 3 6-7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          ) : isLoading ? (
+            <span
+              aria-label="Subscribing"
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: "50%",
+                border: "2px solid var(--color-border)",
+                borderTopColor: "var(--color-text)",
+                animation: "newsletter-spin 0.6s linear infinite",
+              }}
+            />
+          ) : (
+            "Subscribe"
+          )}
         </button>
       </form>
       {status === "error" && (

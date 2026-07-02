@@ -4,11 +4,11 @@ import PageContainer from "../components/PageContainer";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const metadata = {
-  title: `Blog | ${SITE_CONFIG.title}`,
-  description: "A collection of blog posts and articles.",
+  title: `Posts | ${SITE_CONFIG.title}`,
+  description: "A collection of written posts.",
 };
 
-export default async function BlogPage() {
+export default async function PostsPage() {
   const postsMetadata = getAllPosts();
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
@@ -27,7 +27,7 @@ export default async function BlogPage() {
             key={post.slug}
             date={post.date}
             title={post.title}
-            href={post.external_url ?? `/blog/${post.slug}`}
+            href={post.external_url ?? `/posts/${post.slug}`}
             excerpt={post.excerpt}
             isExternal={!!post.external_url}
           />

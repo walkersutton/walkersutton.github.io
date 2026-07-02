@@ -184,7 +184,7 @@ function StatsPanel({
               title={trip.name}
               href={trip.href}
               date={trip.date}
-              excerpt={`${trip.stats} · ${trip.days}`}
+              excerpt={trip.stats}
             />
           ))}
         </div>

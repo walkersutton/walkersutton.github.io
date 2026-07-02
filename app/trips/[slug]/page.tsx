@@ -34,7 +34,7 @@ export default async function TripReportPage(props: {
   const trip = getTripBySlug(slug);
   if (!trip) notFound();
 
-  const { frontmatter: fm, tracks, waypoints, start, stats, dayStats, days, dates, dateStart, dateEnd, content } = trip;
+  const { frontmatter: fm, tracks, waypoints, start, stats, dayStats, dates, content } = trip;
 
   // Prev/next from sorted trip list (desc by date — prev = older, next = newer)
   const allEntries = buildTripEntries();
@@ -86,37 +86,15 @@ export default async function TripReportPage(props: {
             style={{ background: "var(--color-text-faint)" }}
           />
           <span>{fm.region}</span>
-          <span
-            className="w-[3px] h-[3px] rounded-full shrink-0"
-            style={{ background: "var(--color-text-faint)" }}
-          />
-          <span>{days} days</span>
         </div>
 
         {/* Stats strip */}
-        <div
-          className="grid mt-8"
-          style={{
-            gridTemplateColumns: "repeat(5, 1fr)",
-            borderTop: "1px solid var(--color-rule)",
-            borderBottom: "1px solid var(--color-border-faint)",
-          }}
-        >
+        <div className="flex gap-10 mt-6">
           {[
             { lbl: "Distance", val: stats.distance },
             { lbl: "Gained", val: stats.gained },
-            { lbl: "Lost", val: stats.lost },
-            { lbl: "Days", val: String(days) },
-          ].map((s, i) => (
-            <div
-              key={s.lbl}
-              style={{
-                padding: "16px 0 16px 18px",
-                borderLeft:
-                  i === 0 ? "none" : "1px solid var(--color-border-faint)",
-                paddingLeft: i === 0 ? 0 : 18,
-              }}
-            >
+          ].map((s) => (
+            <div key={s.lbl}>
               <div
                 className="text-[10px] font-semibold uppercase tracking-[0.13em] mb-[5px]"
                 style={{ color: "var(--color-text-faint)" }}
@@ -131,27 +109,6 @@ export default async function TripReportPage(props: {
               </div>
             </div>
           ))}
-          <div
-            style={{
-              padding: "16px 0 16px 18px",
-              borderLeft: "1px solid var(--color-border-faint)",
-            }}
-          >
-            <div
-              className="text-[10px] font-semibold uppercase tracking-[0.13em] mb-[5px]"
-              style={{ color: "var(--color-text-faint)" }}
-            >
-              Dates
-            </div>
-            <div
-              className="text-[13px] font-medium leading-[1.3]"
-              style={{ color: "var(--color-text-variant)" }}
-            >
-              {dateStart}
-              <br />
-              {dateEnd}
-            </div>
-          </div>
         </div>
 
         {/* Prose */}

@@ -23,7 +23,20 @@ function escapeXml(unsafe: string) {
 
 function formatRssDate(dateStr: string): string {
   const d = new Date(dateStr);
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const day = d.getUTCDate().toString().padStart(2, "0");
   const month = months[d.getUTCMonth()];
   const year = d.getUTCFullYear();
@@ -39,8 +52,9 @@ export async function generateRssFeed() {
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
       const content = fullPost?.content || "";
-      const url = meta.external_url || `${SITE_CONFIG.siteUrl}/blog/${meta.slug}`;
-      
+      const url =
+        meta.external_url || `${SITE_CONFIG.siteUrl}/posts/${meta.slug}`;
+
       let htmlContent: string;
       if (meta.external_url) {
         const excerpt = generateExcerpt(content, { preserveNewlines: true });
@@ -49,19 +63,20 @@ export async function generateRssFeed() {
       } else {
         htmlContent = await marked.parse(content);
       }
-      
+
       return { ...meta, htmlContent };
     }),
   );
 
   const itemsXml = posts
     .map((post) => {
-      const url = post.external_url || `${SITE_CONFIG.siteUrl}/blog/${post.slug}`;
-      const guid = `/blog/${post.slug}`;
+      const url =
+        post.external_url || `${SITE_CONFIG.siteUrl}/posts/${post.slug}`;
+      const guid = `/posts/${post.slug}`;
       const categoriesXml = (post.categories || [])
         .map((cat) => `<category>${escapeXml(cat)}</category>`)
         .join("\n  ");
-      
+
       return `
 <item>
   <guid>${guid}</guid>
@@ -78,7 +93,7 @@ export async function generateRssFeed() {
   <channel>
     <atom:link href="${SITE_CONFIG.siteUrl}/rss.xml" rel="self" type="application/rss+xml" />
     <title>${SITE_CONFIG.title}</title>
-    <link>${SITE_CONFIG.siteUrl}/blog</link>
+    <link>${SITE_CONFIG.siteUrl}/posts</link>
     <description>${SITE_CONFIG.description}</description>
     <language>en-us</language>
     ${itemsXml}
@@ -92,8 +107,9 @@ export async function generateAtomFeed() {
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);
       const content = fullPost?.content || "";
-      const url = meta.external_url || `${SITE_CONFIG.siteUrl}/blog/${meta.slug}`;
-      
+      const url =
+        meta.external_url || `${SITE_CONFIG.siteUrl}/posts/${meta.slug}`;
+
       let htmlContent: string;
       if (meta.external_url) {
         const excerpt = generateExcerpt(content, { preserveNewlines: true });
@@ -102,14 +118,15 @@ export async function generateAtomFeed() {
       } else {
         htmlContent = await marked.parse(content);
       }
-      
+
       return { ...meta, htmlContent };
     }),
   );
 
   const entriesXml = posts
     .map((post) => {
-      const url = post.external_url || `${SITE_CONFIG.siteUrl}/blog/${post.slug}`;
+      const url =
+        post.external_url || `${SITE_CONFIG.siteUrl}/posts/${post.slug}`;
       return `
   <entry>
     <title>${escapeXml(post.title)}</title>
@@ -139,10 +156,11 @@ export async function generateJsonFeed() {
   const postsMetadata = getAllPosts();
   const items = await Promise.all(
     postsMetadata.map(async (post) => {
-      const url = post.external_url || `${SITE_CONFIG.siteUrl}/blog/${post.slug}`;
+      const url =
+        post.external_url || `${SITE_CONFIG.siteUrl}/posts/${post.slug}`;
       const fullPost = await getPostBySlug(post.slug);
       const content = fullPost?.content || "";
-      
+
       let htmlContent: string;
       if (post.external_url) {
         const excerpt = generateExcerpt(content, { preserveNewlines: true });
@@ -151,7 +169,7 @@ export async function generateJsonFeed() {
       } else {
         htmlContent = await marked.parse(content);
       }
-      
+
       return {
         id: url,
         url: url,
@@ -166,7 +184,7 @@ export async function generateJsonFeed() {
     {
       version: "https://jsonfeed.org/version/1.1",
       title: SITE_CONFIG.title,
-      home_page_url: `${SITE_CONFIG.siteUrl}/blog`,
+      home_page_url: `${SITE_CONFIG.siteUrl}/posts`,
       feed_url: `${SITE_CONFIG.siteUrl}/feed.json`,
       description: SITE_CONFIG.description,
       items: items,

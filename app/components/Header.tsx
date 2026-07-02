@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 
 export const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
-  { href: "/blog", label: "Blog" },
+  { href: "/posts", label: "Posts" },
   { href: "/trips", label: "Trips" },
   { href: "/work", label: "My Work" },
   { href: "/goods", label: "Goods" },
@@ -27,7 +27,9 @@ export default function Header({
   const active =
     NAV_LINKS.find((l) => pathname?.startsWith(l.href))?.href ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
-  const [bonesPhase, setBonesPhase] = useState<"spin-cw" | "spin-ccw" | "retract" | null>(null);
+  const [bonesPhase, setBonesPhase] = useState<
+    "spin-cw" | "spin-ccw" | "retract" | null
+  >(null);
   const hoveringLogoRef = useRef(false);
 
   const navRef = useRef<HTMLElement>(null);
@@ -113,22 +115,36 @@ export default function Header({
   // crossbones <g> and nav indicator mounted across all navigation.
   const isGlass =
     !!pathname?.startsWith("/trips") || (homeGlass && pathname === "/");
-  // Glass headers stick to the top; non-glass headers defer to the sticky prop.
-  const isSticky = sticky || isGlass;
+  // Sticky is opt-in via the prop only. Glass headers overlay the full-bleed map
+  // at the top of the page but flow in normal document scroll — they scroll away
+  // with the rest of the page rather than staying pinned over the content below.
+  const isSticky = sticky;
 
   const logo = (
     <Link
       href="/"
       className="logo-link flex items-center gap-[9px] no-underline shrink-0"
       style={{ color: "var(--color-text)" }}
-      onClick={() => setBonesPhase(Math.random() < 0.5 ? "spin-cw" : "spin-ccw")}
-      onMouseEnter={() => { hoveringLogoRef.current = true; }}
-      onMouseLeave={() => { hoveringLogoRef.current = false; }}
+      onClick={() =>
+        setBonesPhase(Math.random() < 0.5 ? "spin-cw" : "spin-ccw")
+      }
+      onMouseEnter={() => {
+        hoveringLogoRef.current = true;
+      }}
+      onMouseLeave={() => {
+        hoveringLogoRef.current = false;
+      }}
     >
       <svg
         viewBox="0 0 100 115"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: "block", width: 19, height: 22, flexShrink: 0, overflow: "visible" }}
+        style={{
+          display: "block",
+          width: 19,
+          height: 22,
+          flexShrink: 0,
+          overflow: "visible",
+        }}
         aria-hidden="true"
       >
         <g
@@ -137,14 +153,33 @@ export default function Header({
             setBonesPhase((prev) =>
               // After the spin: if the cursor left, hand off to the retract
               // animation; otherwise the :hover rule holds the bones out.
-              (prev === "spin-cw" || prev === "spin-ccw") && !hoveringLogoRef.current ? "retract" : null,
+              (prev === "spin-cw" || prev === "spin-ccw") &&
+              !hoveringLogoRef.current
+                ? "retract"
+                : null,
             )
           }
         >
-          <line x1="-15" y1="15" x2="115" y2="105" stroke="currentColor" strokeWidth="17" strokeLinecap="round" />
+          <line
+            x1="-15"
+            y1="15"
+            x2="115"
+            y2="105"
+            stroke="currentColor"
+            strokeWidth="17"
+            strokeLinecap="round"
+          />
           <circle cx="-15" cy="15" r="13" fill="currentColor" />
           <circle cx="115" cy="105" r="13" fill="currentColor" />
-          <line x1="115" y1="15" x2="-15" y2="105" stroke="currentColor" strokeWidth="17" strokeLinecap="round" />
+          <line
+            x1="115"
+            y1="15"
+            x2="-15"
+            y2="105"
+            stroke="currentColor"
+            strokeWidth="17"
+            strokeLinecap="round"
+          />
           <circle cx="115" cy="15" r="13" fill="currentColor" />
           <circle cx="-15" cy="105" r="13" fill="currentColor" />
         </g>
@@ -276,17 +311,21 @@ export default function Header({
   return (
     <>
       <div
-        className={isGlass
-          ? `${isSticky ? "sticky" : "absolute"} left-0 right-0 z-[55] -mx-4 md:-mx-8`
-          : undefined}
-        style={isGlass
-          ? {
-              top: topOffset,
-              background: "rgba(var(--header-glass-rgb), 0.69)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-            }
-          : undefined}
+        className={
+          isGlass
+            ? `${isSticky ? "sticky" : "relative"} left-0 right-0 z-[55] -mx-4 md:-mx-8`
+            : undefined
+        }
+        style={
+          isGlass
+            ? {
+                top: topOffset,
+                background: "rgba(var(--header-glass-rgb), 0.69)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+              }
+            : undefined
+        }
       >
         <div className={isGlass ? "px-4 md:px-8" : undefined}>
           <div className="w-full max-w-[1080px] mx-auto">
@@ -296,7 +335,10 @@ export default function Header({
               {mobileMenuButton}
             </div>
             {!isGlass && (
-              <div className="h-px" style={{ background: "var(--color-border)" }} />
+              <div
+                className="h-px"
+                style={{ background: "var(--color-border)" }}
+              />
             )}
           </div>
         </div>
@@ -307,13 +349,15 @@ export default function Header({
       {menuOpen && (
         <nav
           className={`sm:hidden flex flex-col ${isGlass ? "px-4 md:px-8" : ""}`}
-          style={isGlass
-            ? {
-                background: "rgba(var(--header-glass-rgb), 0.69)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-              }
-            : undefined}
+          style={
+            isGlass
+              ? {
+                  background: "rgba(var(--header-glass-rgb), 0.69)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                }
+              : undefined
+          }
         >
           {NAV_LINKS.map(({ href, label }) => (
             <Link

@@ -4,7 +4,21 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signToken, verifyToken } from "@/lib/admin-auth";
-import { setLiveEnabled, setBannerEnabled, setBannerText, setBannerLink, setLatestOverride, setActiveTripName } from "@/lib/live-state";
+import {
+  setLiveEnabled,
+  setBannerEnabled,
+  setBannerText,
+  setBannerLink,
+  setLatestOverride,
+  setActiveTripName,
+  setYouTubeChannelId,
+  setBlueskyHandle,
+  setInstagramAccounts,
+  setLatestTemplates,
+} from "@/lib/live-state";
+import { refreshSocialLatest } from "@/lib/social-latest";
+import type { InstagramAccount } from "@/lib/social-latest";
+import { DEFAULT_LATEST_TEMPLATES, type LatestTemplateKey, type LatestTemplates } from "@/lib/latest-templates";
 
 async function assertAuth() {
   const store = await cookies();
@@ -83,4 +97,62 @@ export async function saveLatestOverride(formData: FormData) {
   const href = (formData.get("latestHref") as string | null)?.trim() ?? "";
   await setLatestOverride(text, href);
   revalidatePath("/");
+}
+
+export async function saveYouTubeChannelId(formData: FormData) {
+  await assertAuth();
+  const id = (formData.get("youtubeChannelId") as string | null)?.trim() ?? "";
+  await setYouTubeChannelId(id);
+  revalidatePath("/", "layout");
+}
+
+export async function saveBlueskyHandle(formData: FormData) {
+  await assertAuth();
+  const handle = (formData.get("blueskyHandle") as string | null)?.trim() ?? "";
+  await setBlueskyHandle(handle);
+  revalidatePath("/", "layout");
+}
+
+export async function refreshSocialLatestNow() {
+  await assertAuth();
+  await refreshSocialLatest();
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/latest");
+}
+
+export async function saveInstagramAccounts(formData: FormData) {
+  await assertAuth();
+  const userIds = formData.getAll("userId") as string[];
+  const accessTokens = formData.getAll("accessToken") as string[];
+  const usernames = formData.getAll("username") as string[];
+  const accounts: InstagramAccount[] = userIds
+    .map((userId, i) => {
+      const username = (usernames[i] ?? "").trim();
+      return {
+        userId: userId.trim(),
+        accessToken: (accessTokens[i] ?? "").trim(),
+        ...(username ? { username } : {}),
+      };
+    })
+    .filter((account): account is InstagramAccount => Boolean(account.userId && account.accessToken));
+  await setInstagramAccounts(accounts);
+  revalidatePath("/", "layout");
+}
+
+export async function saveLatestTemplates(formData: FormData) {
+  await assertAuth();
+  const keys = Object.keys(DEFAULT_LATEST_TEMPLATES) as LatestTemplateKey[];
+  const templates = Object.fromEntries(
+    keys.map((key) => [
+      key,
+      {
+        prefix: (formData.get(`${key}.prefix`) as string | null) ?? "",
+        content: (formData.get(`${key}.content`) as string | null) ?? "",
+        suffix: (formData.get(`${key}.suffix`) as string | null) ?? "",
+      },
+    ]),
+  ) as LatestTemplates;
+  await setLatestTemplates(templates);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/latest");
 }

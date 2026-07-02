@@ -7,7 +7,7 @@ import { SITE_CONFIG } from "@/lib/config";
 const SECTIONS = [
   { prefix: "/projects", label: "Projects", root: "/projects" },
   { prefix: "/goods", label: "Goods", root: "/goods" },
-  { prefix: "/blog", label: "Blog", root: "/blog" },
+  { prefix: "/posts", label: "Posts", root: "/posts" },
 ];
 
 export default function HeaderTitle() {
@@ -17,7 +17,9 @@ export default function HeaderTitle() {
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0">
       <Link href="/">
-        <h1 className={`font-display text-2xl sm:text-3xl md:text-4xl font-bold leading-tight ${activeSection ? 'hover-accent' : ''}`}>
+        <h1
+          className={`font-display text-2xl sm:text-3xl md:text-4xl font-bold leading-tight ${activeSection ? "hover-accent" : ""}`}
+        >
           {SITE_CONFIG.title}
         </h1>
       </Link>

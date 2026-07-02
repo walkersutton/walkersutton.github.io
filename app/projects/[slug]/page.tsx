@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { getAllProjects, getProjectBySlug } from "@/lib/projects";
 import ContentPageLayout from "@/app/components/ContentPageLayout";
 
@@ -25,19 +24,6 @@ export default async function ProjectPage(props: {
   if (!project) notFound();
 
   const { metadata, content } = project;
-
-  const eyebrow = (
-    <>
-      <Link
-        href="/projects"
-        style={{ color: "inherit", textDecoration: "none" }}
-      >
-        Projects
-      </Link>
-      {" / "}
-      {metadata.slug}
-    </>
-  );
 
   const header = (
     <>
@@ -113,11 +99,7 @@ export default async function ProjectPage(props: {
   );
 
   return (
-    <ContentPageLayout
-      eyebrow={eyebrow}
-      title={metadata.name}
-      content={content}
-    >
+    <ContentPageLayout title={metadata.name} content={content}>
       {header}
     </ContentPageLayout>
   );

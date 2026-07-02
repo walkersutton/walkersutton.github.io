@@ -82,7 +82,7 @@ export default function Footer() {
       className="w-full max-w-[1080px] mx-auto flex flex-col gap-5 pt-6 pb-8"
       style={{ borderTop: "1px solid var(--color-rule)" }}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <NewsletterForm />
         <div className="flex gap-4">
           {SOCIAL.map(({ label, href, icon }) => (

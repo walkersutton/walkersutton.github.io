@@ -36,7 +36,7 @@ export default function TripsIndex({ trips }: { trips: TripEntry[] }) {
       </div>
 
       {/* Past trips */}
-      <div className="w-full max-w-[1080px] mx-auto px-4 md:px-8 pb-10">
+      <div className="w-full max-w-[820px] mx-auto px-4 md:px-8 pb-10">
         <div
           className="flex items-baseline justify-between pb-3"
           style={{
@@ -69,7 +69,7 @@ export default function TripsIndex({ trips }: { trips: TripEntry[] }) {
                 title={trip.name}
                 href={trip.href}
                 date={trip.date}
-                excerpt={`${trip.region} · ${trip.stats} · ${trip.days}`}
+                excerpt={`${trip.region} · ${trip.stats}`}
               />
             </div>
           ))}

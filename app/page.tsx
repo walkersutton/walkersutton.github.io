@@ -13,6 +13,7 @@ import {
   getLatestOverride,
   getLiveEnabled,
 } from "@/lib/live-state";
+import { getLatestFallback } from "@/lib/latest";
 
 export default async function Home() {
   const visible = getAllProjects()
@@ -24,30 +25,33 @@ export default async function Home() {
   const recentTrips = allTrips.slice(0, 3);
 
   const postsMetadata = getAllPosts().slice(0, 4);
-  const [posts, latestOverride, isLive, activeTripName] = await Promise.all([
-    Promise.all(
-      postsMetadata.map(async (meta) => {
-        const full = await getPostBySlug(meta.slug);
-        const excerpt = generateExcerpt(full?.content ?? "", { length: 140 });
-        return { ...meta, excerpt };
-      }),
-    ),
-    getLatestOverride(),
-    getLiveEnabled(),
-    getActiveTripName(),
-  ]);
+  const [posts, latestOverride, latestFallbackAuto, isLive, activeTripName] =
+    await Promise.all([
+      Promise.all(
+        postsMetadata.map(async (meta) => {
+          const full = await getPostBySlug(meta.slug);
+          const excerpt = generateExcerpt(full?.content ?? "", { length: 140 });
+          return { ...meta, excerpt };
+        }),
+      ),
+      getLatestOverride(),
+      getLatestFallback(),
+      getLiveEnabled(),
+      getActiveTripName(),
+    ]);
 
   const latestPost = posts[0];
+  const latestFallback = latestOverride ?? latestFallbackAuto;
 
   const latestText =
-    latestOverride?.text ?? (latestPost ? latestPost.title : null);
+    latestFallback?.text ?? (latestPost ? latestPost.title : null);
   const latestHref =
-    latestOverride?.href ??
+    latestFallback?.href ??
     (latestPost
-      ? (latestPost.external_url ?? `/blog/${latestPost.slug}`)
+      ? (latestPost.external_url ?? `/posts/${latestPost.slug}`)
       : null);
-  const isExternal = latestOverride
-    ? !latestOverride.href.startsWith("/")
+  const isExternal = latestFallback
+    ? !latestFallback.href.startsWith("/")
     : !!latestPost?.external_url;
 
   return (
@@ -98,7 +102,7 @@ export default async function Home() {
               } as React.CSSProperties
             }
           >
-            I build{" "}
+            I TODO build{" "}
             <span className="underline underline-offset-[4px]">
               small, useful things
             </span>{" "}
@@ -109,14 +113,14 @@ export default async function Home() {
         <SectionBar title="Projects" href="/projects" spacing="lg" />
         <ProjectHomeGrid projects={visible} maxProjects={4} />
 
-        <SectionBar title="Writing" href="/blog" spacing="lg" />
+        <SectionBar title="Posts" href="/posts" spacing="lg" />
         <div className="flex flex-col">
           {posts.map((post) => (
             <PostItem
               key={post.slug}
               date={post.date}
               title={post.title}
-              href={post.external_url ?? `/blog/${post.slug}`}
+              href={post.external_url ?? `/posts/${post.slug}`}
               excerpt={post.excerpt}
               isExternal={!!post.external_url}
             />
