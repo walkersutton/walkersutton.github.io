@@ -199,14 +199,17 @@ export async function getMapShareData(options?: {
       headers: {
         Accept: "application/vnd.google-earth.kml+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
       },
-      next: { revalidate: 300 },
+      // Never serve a cached KML body: this is a live position feed, and the
+      // Next data cache would happily hand back a point that's minutes old.
+      // Request rate is bounded by the CDN cache on /api/mapshare instead.
+      cache: "no-store",
     });
 
     if (!response.ok) {
       return {
         data: { configured: true, fetchedAt: new Date().toISOString(), tracks: [], points: [], totalPoints: 0, error: `Garmin feed responded with ${response.status}` },
         status: 502,
-        cacheControl: "s-maxage=60, stale-while-revalidate=300",
+        cacheControl: "public, s-maxage=15, stale-while-revalidate=0",
       };
     }
 
@@ -220,7 +223,10 @@ export async function getMapShareData(options?: {
         ...parsed,
       },
       status: 200,
-      cacheControl: "s-maxage=300, stale-while-revalidate=1800",
+      // Short edge cache so bursts of viewers collapse into ~1 Garmin request
+      // per minute, without a long stale-while-revalidate window handing out
+      // an out-of-date position for half an hour.
+      cacheControl: "public, s-maxage=60, stale-while-revalidate=60",
     };
   } catch (error) {
     console.error("MapShare feed error:", error);
@@ -228,7 +234,7 @@ export async function getMapShareData(options?: {
     return {
       data: { configured: true, fetchedAt: new Date().toISOString(), tracks: [], points: [], totalPoints: 0, error: "Unable to fetch Garmin MapShare feed" },
       status: 502,
-      cacheControl: "s-maxage=60, stale-while-revalidate=300",
+      cacheControl: "public, s-maxage=15, stale-while-revalidate=0",
     };
   }
 }
