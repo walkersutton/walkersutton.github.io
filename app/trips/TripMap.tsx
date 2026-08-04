@@ -66,15 +66,20 @@ function StatsPanel({
   isOnTrip,
   activeTripName,
   recentPosts,
+  mapSharePageUrl,
 }: {
   data: MapShareResponse;
   stats: ReturnType<typeof computeMapShareStats>;
   isOnTrip: boolean;
   activeTripName: string;
   recentPosts: LiveReportPreview[];
+  mapSharePageUrl?: string;
 }) {
+  // Skip synthetic tracks: their name is a placeholder for a path rebuilt from
+  // loose position reports, not something the feed actually called the trip.
   const tripName =
-    data.tracks[0]?.name ?? (data.sample ? "Sample Track" : activeTripName);
+    data.tracks.find((track) => !track.synthetic)?.name ??
+    (data.sample ? "Sample Track" : activeTripName);
   const updatedText = formatUpdated(data.latestPoint?.time);
   const sectionStyle = {
     borderColor: "var(--color-border-faint)",
@@ -213,6 +218,24 @@ function StatsPanel({
             No updates yet.
           </div>
         )}
+
+        {/* Garmin's own map, as a fallback when this one is misbehaving. */}
+        {mapSharePageUrl && (
+          <a
+            href={mapSharePageUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-[5px] text-[12px] font-medium mt-[14px]"
+            style={{
+              color: "var(--color-text-faint)",
+              textDecoration: "underline",
+              textUnderlineOffset: "2px",
+            }}
+          >
+            View on Garmin MapShare
+            <span aria-hidden>↗</span>
+          </a>
+        )}
       </div>
     </>
   );
@@ -223,10 +246,12 @@ export default function TripMap({
   isOnTrip = false,
   activeTripName = "Active Trip",
   recentPosts = [],
+  mapSharePageUrl,
 }: {
   isOnTrip?: boolean;
   activeTripName?: string;
   recentPosts?: LiveReportPreview[];
+  mapSharePageUrl?: string;
 }) {
   const data = useMapShare();
 
@@ -283,6 +308,7 @@ export default function TripMap({
           isOnTrip={isOnTrip}
           activeTripName={activeTripName}
           recentPosts={recentPosts}
+          mapSharePageUrl={mapSharePageUrl}
         />
       </div>
     </div>

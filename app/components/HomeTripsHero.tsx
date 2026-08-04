@@ -34,7 +34,8 @@ export default function HomeTripsHero({
       ),
     [data],
   );
-  const tripName = data.tracks[0]?.name ?? activeTripName;
+  // Synthetic tracks are named "Route" as a placeholder — not a trip title.
+  const tripName = data.tracks.find((track) => !track.synthetic)?.name ?? activeTripName;
   const updated = formatUpdated(data.latestPoint?.time);
 
   return (

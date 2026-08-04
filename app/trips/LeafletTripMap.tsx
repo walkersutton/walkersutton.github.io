@@ -87,10 +87,32 @@ export default function LeafletTripMap({
   showZoom = true,
 }: LeafletTripMapProps) {
   const pulseIcon = usePulseIcon();
+
+  // Dots come from the loose points plus, when the route was rebuilt from
+  // individual position reports, the route's own coordinates — those are the
+  // day's reports and are exactly what should be visible along the line.
   const waypoints = useMemo(() => {
-    if (!latestPoint) return points;
-    return points.filter((p) => !(p.lat === latestPoint.lat && p.lng === latestPoint.lng && p.time === latestPoint.time));
-  }, [points, latestPoint]);
+    const fromSyntheticRoute = tracks
+      .filter((track) => track.synthetic)
+      .flatMap((track) => track.coordinates);
+    const all = [...points, ...fromSyntheticRoute];
+
+    const withoutLatest = latestPoint
+      ? all.filter(
+          (p) =>
+            !(p.lat === latestPoint.lat && p.lng === latestPoint.lng && p.time === latestPoint.time),
+        )
+      : all;
+
+    // A week of ten-minute reports is ~1000 positions; that many CircleMarkers
+    // with tooltips is a visibly slow map on a phone. The polyline still uses
+    // every point, so thinning only affects the dots drawn on top of it.
+    const MAX_DOTS = 200;
+    if (withoutLatest.length <= MAX_DOTS) return withoutLatest;
+
+    const step = Math.ceil(withoutLatest.length / MAX_DOTS);
+    return withoutLatest.filter((_, index) => index % step === 0);
+  }, [points, tracks, latestPoint]);
 
   return (
     <MapContainer

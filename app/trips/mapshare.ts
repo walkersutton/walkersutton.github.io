@@ -11,6 +11,12 @@ export type MapTrack = {
   id: string;
   name: string;
   coordinates: MapPoint[];
+  /**
+   * True when the path was reconstructed from individual position reports
+   * rather than read from a gx:Track or LineString in the feed. Its name is a
+   * placeholder, so it must not be used to title the trip.
+   */
+  synthetic?: boolean;
 };
 
 export type MapShareResponse = {

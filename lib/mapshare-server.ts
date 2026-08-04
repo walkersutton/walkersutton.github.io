@@ -157,11 +157,34 @@ function parseKml(kml: string) {
   }
   latestPoint ??= points.at(-1) ?? trackPoints.at(-1);
 
+  // Garmin's MapShare feed is one Placemark per position report, each holding a
+  // single <Point> — there is no gx:Track or LineString tying them together, so
+  // nothing above produces a route and the map draws only loose dots. Join the
+  // timestamped positions in chronological order to recover the path. Only when
+  // the feed supplied no real track of its own, so a genuine gx:Track is never
+  // second-guessed.
+  let routePoints: MapPoint[] = points;
+
+  if (tracks.length === 0) {
+    const ordered = points
+      .filter((point) => timeValue(point) > -Infinity)
+      .sort((a, b) => timeValue(a) - timeValue(b));
+
+    if (ordered.length > 1) {
+      tracks.push({ id: "route", name: "Route", coordinates: ordered, synthetic: true });
+      // Everything is now carried by the track, and repeating it under `points`
+      // would send every position twice — a real cost over a mobile connection
+      // once a week's worth of ten-minute reports adds up. Anything without a
+      // usable time is not in the route, so it still has to be listed.
+      routePoints = points.filter((point) => timeValue(point) === -Infinity);
+    }
+  }
+
   return {
     tracks,
     // Newest first, with unparseable times sorting last instead of poisoning
     // the comparator with NaN.
-    points: [...points].sort((a, b) => timeValue(b) - timeValue(a)),
+    points: [...routePoints].sort((a, b) => timeValue(b) - timeValue(a)),
     latestPoint,
     totalPoints: allPoints.length,
   };
@@ -183,17 +206,32 @@ async function loadDummyKml(): Promise<{ data: MapShareResponse; status: number;
   };
 }
 
+// How far back the rolling window reaches when the configured URL sets no d1.
+// Generous enough to cover a multi-day trip's track, short enough to keep the
+// document small.
+const DEFAULT_WINDOW_DAYS = 7;
+
 // Garmin's Feed/Share endpoint takes d1 (window start) and d2 (window end).
-// A d2 baked into the configured URL pins the feed to a window that ended in
-// the past, so the feed keeps returning the same final position no matter how
-// far the tracker has moved since — the map looks frozen while MapShare itself
-// is current. Drop d2 so the window always runs to now; keep d1, which is
-// usually a deliberate trip-start bound.
+//
+// With no d1 the feed returns only the most recent position, which draws a map
+// with a single dot and no route. With a d2 the window ends in the past, so the
+// feed keeps returning the same final position no matter how far the tracker
+// has moved since — a map frozen while MapShare itself is current.
+//
+// So: always drop d2, and supply a rolling d1 when none was configured. An
+// explicit d1 is left alone, since that is usually a deliberate trip-start
+// bound and the whole trip is what the map wants to show.
 function withOpenEndedWindow(feedUrl: string): string {
   try {
     const url = new URL(feedUrl);
-    if (!url.searchParams.has("d2")) return feedUrl;
     url.searchParams.delete("d2");
+
+    if (!url.searchParams.has("d1")) {
+      const since = new Date(Date.now() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+      // Garmin wants seconds precision, no milliseconds.
+      url.searchParams.set("d1", `${since.toISOString().slice(0, 19)}Z`);
+    }
+
     return url.toString();
   } catch {
     // Not parseable as a URL — hand it back untouched and let fetch complain.
@@ -217,6 +255,29 @@ export async function resolveFeedSource(): Promise<FeedSource> {
   if (!raw) return { kind: "missing" };
   if (isEncrypted(raw)) return { kind: "encrypted" };
   return { kind: "env", url: raw };
+}
+
+/**
+ * The public MapShare page for the configured feed: share.garmin.com/Feed/Share/
+ * <name> is the KML, share.garmin.com/<name> is the page a visitor can open.
+ * Returned so /trips/live can offer Garmin's own map as a fallback. Undefined
+ * when the feed isn't a Garmin URL or isn't configured.
+ */
+export async function getMapSharePageUrl(): Promise<string | undefined> {
+  const source = await resolveFeedSource();
+  if (source.kind === "missing" || source.kind === "encrypted") return undefined;
+
+  try {
+    const url = new URL(source.url);
+    if (!url.hostname.endsWith("garmin.com")) return undefined;
+
+    const name = url.pathname.replace(/^\/Feed\/Share\//i, "").split("/").filter(Boolean)[0];
+    if (!name) return undefined;
+
+    return `https://${url.hostname}/${name}`;
+  } catch {
+    return undefined;
+  }
 }
 
 export type MapShareDiagnostics = {
