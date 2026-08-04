@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { refreshSocialLatest } from "@/lib/social-latest";
+import { verifyCronSecret } from "@/lib/admin-auth";
 
 export async function GET(request: Request) {
-  const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+  if (!verifyCronSecret(request.headers.get("authorization"))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const posts = await refreshSocialLatest();

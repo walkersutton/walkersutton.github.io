@@ -100,7 +100,7 @@ export default function HomeTripsHero({
             className="inline-flex min-h-9 items-center justify-center bg-[var(--color-text)] px-4 text-[12px] font-semibold no-underline transition-opacity hover:opacity-85"
             style={{ color: "var(--color-bg)" }}
           >
-            Open live map&nbsp; →
+            Live tracker&nbsp; →
           </Link>
         </div>
       </div>

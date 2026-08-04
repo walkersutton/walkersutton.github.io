@@ -3,7 +3,7 @@
 import { cookies, draftMode } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { signToken, verifyToken } from "@/lib/admin-auth";
+import { SESSION_MAX_AGE_MS, signToken, verifyPassword, verifyToken } from "@/lib/admin-auth";
 import {
   setLiveEnabled,
   setBannerEnabled,
@@ -34,16 +34,17 @@ async function assertAuth() {
 }
 
 export async function login(_prev: { error?: string }, formData: FormData) {
-  const password = formData.get("password") as string;
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
+  const password = (formData.get("password") as string | null) ?? "";
+  if (!verifyPassword(password)) {
     return { error: "Wrong password." };
   }
   const store = await cookies();
   store.set("admin_session", signToken(), {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/admin",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: SESSION_MAX_AGE_MS / 1000,
   });
   redirect("/admin");
 }

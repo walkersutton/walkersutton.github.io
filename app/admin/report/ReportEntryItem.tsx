@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { SITE_CONFIG } from "@/lib/config";
 import type { LiveReportEntry } from "@/lib/live-state";
 import { updateReportEntry, deleteReportEntry } from "../actions";
 import { INPUT, BTN } from "../styles";
@@ -27,6 +28,7 @@ function fmtEntryDate(iso: string): string {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: SITE_CONFIG.timeZone,
   }).format(d);
 }
 

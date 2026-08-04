@@ -14,6 +14,20 @@ export const metadata: Metadata = {
       "application/rss+xml": "/rss.xml",
     },
   },
+  // og:image itself comes from app/opengraph-image.tsx; these tags are what make
+  // crawlers use it instead of scraping the first image on the page.
+  openGraph: {
+    type: "website",
+    siteName: SITE_CONFIG.title,
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_CONFIG.title,
+    description: SITE_CONFIG.description,
+  },
 };
 
 

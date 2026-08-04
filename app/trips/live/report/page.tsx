@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageContainer from "@/app/components/PageContainer";
 import Footer from "@/app/components/Footer";
+import { SITE_CONFIG } from "@/lib/config";
 import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
 import type { LiveReportEntry } from "@/lib/live-state";
 
@@ -10,9 +11,11 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Live trip report | Walker Sutton" };
 
+const TZ = SITE_CONFIG.timeZone;
+
 function dayKey(iso: string): string {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-CA");
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-CA", { timeZone: TZ });
 }
 
 function fmtDayHeading(iso: string): string {
@@ -22,13 +25,18 @@ function fmtDayHeading(iso: string): string {
     weekday: "long",
     month: "long",
     day: "numeric",
+    timeZone: TZ,
   }).format(d);
 }
 
 function fmtTime(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(d);
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: TZ,
+  }).format(d);
 }
 
 // Group newest-first entries into day buckets, preserving order.

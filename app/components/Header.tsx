@@ -337,37 +337,31 @@ export default function Header({
               {desktopNav}
               {mobileMenuButton}
             </div>
+            {/* The open menu lives *inside* the header wrapper so it shares the
+                wrapper's stacking context and glass background. Kept outside, it
+                is a non-positioned in-flow sibling and the full-bleed maps —
+                which are pulled up behind the header and carry
+                `position: relative; z-index: 0` — paint over its lower items. */}
+            {menuOpen && (
+              <nav className="sm:hidden flex flex-col">
+                {navLinks.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="py-4 text-[17px] font-medium no-underline border-b"
+                    style={{
+                      color: "var(--color-text-variant)",
+                      borderColor: "var(--color-border-faint)",
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </nav>
+            )}
           </div>
         </div>
       </div>
-      {menuOpen && (
-        <nav
-          className={`sm:hidden flex flex-col ${isGlass ? "px-4 md:px-8" : ""}`}
-          style={
-            isGlass
-              ? {
-                  background: "rgba(var(--header-glass-rgb), 0.69)",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
-                }
-              : undefined
-          }
-        >
-          {navLinks.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="py-4 text-[17px] font-medium no-underline border-b"
-              style={{
-                color: "var(--color-text-variant)",
-                borderColor: "var(--color-border-faint)",
-              }}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-      )}
     </>
   );
 }
