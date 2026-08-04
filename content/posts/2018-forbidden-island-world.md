@@ -1,10 +1,10 @@
 ---
-date: "2018-06-28 12:00:00 -0500"
+date: "2018-06-28"
 slug: "forbidden-island-world"
 title: "Forbidden Island World"
 ---
 
-<img className="img-tall" src="https://i.imgur.com/EM2NExP.gif" alt="forbidden_island_world_game_gif" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-forbidden-island-world/forbidden-island-world-game-gif-YkYwDe3Qth9ciJ2Az3uRblvXaTCprr.gif" alt="forbidden_island_world_game_gif" tall />
 
 **Java**
 

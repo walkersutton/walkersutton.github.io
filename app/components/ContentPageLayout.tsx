@@ -1,4 +1,6 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
+import Gallery from "./Gallery";
+import ProseImage from "./ProseImage";
 
 interface ContentPageLayoutProps {
   title: string;
@@ -27,17 +29,18 @@ export default function ContentPageLayout({
             } as React.CSSProperties
           }
         >
-          {title}.
+          {title}
         </h1>
 
         {children}
 
         {hasContent && (
           <div
-            className="prose max-w-none flex flex-col
-              prose-h2:text-[13px] prose-h2:font-semibold prose-h2:uppercase prose-h2:tracking-[0.1em] prose-h2:mt-8 prose-h2:mb-3
+            className="prose max-w-none
+              prose-h2:text-[13px] prose-h2:font-semibold prose-h2:uppercase prose-h2:tracking-[0.1em] prose-h2:mt-10 prose-h2:mb-3
               prose-h3:text-[23px] prose-h3:font-semibold prose-h3:tracking-[-0.02em] prose-h3:leading-[1.2] prose-h3:mt-10 prose-h3:mb-3
-              prose-p:leading-[1.65] prose-p:mb-5
+              prose-p:leading-[1.65] prose-p:mt-0 prose-p:mb-5
+              prose-ul:mt-2 prose-ol:mt-2
               prose-li:my-1
               prose-strong:font-semibold
               prose-a:no-underline prose-a:underline prose-a:underline-offset-[2px]
@@ -45,15 +48,13 @@ export default function ContentPageLayout({
               prose-blockquote:border-l-2 prose-blockquote:pl-4 prose-blockquote:not-italic"
             style={
               {
-                marginTop: 40,
-                borderTop: "1px solid var(--color-border-faint)",
-                paddingTop: 36,
-                color: "var(--color-text-variant)",
+                marginTop: 28,
+                color: "var(--color-text)",
                 fontSize: 16,
                 lineHeight: 1.65,
-                "--tw-prose-body": "var(--color-text-variant)",
+                "--tw-prose-body": "var(--color-text)",
                 "--tw-prose-headings": "var(--color-text)",
-                "--tw-prose-links": "var(--color-text)",
+                "--tw-prose-links": "var(--color-text-variant)",
                 "--tw-prose-bold": "var(--color-text)",
                 "--tw-prose-quotes": "var(--color-text-variant)",
                 "--tw-prose-quote-borders": "var(--color-border)",
@@ -68,7 +69,10 @@ export default function ContentPageLayout({
               } as React.CSSProperties
             }
           >
-            <MDXRemote source={content} />
+            <MDXRemote
+              source={content}
+              components={{ Img: ProseImage, img: ProseImage, Gallery }}
+            />
           </div>
         )}
       </div>

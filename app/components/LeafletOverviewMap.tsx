@@ -52,6 +52,11 @@ function MapController({ coords, fitMinZoom = 0 }: { coords: LatLngExpression[];
         }
         minZoom.current = map.getZoom();
       });
+    } else if (coords.length === 1) {
+      // A lone live position with no track yet — center on it directly
+      // since fitBounds has nothing to fit.
+      map.setView(coords[0], Math.max(fitMinZoom, 12));
+      minZoom.current = map.getZoom();
     }
   }, [coords, map, fitMinZoom]);
 
@@ -93,13 +98,20 @@ export default function LeafletOverviewMap({
   const pulseIcon = usePulseIcon();
   const [mapHoveredTrip, setMapHoveredTrip] = useState<string | null>(null);
   const livePositions = (liveTrack ?? []) as LatLngExpression[];
-  const hasLive = livePositions.length > 0;
+  // A live position alone (no breadcrumb track yet) still counts as live.
+  const hasLive = livePositions.length > 0 || !!liveLatest;
   const allCoords = useMemo(
     () => trips.flatMap((t) => t.coords as LatLngExpression[]),
     [trips],
   );
   // When a live trip is present, focus the map on it; otherwise frame all trips.
-  const focusCoords = hasLive ? livePositions : allCoords;
+  const focusCoords = hasLive
+    ? livePositions.length > 0
+      ? livePositions
+      : liveLatest
+        ? [[liveLatest.lat, liveLatest.lng] as LatLngExpression]
+        : []
+    : allCoords;
 
   return (
     <MapContainer
@@ -182,7 +194,7 @@ export default function LeafletOverviewMap({
         );
       })}
 
-      {hasLive && (
+      {hasLive && livePositions.length > 0 && (
         <>
           <Polyline
             positions={livePositions}

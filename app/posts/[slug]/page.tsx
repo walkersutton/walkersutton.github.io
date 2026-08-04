@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import ContentPageLayout from "@/app/components/ContentPageLayout";
@@ -23,6 +24,9 @@ export default async function PostPage(props: {
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
+  const { isEnabled: showDrafts } = await draftMode();
+  if (post.metadata.draft && !showDrafts) notFound();
+
   const formattedDate = new Date(
     post.metadata.date + "T12:00:00",
   ).toLocaleDateString("en-US", {
@@ -33,8 +37,8 @@ export default async function PostPage(props: {
 
   const meta = (
     <div
-      className="text-[13px]"
-      style={{ color: "var(--color-text-faint)" }}
+      className="text-[12px] font-semibold uppercase tracking-[0.11em]"
+      style={{ color: "var(--color-text-variant)" }}
     >
       <time dateTime={post.metadata.date}>{formattedDate}</time>
     </div>

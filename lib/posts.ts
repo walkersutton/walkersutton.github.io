@@ -8,6 +8,7 @@ export interface PostMetadata {
   title: string;
   date: string;
   slug: string;
+  draft?: boolean;
   external_url?: string;
   categories?: string[];
 }
@@ -17,7 +18,7 @@ export interface Post {
   content: string;
 }
 
-export function getAllPosts(): PostMetadata[] {
+export function getAllPosts(options: { includeDrafts?: boolean } = {}): PostMetadata[] {
   // Ensure the directory exists
   if (!fs.existsSync(postsDirectory)) {
     return [];
@@ -25,12 +26,12 @@ export function getAllPosts(): PostMetadata[] {
 
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsData = fileNames
-    .filter((fileName) => (fileName.endsWith(".md") || fileName.endsWith(".mdx")) && !fileName.startsWith("draft"))
+    .filter((fileName) => fileName.endsWith(".md") || fileName.endsWith(".mdx"))
     .map((fileName) => {
       const fullPath = path.join(postsDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, "utf8");
       const { data } = matter(fileContents);
-      
+
       const slug = String(data.slug || fileName.replace(/\.mdx?$/, ""));
 
       return {
@@ -38,9 +39,11 @@ export function getAllPosts(): PostMetadata[] {
         title: String(data.title || ""),
         date: String(data.date || ""),
         slug,
+        draft: data.draft === true || fileName.startsWith("draft"),
         external_url: data.external_url ? String(data.external_url) : undefined,
       } as PostMetadata;
-    });
+    })
+    .filter((post) => options.includeDrafts || !post.draft);
 
   // Sort posts by date
   return allPostsData.sort((a, b) => (new Date(a.date) < new Date(b.date) ? 1 : -1));
@@ -83,7 +86,10 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   const { data, content } = matter(fileContents);
 
   return {
-    metadata: data as PostMetadata,
+    metadata: {
+      ...(data as PostMetadata),
+      draft: data.draft === true || path.basename(actualPath).startsWith("draft"),
+    },
     content,
   };
 }

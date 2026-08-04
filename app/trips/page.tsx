@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
 import TripsIndex from "./TripsIndex";
 import { buildTripEntries } from "@/lib/trips";
 
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
   description: "Backpacking trip location updates from Walker Sutton's Garmin inReach.",
 };
 
-export default function TripsPage() {
-  return <TripsIndex trips={buildTripEntries()} />;
+export default async function TripsPage() {
+  const { isEnabled: includeDrafts } = await draftMode();
+  return <TripsIndex trips={buildTripEntries({ includeDrafts })} />;
 }

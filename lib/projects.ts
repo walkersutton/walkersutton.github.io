@@ -7,14 +7,29 @@ const projectsDirectory = path.join(process.cwd(), "content/projects");
 export interface ProjectMetadata {
   name: string;
   slug: string;
-  year?: string;
-  date?: string; // ISO date (YYYY-MM-DD) — used for sitemap lastModified
-  hide?: boolean;
+  date?: string; // ISO date (YYYY-MM-DD) — sorting, displayed year, sitemap lastModified
+  draft?: boolean;
+  hide?: boolean; // excluded from sitemap and "latest", but still listed
   href?: string;
   githubUrl?: string;
+  tiktokUrl?: string;
   image?: string;
   still?: string;
   blurb: string;
+  hasContent?: boolean; // true when the mdx body has prose (set by getAllProjects)
+}
+
+// Projects without a write-up don't get sent to /projects/<slug> — kick to the
+// best external link instead (GitHub first).
+export function getProjectLink(p: ProjectMetadata): { href: string; external: boolean } {
+  if (!p.hasContent) {
+    const external =
+      p.githubUrl ??
+      (p.href && p.href !== "#" ? p.href : undefined) ??
+      p.tiktokUrl;
+    if (external) return { href: external, external: true };
+  }
+  return { href: `/projects/${p.slug}`, external: false };
 }
 
 export interface Project {
@@ -22,7 +37,7 @@ export interface Project {
   content: string;
 }
 
-export function getAllProjects(): ProjectMetadata[] {
+export function getAllProjects(options: { includeDrafts?: boolean } = {}): ProjectMetadata[] {
   if (!fs.existsSync(projectsDirectory)) return [];
 
   const fileNames = fs.readdirSync(projectsDirectory);
@@ -30,10 +45,11 @@ export function getAllProjects(): ProjectMetadata[] {
     .filter((f) => f.endsWith(".mdx") || f.endsWith(".md"))
     .map((fileName) => {
       const fullPath = path.join(projectsDirectory, fileName);
-      const { data } = matter(fs.readFileSync(fullPath, "utf8"));
+      const { data, content } = matter(fs.readFileSync(fullPath, "utf8"));
       const slug = String(data.slug || fileName.replace(/\.mdx?$/, ""));
-      return { ...data, slug } as ProjectMetadata;
-    });
+      return { ...data, slug, hasContent: content.trim().length > 0 } as ProjectMetadata;
+    })
+    .filter((p) => options.includeDrafts || !p.draft);
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {

@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getAllTripSlugs, getTripBySlug, buildTripEntries, fmtMiles, fmtFeet } from "@/lib/trips";
+import {
+  getAllTripSlugs,
+  getTripBySlug,
+  buildTripEntries,
+  fmtMiles,
+  fmtFeet,
+} from "@/lib/trips";
 import type { TripEntry, DayStat } from "@/lib/trips";
+import Gallery from "@/app/components/Gallery";
+import ProseImage from "@/app/components/ProseImage";
 import LeafletReportMapLoader from "./LeafletReportMapLoader";
 import TripReportLayout from "./TripReportLayout";
 
@@ -22,7 +31,10 @@ export async function generateMetadata(props: {
 
 function fmtNavMeta(entry: TripEntry): string {
   const d = new Date(entry.date + "T12:00:00");
-  const month = d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  const month = d.toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
   const dist = entry.stats.split(" · ")[0];
   return `${month} · ${dist}`;
 }
@@ -34,10 +46,23 @@ export default async function TripReportPage(props: {
   const trip = getTripBySlug(slug);
   if (!trip) notFound();
 
-  const { frontmatter: fm, tracks, waypoints, start, stats, dayStats, dates, content } = trip;
+  const { isEnabled: showDrafts } = await draftMode();
+  if (trip.frontmatter.draft && !showDrafts) notFound();
+
+  const {
+    frontmatter: fm,
+    tracks,
+    waypoints,
+    start,
+    stats,
+    dayStats,
+    stravaByLabel,
+    dates,
+    content,
+  } = trip;
 
   // Prev/next from sorted trip list (desc by date — prev = older, next = newer)
-  const allEntries = buildTripEntries();
+  const allEntries = buildTripEntries({ includeDrafts: showDrafts });
   const idx = allEntries.findIndex((e) => e.href === `/trips/${slug}`);
   const prevEntry = idx < allEntries.length - 1 ? allEntries[idx + 1] : null;
   const nextEntry = idx > 0 ? allEntries[idx - 1] : null;
@@ -46,7 +71,11 @@ export default async function TripReportPage(props: {
     <TripReportLayout
       map={
         start ? (
-          <LeafletReportMapLoader tracks={tracks} waypoints={waypoints} start={start} />
+          <LeafletReportMapLoader
+            tracks={tracks}
+            waypoints={waypoints}
+            start={start}
+          />
         ) : null
       }
     >
@@ -56,7 +85,7 @@ export default async function TripReportPage(props: {
         <div
           className="text-[11px] font-semibold uppercase tracking-[0.13em]"
           style={{
-            color: "var(--color-text-faint)",
+            color: "var(--color-text-variant)",
             marginTop: 32,
             marginBottom: 10,
           }}
@@ -74,16 +103,16 @@ export default async function TripReportPage(props: {
             } as React.CSSProperties
           }
         >
-          {fm.title}.
+          {fm.title}
         </h1>
         <div
           className="flex items-center flex-wrap gap-4 text-[14px]"
-          style={{ color: "var(--color-text-faint)" }}
+          style={{ color: "var(--color-text-variant)" }}
         >
           <span>{dates}</span>
           <span
             className="w-[3px] h-[3px] rounded-full shrink-0"
-            style={{ background: "var(--color-text-faint)" }}
+            style={{ background: "var(--color-text-variant)" }}
           />
           <span>{fm.region}</span>
         </div>
@@ -93,11 +122,12 @@ export default async function TripReportPage(props: {
           {[
             { lbl: "Distance", val: stats.distance },
             { lbl: "Gained", val: stats.gained },
+            { lbl: "Lost", val: stats.lost },
           ].map((s) => (
             <div key={s.lbl}>
               <div
                 className="text-[10px] font-semibold uppercase tracking-[0.13em] mb-[5px]"
-                style={{ color: "var(--color-text-faint)" }}
+                style={{ color: "var(--color-text-variant)" }}
               >
                 {s.lbl}
               </div>
@@ -114,17 +144,16 @@ export default async function TripReportPage(props: {
         {/* Prose */}
         <div
           className="flex flex-col"
-          style={{
-            marginTop: 40,
-            borderTop: "1px solid var(--color-border-faint)",
-            paddingTop: 36,
-          }}
+          style={{ marginTop: 52 }}
         >
           <MDXRemote
             source={content}
             components={{
-              DayMarker: makeDayMarker(dayStats),
+              DayMarker: makeDayMarker(dayStats, stravaByLabel),
               p: Paragraph,
+              Img: ProseImage,
+              img: ProseImage,
+              Gallery,
             }}
           />
 
@@ -134,7 +163,7 @@ export default async function TripReportPage(props: {
               <h3
                 className="text-[13px] font-semibold uppercase tracking-[0.08em]"
                 style={{
-                  color: "var(--color-text-faint)",
+                  color: "var(--color-text-variant)",
                   marginTop: 36,
                   marginBottom: 12,
                 }}
@@ -155,13 +184,15 @@ export default async function TripReportPage(props: {
                   </div>
                   <div
                     className="text-[13px]"
-                    style={{ color: "var(--color-text-faint)" }}
+                    style={{ color: "var(--color-text-variant)" }}
                   >
                     {wpt.desc}
                   </div>
                 </div>
               ))}
-              <div style={{ borderTop: "1px solid var(--color-border-faint)" }} />
+              <div
+                style={{ borderTop: "1px solid var(--color-border-faint)" }}
+              />
             </>
           )}
         </div>
@@ -169,11 +200,7 @@ export default async function TripReportPage(props: {
         {/* Trip navigation */}
         <nav
           className="flex justify-between items-baseline gap-6"
-          style={{
-            marginTop: 56,
-            paddingTop: 20,
-            borderTop: "1px solid var(--color-rule)",
-          }}
+          style={{ marginTop: 72 }}
         >
           {prevEntry ? (
             <Link
@@ -183,7 +210,7 @@ export default async function TripReportPage(props: {
             >
               <div
                 className="text-[11px] font-semibold uppercase tracking-[0.11em]"
-                style={{ color: "var(--color-text-faint)" }}
+                style={{ color: "var(--color-text-variant)" }}
               >
                 ← Previous
               </div>
@@ -195,7 +222,7 @@ export default async function TripReportPage(props: {
               </div>
               <div
                 className="text-[12px]"
-                style={{ color: "var(--color-text-faint)" }}
+                style={{ color: "var(--color-text-variant)" }}
               >
                 {fmtNavMeta(prevEntry)}
               </div>
@@ -211,7 +238,7 @@ export default async function TripReportPage(props: {
             >
               <div
                 className="text-[11px] font-semibold uppercase tracking-[0.11em]"
-                style={{ color: "var(--color-text-faint)" }}
+                style={{ color: "var(--color-text-variant)" }}
               >
                 Next →
               </div>
@@ -223,7 +250,7 @@ export default async function TripReportPage(props: {
               </div>
               <div
                 className="text-[12px]"
-                style={{ color: "var(--color-text-faint)" }}
+                style={{ color: "var(--color-text-variant)" }}
               >
                 {fmtNavMeta(nextEntry)}
               </div>
@@ -251,40 +278,80 @@ function parseDayNumbers(label: string): number[] {
   return [];
 }
 
-function makeDayMarker(dayStats: DayStat[]) {
-  return function DayMarker({ label, subtitle }: { label: string; subtitle: string }) {
+function makeDayMarker(
+  dayStats: DayStat[],
+  stravaByLabel: Record<string, string> = {},
+) {
+  return function DayMarker({
+    label,
+    subtitle,
+    strava,
+  }: {
+    label: string;
+    subtitle: string;
+    strava?: string;
+  }) {
+    // Falls back to the frontmatter `strava` list, paired by marker order.
+    const stravaUrl = strava ?? stravaByLabel[label];
     const days = parseDayNumbers(label);
-    let distKm = 0, gainM = 0, lossM = 0;
+    let distKm = 0,
+      gainM = 0,
+      lossM = 0;
     for (const d of days) {
       const s = dayStats[d - 1];
-      if (s) { distKm += s.distKm; gainM += s.gainM; lossM += s.lossM; }
+      if (s) {
+        distKm += s.distKm;
+        gainM += s.gainM;
+        lossM += s.lossM;
+      }
     }
     const hasStats = dayStats.length > 0 && (distKm > 0 || gainM > 0);
 
     return (
-      <div style={{ marginTop: 36, marginBottom: 10 }}>
+      <div className="mt-6 first:mt-0" style={{ marginBottom: 12 }}>
         <div
-          className="inline-flex items-baseline gap-[10px] text-[11px] font-semibold uppercase tracking-[0.11em]"
-          style={{ color: "var(--color-text-faint)" }}
+          className="text-[11px] font-semibold uppercase tracking-[0.13em]"
+          style={{ color: "var(--color-text-variant)", marginBottom: 4 }}
         >
           {label}
-          <span
-            className="text-[13px] font-semibold tracking-[-0.01em] normal-case"
-            style={{ color: "var(--color-text)" }}
-          >
-            {subtitle}
-          </span>
         </div>
-        {hasStats && (
+        <h3
+          className="text-[17px] font-semibold tracking-[-0.015em] leading-[1.25]"
+          style={{ color: "var(--color-text)", margin: 0 }}
+        >
+          {subtitle}
+        </h3>
+        {(hasStats || stravaUrl) && (
           <div
-            className="flex items-center gap-[6px] text-[12px] mt-[5px]"
-            style={{ color: "var(--color-text-faint)" }}
+            className="flex items-baseline flex-wrap gap-x-4 gap-y-[2px] text-[13px] mt-[6px]"
+            style={{ color: "var(--color-text-variant)" }}
           >
-            <span>{fmtMiles(distKm)}</span>
-            <span style={{ opacity: 0.4 }}>·</span>
-            <span>↑ {fmtFeet(gainM)}</span>
-            <span style={{ opacity: 0.4 }}>·</span>
-            <span>↓ {fmtFeet(lossM)}</span>
+            {hasStats && (
+              <>
+                <span>{fmtMiles(distKm)}</span>
+                <span>↑ {fmtFeet(gainM)}</span>
+                <span>↓ {fmtFeet(lossM)}</span>
+              </>
+            )}
+            {stravaUrl && (
+              <a
+                href={stravaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "var(--color-text-variant)",
+                  textDecoration: "none",
+                }}
+              >
+                <span className="underline-border">
+                  <span className="b b-bottom" />
+                  <span className="b b-right" />
+                  <span className="b b-top" />
+                  <span className="b b-left" />
+                  Strava ↗
+                </span>
+              </a>
+            )}
           </div>
         )}
       </div>
@@ -296,7 +363,7 @@ function Paragraph({ children }: { children: React.ReactNode }) {
   return (
     <p
       className="text-[16px] leading-[1.7] mb-[22px]"
-      style={{ color: "var(--color-text-variant)", maxWidth: "64ch" }}
+      style={{ color: "var(--color-text)", maxWidth: "64ch" }}
     >
       {children}
     </p>

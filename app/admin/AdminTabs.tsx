@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/admin", label: "General" },
   { href: "/admin/latest", label: "Latest" },
+  { href: "/admin/report", label: "Report" },
 ];
 
 const TAB_LINK = (active: boolean): React.CSSProperties => ({

@@ -4,7 +4,7 @@ slug: "swing"
 title: "Swing | Stock Trading Application"
 ---
 
-<img className="img-tall" src="https://i.imgur.com/HhDYe3l.png" alt="swing_stock_trading_web_app_screenshot" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-stock-trading-web-app-screenshot-lbGEyxMtPt3m2j0ErlYAfwkiyOFFGd.webp" alt="swing_stock_trading_web_app_screenshot" tall />
 
 **SQL, PHP, jQuery, HTML, CSS, Javascript**
 
@@ -18,12 +18,12 @@ In trying to complete this project, I believe that we were a bit too ambitious i
 
 #### Landing Page
 
-<img className="img-tall" src="https://i.imgur.com/5FtX0a2.png" alt="swing_interface_screenshot" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-interface-screenshot-6sOKEQVH1gFnS5HfY1ox9AhBJx9RGl.webp" alt="swing_interface_screenshot" tall />
 
 #### Early UI Designs
 
-<img className="img-wide" src="https://i.imgur.com/BqHdC1W.png" alt="swing_mockup_interface_screenshot_1" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-1-MgOiAiRDZE2c1Z3b3LiHHr5BAOGw5C.webp" alt="swing_mockup_interface_screenshot_1" />
 
-<img className="img-wide" src="https://i.imgur.com/nDUeVkx.png" alt="swing_mockup_interface_screenshot_2" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-2-i0civjq2HOc8Piij1FibhgPtbCyjpX.webp" alt="swing_mockup_interface_screenshot_2" />
 
-<img className="img-wide" src="https://i.imgur.com/RRHLmEB.png" alt="swing_mockup_interface_screenshot_3" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-3-lzlMPBwNCkRiC5gW1GFATWe61KveKy.webp" alt="swing_mockup_interface_screenshot_3" />

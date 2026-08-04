@@ -1,3 +1,4 @@
+import { draftMode } from "next/headers";
 import { getAllPosts, getPostBySlug, generateExcerpt } from "@/lib/posts";
 import PostItem from "../components/PostItem";
 import PageContainer from "../components/PageContainer";
@@ -9,7 +10,8 @@ export const metadata = {
 };
 
 export default async function PostsPage() {
-  const postsMetadata = getAllPosts();
+  const { isEnabled: includeDrafts } = await draftMode();
+  const postsMetadata = getAllPosts({ includeDrafts });
   const posts = await Promise.all(
     postsMetadata.map(async (meta) => {
       const fullPost = await getPostBySlug(meta.slug);

@@ -3,8 +3,6 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
-import PostItem from "../components/PostItem";
-import type { TripEntry } from "@/lib/trips";
 import { useMapShare } from "./useMapShare";
 import {
   computeMapShareStats,
@@ -36,6 +34,9 @@ function fmtCoord(p?: MapPoint) {
   if (!p) return "—";
   return `${Math.abs(p.lat).toFixed(5)}°${p.lat >= 0 ? "N" : "S"},  ${Math.abs(p.lng).toFixed(5)}°${p.lng >= 0 ? "E" : "W"}`;
 }
+
+export type LiveReportPreview = { id: string; dateLabel: string; excerpt: string };
+
 // ── Sub-components ────────────────────────────────────────────────
 function Lbl({ children }: { children: React.ReactNode }) {
   return (
@@ -62,21 +63,19 @@ function Val({ children }: { children: React.ReactNode }) {
 function StatsPanel({
   data,
   stats,
-  trips,
   isOnTrip,
   activeTripName,
+  recentPosts,
 }: {
   data: MapShareResponse;
   stats: ReturnType<typeof computeMapShareStats>;
-  trips: TripEntry[];
   isOnTrip: boolean;
   activeTripName: string;
+  recentPosts: LiveReportPreview[];
 }) {
   const tripName =
     data.tracks[0]?.name ?? (data.sample ? "Sample Track" : activeTripName);
   const updatedText = formatUpdated(data.latestPoint?.time);
-  const latestDesc =
-    data.latestPoint?.description ?? data.points[0]?.description;
   const sectionStyle = {
     borderColor: "var(--color-border-faint)",
     padding: "16px 18px",
@@ -156,10 +155,52 @@ function StatsPanel({
         </div>
       </div>
 
-      {/* Latest check-in */}
-      {(latestDesc || data.totalPoints === 0) && (
-        <div style={sectionStyle}>
-          <Lbl>Latest check-in</Lbl>
+      {/* Latest from the trip report */}
+      <div style={{ ...sectionStyle, borderBottom: "none" }}>
+        <Lbl>Latest</Lbl>
+        {recentPosts.length > 0 ? (
+          <>
+            <div className="mt-[9px] flex flex-col gap-[10px]">
+              {recentPosts.map((post, index) => (
+                <Link
+                  key={post.id}
+                  href="/trips/live/report"
+                  className="block no-underline"
+                  style={{
+                    padding: "8px 11px",
+                    background: index === 0 ? "var(--color-bg-sink)" : "transparent",
+                    borderLeft: `2.5px solid ${index === 0 ? "var(--color-text)" : "var(--color-border-faint)"}`,
+                  }}
+                >
+                  <div
+                    className="text-[10.5px] font-semibold uppercase tracking-[0.1em] mb-[3px]"
+                    style={{ color: "var(--color-text-faint)" }}
+                  >
+                    {post.dateLabel}
+                  </div>
+                  <div
+                    className="text-[13px] leading-[1.55]"
+                    style={{ color: "var(--color-text-variant)" }}
+                  >
+                    {post.excerpt}
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <Link
+              href="/trips/live/report"
+              className="inline-flex items-center gap-[5px] text-[12px] font-medium mt-[11px]"
+              style={{
+                color: "var(--color-text-faint)",
+                textDecoration: "underline",
+                textUnderlineOffset: "2px",
+              }}
+            >
+              Read the full report
+              <span aria-hidden>→</span>
+            </Link>
+          </>
+        ) : (
           <div
             className="text-[13px] leading-[1.55] mt-[7px]"
             style={{
@@ -169,36 +210,9 @@ function StatsPanel({
               color: "var(--color-text-variant)",
             }}
           >
-            {latestDesc ?? "No messages yet."}
+            No updates yet.
           </div>
-        </div>
-      )}
-
-      {/* Past trips */}
-      <div style={{ ...sectionStyle, borderBottom: "none" }}>
-        <Lbl>Trip Reports</Lbl>
-        <div className="mt-[10px] flex flex-col">
-          {trips.slice(0, 2).map((trip) => (
-            <PostItem
-              key={trip.name}
-              title={trip.name}
-              href={trip.href}
-              date={trip.date}
-              excerpt={trip.stats}
-            />
-          ))}
-        </div>
-        <Link
-          href="/trips"
-          className="text-[12px] font-medium mt-[10px] inline-block"
-          style={{
-            color: "var(--color-text-faint)",
-            textDecoration: "underline",
-            textUnderlineOffset: "2px",
-          }}
-        >
-          View all trips
-        </Link>
+        )}
       </div>
     </>
   );
@@ -206,13 +220,13 @@ function StatsPanel({
 
 // ── Main component ────────────────────────────────────────────────
 export default function TripMap({
-  trips,
   isOnTrip = false,
   activeTripName = "Active Trip",
+  recentPosts = [],
 }: {
-  trips: TripEntry[];
   isOnTrip?: boolean;
   activeTripName?: string;
+  recentPosts?: LiveReportPreview[];
 }) {
   const data = useMapShare();
 
@@ -266,9 +280,9 @@ export default function TripMap({
         <StatsPanel
           data={data}
           stats={stats}
-          trips={trips}
           isOnTrip={isOnTrip}
           activeTripName={activeTripName}
+          recentPosts={recentPosts}
         />
       </div>
     </div>

@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { getAllProjects, getProjectBySlug } from "@/lib/projects";
 import ContentPageLayout from "@/app/components/ContentPageLayout";
+import ProjectImage from "@/app/components/ProjectImage";
+
+function MetaLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: "var(--color-text)", textDecoration: "none" }}
+    >
+      <span className="underline-border">
+        <span className="b b-bottom" />
+        <span className="b b-right" />
+        <span className="b b-top" />
+        <span className="b b-left" />
+        {label} ↗
+      </span>
+    </a>
+  );
+}
 
 export async function generateStaticParams() {
   return getAllProjects().map((p) => ({ slug: p.slug }));
@@ -22,6 +43,9 @@ export default async function ProjectPage(props: {
   const { slug } = await props.params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
+
+  const { isEnabled: showDrafts } = await draftMode();
+  if (project.metadata.draft && !showDrafts) notFound();
 
   const { metadata, content } = project;
 
@@ -47,51 +71,31 @@ export default async function ProjectPage(props: {
           color: "var(--color-text-faint)",
         }}
       >
-        {metadata.year && (
+        {metadata.date && (
           <span>
             <span className="font-semibold uppercase tracking-[0.1em] text-[10px] mr-2">
               Year
             </span>
-            {metadata.year}
+            {metadata.date.slice(0, 4)}
           </span>
         )}
         {metadata.href && metadata.href !== "#" && (
-          <a
-            href={metadata.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "var(--color-text)",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            Live site ↗
-          </a>
+          <MetaLink href={metadata.href} label="Live site" />
         )}
         {metadata.githubUrl && (
-          <a
-            href={metadata.githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "var(--color-text)",
-              textDecoration: "underline",
-              textUnderlineOffset: 2,
-            }}
-          >
-            GitHub ↗
-          </a>
+          <MetaLink href={metadata.githubUrl} label="GitHub" />
+        )}
+        {metadata.tiktokUrl && (
+          <MetaLink href={metadata.tiktokUrl} label="TikTok" />
         )}
       </div>
 
       {metadata.image && (
         <div style={{ marginTop: 36 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={metadata.still ?? metadata.image}
+          <ProjectImage
+            src={metadata.image}
+            still={metadata.still}
             alt={metadata.name}
-            style={{ width: "100%", height: "auto", display: "block" }}
           />
         </div>
       )}

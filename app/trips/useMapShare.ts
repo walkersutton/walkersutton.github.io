@@ -8,8 +8,15 @@ const POLL_MS = 5 * 60 * 1000;
 // Shared client-side poller for the live Garmin MapShare feed. Used by the
 // full-screen live map (TripMap) and the home page trips hero so the fetch +
 // interval logic lives in exactly one place.
-export function useMapShare(): MapShareResponse {
-  const [data, setData] = useState<MapShareResponse>(EMPTY_MAPSHARE_RESPONSE);
+//
+// Pass `initialData` (fetched server-side, e.g. via getMapShareData()) to
+// seed the first render with real data instead of EMPTY_MAPSHARE_RESPONSE —
+// otherwise the UI flashes an empty/fallback state before the client's own
+// fetch resolves.
+export function useMapShare(initialData?: MapShareResponse): MapShareResponse {
+  const [data, setData] = useState<MapShareResponse>(
+    initialData ?? EMPTY_MAPSHARE_RESPONSE,
+  );
 
   useEffect(() => {
     let ignore = false;

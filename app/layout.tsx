@@ -24,6 +24,8 @@ import Header from "./components/Header";
 import HideOnTrips from "./components/HideOnTrips";
 import Banner from "./components/Banner";
 import { getBannerEnabled, getBannerText, getBannerLink, getLiveEnabled } from "@/lib/live-state";
+import { getAllTripSlugs } from "@/lib/trips";
+import { draftMode } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -32,12 +34,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [bannerEnabled, bannerText, bannerLink, isLive] = await Promise.all([
-    getBannerEnabled(),
-    getBannerText(),
-    getBannerLink(),
-    getLiveEnabled(),
-  ]);
+  const [bannerEnabled, bannerText, bannerLink, isLive, { isEnabled: includeDrafts }] =
+    await Promise.all([
+      getBannerEnabled(),
+      getBannerText(),
+      getBannerLink(),
+      getLiveEnabled(),
+      draftMode(),
+    ]);
+  const hasTrips = getAllTripSlugs({ includeDrafts }).length > 0;
 
   return (
     <html
@@ -58,7 +63,7 @@ export default async function RootLayout({
               <Banner text={bannerText} href={bannerLink} />
             </div>
           )}
-          <Header homeGlass={isLive} />
+          <Header homeGlass={isLive} showTrips={hasTrips} />
           <div className="flex-grow">{children}</div>
           <HideOnTrips>
             <Footer />

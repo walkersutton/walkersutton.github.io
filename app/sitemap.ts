@@ -2,18 +2,17 @@ import { MetadataRoute } from "next";
 import { getAllPosts } from "@/lib/posts";
 import { getAllProjects } from "@/lib/projects";
 import { buildTripEntries } from "@/lib/trips";
-import { getGoodsProducts } from "@/lib/products";
 import { SITE_CONFIG } from "@/lib/config";
 
 export const dynamic = "force-static";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = getAllPosts();
-  const projects = getAllProjects().filter((p) => !p.hide);
+  // Projects without a write-up link out (GitHub etc.) — no page to index.
+  const projects = getAllProjects().filter((p) => !p.hide && p.hasContent);
   const trips = buildTripEntries();
-  const goods = await getGoodsProducts();
 
-  const staticPaths = ["", "/posts", "/projects", "/trips", "/work", "/goods"];
+  const staticPaths = ["", "/posts", "/projects", "/trips"];
 
   const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${SITE_CONFIG.siteUrl}${path}`,
@@ -43,18 +42,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  const goodsRoutes: MetadataRoute.Sitemap = goods.map((product) => ({
-    url: `${SITE_CONFIG.siteUrl}/goods/${product.slug}`,
-    lastModified: product.createdAt ? new Date(product.createdAt) : new Date(),
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
-
-  return [
-    ...staticRoutes,
-    ...postRoutes,
-    ...projectRoutes,
-    ...tripRoutes,
-    ...goodsRoutes,
-  ];
+  return [...staticRoutes, ...postRoutes, ...projectRoutes, ...tripRoutes];
 }

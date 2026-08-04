@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { signToken, verifyToken } from "@/lib/admin-auth";
@@ -15,6 +15,8 @@ import {
   setBlueskyHandle,
   setInstagramAccounts,
   setLatestTemplates,
+  getLiveReportEntries,
+  setLiveReportEntries,
 } from "@/lib/live-state";
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
@@ -55,6 +57,14 @@ export async function logout() {
 export async function setLive(enabled: boolean) {
   await assertAuth();
   await setLiveEnabled(enabled);
+  revalidatePath("/", "layout");
+}
+
+export async function setDraftPreview(enabled: boolean) {
+  await assertAuth();
+  const draft = await draftMode();
+  if (enabled) draft.enable();
+  else draft.disable();
   revalidatePath("/", "layout");
 }
 
@@ -137,6 +147,61 @@ export async function saveInstagramAccounts(formData: FormData) {
     .filter((account): account is InstagramAccount => Boolean(account.userId && account.accessToken));
   await setInstagramAccounts(accounts);
   revalidatePath("/", "layout");
+}
+
+export async function publishReportEntry(formData: FormData) {
+  await assertAuth();
+  const text = (formData.get("text") as string | null)?.trim() ?? "";
+  const images = (formData.getAll("imageUrl") as string[])
+    .map((url) => url.trim())
+    .filter(Boolean);
+  if (!text && images.length === 0) return;
+
+  const entries = await getLiveReportEntries();
+  entries.unshift({
+    id: crypto.randomUUID(),
+    date: new Date().toISOString(),
+    text,
+    images,
+  });
+  await setLiveReportEntries(entries);
+  revalidatePath("/trips/live/report");
+  revalidatePath("/admin/report");
+}
+
+export async function updateReportEntry(formData: FormData) {
+  await assertAuth();
+  const id = (formData.get("id") as string | null) ?? "";
+  const text = (formData.get("text") as string | null)?.trim() ?? "";
+  const images = (formData.getAll("imageUrl") as string[])
+    .map((url) => url.trim())
+    .filter(Boolean);
+  if (!id || (!text && images.length === 0)) return;
+
+  const entries = await getLiveReportEntries();
+  const entry = entries.find((e) => e.id === id);
+  if (!entry) return;
+
+  entry.text = text;
+  entry.images = images;
+  await setLiveReportEntries(entries);
+  revalidatePath("/trips/live/report");
+  revalidatePath("/admin/report");
+}
+
+export async function deleteReportEntry(id: string) {
+  await assertAuth();
+  const entries = await getLiveReportEntries();
+  await setLiveReportEntries(entries.filter((e) => e.id !== id));
+  revalidatePath("/trips/live/report");
+  revalidatePath("/admin/report");
+}
+
+export async function clearReportEntries() {
+  await assertAuth();
+  await setLiveReportEntries([]);
+  revalidatePath("/trips/live/report");
+  revalidatePath("/admin/report");
 }
 
 export async function saveLatestTemplates(formData: FormData) {

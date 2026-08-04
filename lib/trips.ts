@@ -8,6 +8,10 @@ const tripsDirectory = path.join(process.cwd(), "content/trips");
 export interface TripFrontmatter {
   title: string;
   region: string;
+  draft?: boolean;
+  // Activity URLs in DayMarker order — first entry belongs to the first
+  // <DayMarker> in the body, and so on. Use null to skip a marker.
+  strava?: (string | null)[];
 }
 
 export interface TripStats {
@@ -30,6 +34,7 @@ export interface Trip {
   start: { lat: number; lng: number; name: string } | null;
   stats: TripStats;
   dayStats: DayStat[];  // one entry per unique date, ordered day 1…N
+  stravaByLabel: Record<string, string>; // DayMarker label → activity URL
   days: number;
   date: string;      // ISO "YYYY-MM-DD" for sorting
   dateStart: string; // display "May 15"
@@ -153,10 +158,16 @@ function parseGeoJSON(slug: string): ParsedGeoJSON | null {
       let gainM = 0;
       let lossM = 0;
 
-      for (let i = 1; i < coords.length; i++) {
-        const [lng1, lat1] = coords[i - 1];
-        const [lng2, lat2] = coords[i];
-        distKm += haversineKm(lat1, lng1, lat2, lng2);
+      // Stored geometry is thinned to one point per minute, which chords off
+      // switchbacks — prefer dist_m, measured on the full-resolution track.
+      if (properties.dist_m != null) {
+        distKm = Number(properties.dist_m) / 1000;
+      } else {
+        for (let i = 1; i < coords.length; i++) {
+          const [lng1, lat1] = coords[i - 1];
+          const [lng2, lat2] = coords[i];
+          distKm += haversineKm(lat1, lng1, lat2, lng2);
+        }
       }
 
       if (properties.vert_up_m != null && properties.vert_down_m != null) {
@@ -253,13 +264,38 @@ function parseGeoJSON(slug: string): ParsedGeoJSON | null {
   };
 }
 
+// ── DayMarker ↔ Strava pairing ────────────────────────────────────
+
+// Pairs the frontmatter `strava` list with the <DayMarker> tags in body
+// order, so the MDX doesn't have to repeat a URL on every marker.
+function pairStravaLinks(
+  content: string,
+  urls: (string | null)[] | undefined,
+): Record<string, string> {
+  if (!urls?.length) return {};
+  const labels = [...content.matchAll(/<DayMarker\b[^>]*?\blabel="([^"]*)"/g)].map(
+    (m) => m[1],
+  );
+  const pairs: Record<string, string> = {};
+  labels.forEach((label, i) => {
+    const url = urls[i];
+    if (url) pairs[label] = url;
+  });
+  return pairs;
+}
+
 // ── Public API ────────────────────────────────────────────────────
 
-export function getAllTripSlugs(): string[] {
+export function getAllTripSlugs(options: { includeDrafts?: boolean } = {}): string[] {
   if (!fs.existsSync(tripsDirectory)) return [];
   return fs
     .readdirSync(tripsDirectory)
     .filter((f) => f.endsWith(".mdx") || f.endsWith(".md"))
+    .filter((f) => {
+      if (options.includeDrafts) return true;
+      const { data } = matter(fs.readFileSync(path.join(tripsDirectory, f), "utf8"));
+      return data.draft !== true;
+    })
     .map((f) => f.replace(/\.mdx?$/, ""));
 }
 
@@ -286,6 +322,7 @@ export function getTripBySlug(slug: string): Trip | null {
     start: geo?.start ?? null,
     stats: geo?.stats ?? { distance: "", gained: "", lost: "" },
     dayStats: geo?.dayStats ?? [],
+    stravaByLabel: pairStravaLinks(content, frontmatter.strava),
     days: geo?.days ?? 0,
     date: geo?.date ?? "",
     dateStart: geo?.dateStart ?? "",
@@ -295,8 +332,8 @@ export function getTripBySlug(slug: string): Trip | null {
   };
 }
 
-export function buildTripEntries(): TripEntry[] {
-  return getAllTripSlugs()
+export function buildTripEntries(options: { includeDrafts?: boolean } = {}): TripEntry[] {
+  return getAllTripSlugs(options)
     .map((slug): TripEntry | null => {
       const trip = getTripBySlug(slug);
       if (!trip || !trip.frontmatter.title) return null;

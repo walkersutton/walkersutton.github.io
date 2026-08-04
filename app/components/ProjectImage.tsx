@@ -14,6 +14,7 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
   const [isGifLoaded, setIsGifLoaded] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const isGif = src.toLowerCase().endsWith(".gif");
+  const isVideo = src.toLowerCase().endsWith(".mp4");
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -53,6 +54,38 @@ export default function ProjectImage({ src, still, alt }: ProjectImageProps) {
   }, [src, isGif, isTouchDevice, still]);
 
 
+
+  if (isVideo) {
+    return (
+      <div
+        className="relative w-full h-auto overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {still && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={still}
+            alt={alt}
+            className={`w-full h-auto block transition-opacity duration-200 ${
+              isHovered || isTouchDevice ? "opacity-0" : "opacity-100"
+            }`}
+          />
+        )}
+        <video
+          src={src}
+          poster={still}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className={`absolute inset-0 w-full h-full object-cover block transition-opacity duration-200 ${
+            !still || isHovered || isTouchDevice ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      </div>
+    );
+  }
 
   if (!isGif || isTouchDevice) {
     return (

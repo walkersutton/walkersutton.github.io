@@ -1,3 +1,4 @@
+import { draftMode } from "next/headers";
 import {
   getLiveEnabled,
   getBannerEnabled,
@@ -8,6 +9,7 @@ import {
 import {
   setLive,
   setBanner,
+  setDraftPreview,
   saveBannerText,
   saveBannerLink,
   saveActiveTripName,
@@ -22,9 +24,23 @@ export default async function AdminGeneralPage() {
   const bannerText = await getBannerText();
   const bannerLink = await getBannerLink();
   const activeTripName = await getActiveTripName();
+  const { isEnabled: showDrafts } = await draftMode();
 
   return (
     <div>
+      <div style={ROW}>
+        <span style={LABEL}>Show drafts</span>
+        <form action={setDraftPreview.bind(null, true)}>
+          <button type="submit" style={BTN(showDrafts)}>On</button>
+        </form>
+        <form action={setDraftPreview.bind(null, false)}>
+          <button type="submit" style={BTN(!showDrafts)}>Off</button>
+        </form>
+        <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
+          (this browser only)
+        </span>
+      </div>
+
       <div style={ROW}>
         <span style={LABEL}>On trip</span>
         <form action={setLive.bind(null, true)}>

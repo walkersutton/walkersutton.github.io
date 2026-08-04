@@ -4,16 +4,22 @@ import type { InstagramAccount, SocialPost } from "./social-latest";
 import { DEFAULT_LATEST_TEMPLATES, type LatestTemplates } from "./latest-templates";
 
 const STATE_FILE = path.join(process.cwd(), "data", "live-state.json");
+const STATE_BLOB_PATH = "live-state.json";
 const DEFAULT_BANNER_TEXT = "Walker is currently on trail";
 const DEFAULT_BLUESKY_HANDLE = "walkersutton.com";
 
-type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates> };
+export type LiveReportEntry = { id: string; date: string; text: string; images: string[] };
 
-function edgeConfigId(): string | null {
-  const url = process.env.EDGE_CONFIG;
-  if (!url) return null;
-  const match = url.match(/\/([^/?]+)\?/);
-  return match?.[1] ?? null;
+type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[] };
+
+// State lives in the private "live-state" Blob store (the deployment
+// filesystem is ephemeral, so admin writes must go somewhere durable). The
+// committed data/live-state.json is the seed when the store is empty, and the
+// store of record when no token is configured (plain local dev). The state
+// includes Instagram access tokens, so it must never move to a public store.
+function blobOptions(): { access: "private"; token: string } | null {
+  const token = process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN;
+  return token ? { access: "private", token } : null;
 }
 
 function readLocalState(): LiveState {
@@ -24,171 +30,100 @@ function readLocalState(): LiveState {
   }
 }
 
-function writeLocalState(patch: Partial<LiveState>) {
-  const current = readLocalState();
-  fs.writeFileSync(STATE_FILE, JSON.stringify({ ...current, ...patch }, null, 2));
+// Returns null when the store has no state yet; throws on auth/network errors.
+async function readBlobState(opts: { access: "private"; token: string }): Promise<LiveState | null> {
+  const { get } = await import("@vercel/blob");
+  const result = await get(STATE_BLOB_PATH, opts);
+  if (!result?.stream) return null;
+  return (await new Response(result.stream).json()) as LiveState;
+}
+
+async function readState(): Promise<LiveState> {
+  const opts = blobOptions();
+  if (opts) {
+    try {
+      const state = await readBlobState(opts);
+      if (state) return state;
+    } catch {
+      // Render from the committed seed rather than erroring the page.
+    }
+  }
+  return readLocalState();
+}
+
+async function writeState(patch: Partial<LiveState>): Promise<void> {
+  const opts = blobOptions();
+  if (opts) {
+    // Unlike readState, blob errors propagate here: silently writing to the
+    // local file on Vercel would drop the update on the next cold start.
+    const current = (await readBlobState(opts)) ?? readLocalState();
+    const { put } = await import("@vercel/blob");
+    await put(STATE_BLOB_PATH, JSON.stringify({ ...current, ...patch }, null, 2), {
+      ...opts,
+      allowOverwrite: true,
+      contentType: "application/json",
+    });
+    return;
+  }
+  fs.writeFileSync(STATE_FILE, JSON.stringify({ ...readLocalState(), ...patch }, null, 2));
 }
 
 export async function getLiveEnabled(): Promise<boolean> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<boolean>("live");
-      if (typeof value === "boolean") return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().enabled ?? !!process.env.GARMIN_MAPSHARE_KML_URL;
-}
-
-export async function getBannerEnabled(): Promise<boolean> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<boolean>("bannerEnabled");
-      if (typeof value === "boolean") return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().bannerEnabled ?? false;
-}
-
-export async function setBannerEnabled(enabled: boolean): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "bannerEnabled", value: enabled }])) return;
-  writeLocalState({ bannerEnabled: enabled });
-}
-
-export async function getBannerText(): Promise<string> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<string>("liveBannerText");
-      if (typeof value === "string" && value) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().bannerText ?? DEFAULT_BANNER_TEXT;
-}
-
-export async function getBannerLink(): Promise<string> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<string>("bannerLink");
-      if (typeof value === "string" && value) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().bannerLink ?? "/";
-}
-
-export async function setBannerLink(link: string): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "bannerLink", value: link }])) return;
-  writeLocalState({ bannerLink: link });
-}
-
-async function edgePatch(items: { operation: string; key: string; value: unknown }[]) {
-  const id = edgeConfigId();
-  if (!id || !process.env.VERCEL_API_TOKEN) return false;
-  const teamParam = process.env.VERCEL_TEAM_ID ? `?teamId=${process.env.VERCEL_TEAM_ID}` : "";
-  const res = await fetch(`https://api.vercel.com/v1/edge-config/${id}/items${teamParam}`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${process.env.VERCEL_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ items }),
-  });
-  if (!res.ok) throw new Error(`Edge Config write failed: ${res.status}`);
-  return true;
+  return (await readState()).enabled ?? !!process.env.GARMIN_MAPSHARE_KML_URL;
 }
 
 export async function setLiveEnabled(enabled: boolean): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "live", value: enabled }])) return;
-  writeLocalState({ enabled });
+  await writeState({ enabled });
 }
 
-export async function setBannerText(text: string): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "liveBannerText", value: text }])) return;
-  writeLocalState({ bannerText: text });
+export async function getBannerEnabled(): Promise<boolean> {
+  return (await readState()).bannerEnabled ?? false;
+}
+
+export async function setBannerEnabled(bannerEnabled: boolean): Promise<void> {
+  await writeState({ bannerEnabled });
+}
+
+export async function getBannerText(): Promise<string> {
+  return (await readState()).bannerText ?? DEFAULT_BANNER_TEXT;
+}
+
+export async function setBannerText(bannerText: string): Promise<void> {
+  await writeState({ bannerText });
+}
+
+export async function getBannerLink(): Promise<string> {
+  return (await readState()).bannerLink ?? "/";
+}
+
+export async function setBannerLink(bannerLink: string): Promise<void> {
+  await writeState({ bannerLink });
 }
 
 export async function getLatestOverride(): Promise<{ text: string; href: string } | null> {
-  let text: string | undefined;
-  let href: string | undefined;
-
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      text = (await get<string>("latestText")) ?? undefined;
-      href = (await get<string>("latestHref")) ?? undefined;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  if (!text || !href) {
-    const s = readLocalState();
-    text = text ?? s.latestText;
-    href = href ?? s.latestHref;
-  }
-
-  if (text && href) return { text, href };
+  const { latestText, latestHref } = await readState();
+  if (latestText && latestHref) return { text: latestText, href: latestHref };
   return null;
 }
 
+export async function setLatestOverride(latestText: string, latestHref: string): Promise<void> {
+  await writeState({ latestText, latestHref });
+}
+
 export async function getActiveTripName(): Promise<string> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<string>("activeTripName");
-      if (typeof value === "string" && value) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().activeTripName ?? "Active Trip";
+  return (await readState()).activeTripName ?? "Active Trip";
 }
 
-export async function setActiveTripName(name: string): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "activeTripName", value: name }])) return;
-  writeLocalState({ activeTripName: name });
-}
-
-export async function setLatestOverride(text: string, href: string): Promise<void> {
-  if (await edgePatch([
-    { operation: "upsert", key: "latestText", value: text },
-    { operation: "upsert", key: "latestHref", value: href },
-  ])) return;
-  writeLocalState({ latestText: text, latestHref: href });
+export async function setActiveTripName(activeTripName: string): Promise<void> {
+  await writeState({ activeTripName });
 }
 
 export async function getSocialLatestPosts(): Promise<SocialPost[]> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<SocialPost[]>("socialLatestPosts");
-      if (Array.isArray(value)) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().socialLatestPosts ?? [];
+  return (await readState()).socialLatestPosts ?? [];
 }
 
-export async function setSocialLatestPosts(posts: SocialPost[]): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "socialLatestPosts", value: posts }])) return;
-  writeLocalState({ socialLatestPosts: posts });
+export async function setSocialLatestPosts(socialLatestPosts: SocialPost[]): Promise<void> {
+  await writeState({ socialLatestPosts });
 }
 
 export async function getSocialLatest(): Promise<{ text: string; href: string; publishedAt: string } | null> {
@@ -199,78 +134,43 @@ export async function getSocialLatest(): Promise<{ text: string; href: string; p
   return { text: top.text, href: top.href, publishedAt: top.publishedAt };
 }
 
-export async function getYouTubeChannelId(): Promise<string | null> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<string>("youtubeChannelId");
-      if (typeof value === "string" && value) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().youtubeChannelId ?? null;
+export async function getLiveReportEntries(): Promise<LiveReportEntry[]> {
+  const entries = (await readState()).liveReportEntries ?? [];
+  return [...entries].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 }
 
-export async function setYouTubeChannelId(id: string): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "youtubeChannelId", value: id }])) return;
-  writeLocalState({ youtubeChannelId: id });
+export async function setLiveReportEntries(liveReportEntries: LiveReportEntry[]): Promise<void> {
+  await writeState({ liveReportEntries });
+}
+
+export async function getYouTubeChannelId(): Promise<string | null> {
+  return (await readState()).youtubeChannelId ?? null;
+}
+
+export async function setYouTubeChannelId(youtubeChannelId: string): Promise<void> {
+  await writeState({ youtubeChannelId });
 }
 
 export async function getBlueskyHandle(): Promise<string | null> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<string>("blueskyHandle");
-      if (typeof value === "string" && value) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().blueskyHandle ?? DEFAULT_BLUESKY_HANDLE;
+  return (await readState()).blueskyHandle ?? DEFAULT_BLUESKY_HANDLE;
 }
 
-export async function setBlueskyHandle(handle: string): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "blueskyHandle", value: handle }])) return;
-  writeLocalState({ blueskyHandle: handle });
+export async function setBlueskyHandle(blueskyHandle: string): Promise<void> {
+  await writeState({ blueskyHandle });
 }
 
 export async function getInstagramAccounts(): Promise<InstagramAccount[]> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<InstagramAccount[]>("instagramAccounts");
-      if (Array.isArray(value)) return value;
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return readLocalState().instagramAccounts ?? [];
+  return (await readState()).instagramAccounts ?? [];
 }
 
-export async function setInstagramAccounts(accounts: InstagramAccount[]): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "instagramAccounts", value: accounts }])) return;
-  writeLocalState({ instagramAccounts: accounts });
+export async function setInstagramAccounts(instagramAccounts: InstagramAccount[]): Promise<void> {
+  await writeState({ instagramAccounts });
 }
 
 export async function getLatestTemplates(): Promise<LatestTemplates> {
-  if (process.env.EDGE_CONFIG) {
-    try {
-      const { get } = await import("@vercel/edge-config");
-      const value = await get<Partial<LatestTemplates>>("latestTemplates");
-      if (value && typeof value === "object") return { ...DEFAULT_LATEST_TEMPLATES, ...value };
-    } catch {
-      // fall through to local fallback
-    }
-  }
-
-  return { ...DEFAULT_LATEST_TEMPLATES, ...readLocalState().latestTemplates };
+  return { ...DEFAULT_LATEST_TEMPLATES, ...(await readState()).latestTemplates };
 }
 
-export async function setLatestTemplates(templates: LatestTemplates): Promise<void> {
-  if (await edgePatch([{ operation: "upsert", key: "latestTemplates", value: templates }])) return;
-  writeLocalState({ latestTemplates: templates });
+export async function setLatestTemplates(latestTemplates: LatestTemplates): Promise<void> {
+  await writeState({ latestTemplates });
 }

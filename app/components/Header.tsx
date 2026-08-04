@@ -7,25 +7,28 @@ import { useState, useEffect, useRef } from "react";
 export const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
   { href: "/posts", label: "Posts" },
-  { href: "/trips", label: "Trips" },
-  { href: "/work", label: "My Work" },
-  { href: "/goods", label: "Goods" },
+  { href: "/trips", label: "Trip Reports" },
 ];
 
 interface HeaderProps {
   topOffset?: number;
   sticky?: boolean;
   homeGlass?: boolean;
+  showTrips?: boolean;
 }
 
 export default function Header({
   topOffset = 0,
   sticky = false,
   homeGlass = false,
+  showTrips = true,
 }: HeaderProps = {}) {
   const pathname = usePathname();
+  const navLinks = showTrips
+    ? NAV_LINKS
+    : NAV_LINKS.filter((l) => l.href !== "/trips");
   const active =
-    NAV_LINKS.find((l) => pathname?.startsWith(l.href))?.href ?? "";
+    navLinks.find((l) => pathname?.startsWith(l.href))?.href ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
   const [bonesPhase, setBonesPhase] = useState<
     "spin-cw" | "spin-ccw" | "retract" | null
@@ -231,7 +234,7 @@ export default function Header({
           opacity: 0,
         }}
       />
-      {NAV_LINKS.map(({ href, label }) => {
+      {navLinks.map(({ href, label }) => {
         const isActive = active === href;
         return (
           <Link
@@ -334,17 +337,8 @@ export default function Header({
               {desktopNav}
               {mobileMenuButton}
             </div>
-            {!isGlass && (
-              <div
-                className="h-px"
-                style={{ background: "var(--color-border)" }}
-              />
-            )}
           </div>
         </div>
-        {isGlass && (
-          <div style={{ height: 1, background: "var(--color-border-faint)" }} />
-        )}
       </div>
       {menuOpen && (
         <nav
@@ -359,7 +353,7 @@ export default function Header({
               : undefined
           }
         >
-          {NAV_LINKS.map(({ href, label }) => (
+          {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}

@@ -4,7 +4,7 @@ slug: "personal-website"
 title: "Personal Website"
 ---
 
-<img className="img-wide" src="https://i.imgur.com/Twc7PHV.png" alt="old_website_screenshot_main" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-main-InJQmH1vjrG1RjbaLoZ2ukWSIIR2ib.webp" alt="old_website_screenshot_main" />
 
 **Node, Express, HTML, CSS, JS**
 
@@ -12,25 +12,25 @@ I decided I wanted to have a website on January 18, 2017. I can't remember why, 
 
 #### Spring 2017 Version
 
-<img className="img-wide" src="https://i.imgur.com/2K1mWPD.png" alt="old_website_screenshot_spring_2017" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-spring-2017-D4YZUzj56Bktj3qJDfYgOp3gvr2cBU.webp" alt="old_website_screenshot_spring_2017" />
 
 This is what the first rendition of my site looked like. I chose a fairly simple portfolio template on Squarespace and built it out from there. The image above doesn't include the original graphics because when I captured the screenshot recently, Squarespace had already removed the images that I uploaded two years ago.<br /><br />Over the summer of 2017, I went to my local library and checked out a beginner's guide to website development. After reading through it, I was able to put together my first webpage from scratch! It's not pretty by any means, but from that point forward, I was comfortable experimenting with new designs.
 
 #### Book Tutorial Page
 
-<img className="img-wide" src="https://i.imgur.com/g9UYFsi.png" alt="old_website_screenshot_book_tutorial" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-book-tutorial-Hyx4mwbIjAshHSx5qyvHYc2SPXXLPl.webp" alt="old_website_screenshot_book_tutorial" />
 
 I started off by trying to create a menu. In the book, I learned about lists and tables, and from what I was finding online, I thought I could use these structures to build my own iteration. After lots of experimenting with different design properties and structures, I had a very tentative menu that looked something like this.
 
 #### First Menu
 
-<img className="img-wide" src="https://i.imgur.com/nf0H2YF.png" alt="old_website_screenshot_first_menu" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-first-menu-6414yZSkm4ZnadJc4Wex1HVApe9uGX.webp" alt="old_website_screenshot_first_menu" />
 
 I wasn't super thrilled with how it was looking, so I tried adding some color and reformatting the layout until I ended up with this.
 
 #### Revamped Menu
 
-<img className="img-wide" src="https://i.imgur.com/XI7VxPe.png" alt="old_website_screenshot_revamped_menu" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-revamped-menu-tWfca7QFNbInJ4myHfq1CgYNqGZmYR.webp" alt="old_website_screenshot_revamped_menu" />
 
 I was a little happier with how this menu turned out, but I still wasn't at the point where I could replace my content on Squarespace with this. (I know it looks a little funky, these were only the early prototypes)
 
@@ -38,11 +38,11 @@ I toyed around with this new idea where the site was more of a landing page than
 
 #### Landing Page
 
-<img className="img-wide" src="https://i.imgur.com/HTrAW8u.png" alt="old_website_screenshot_landing_page" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-landing-page-br0bNIs1msaB3tuixx3ew70cAuB4Q8.webp" alt="old_website_screenshot_landing_page" />
 
 #### On-Hover
 
-<img className="img-wide" src="https://i.imgur.com/xzuyitR.png" alt="old_website_screenshot_on_hover" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-on-hover-oF7XgQpFM3u8dDCfUELv8JvxRMucLf.webp" alt="old_website_screenshot_on_hover" />
 
 For my next concept, I decided to build a single scrolling page. From a design standpoint, I thought this was a fairly easy layout to implement since you only need to worry about vertical positioning. It also scales fairly well because the perspective is similar on most devices.
 
@@ -50,13 +50,13 @@ I wanted the background color of this site to be white, but once I started addin
 
 #### Single Scroll Clean
 
-<img className="img-tall" src="https://i.imgur.com/rKnrian.png" alt="old_website_screenshot_single_scroll_clean" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-single-scroll-clean-mkmjqmQuwaoNDTDc68XJpgizIGVB46.webp" alt="old_website_screenshot_single_scroll_clean" tall />
 
 I was happy with how the single scrolling page turned out, but I started running into problems with displaying my content. I wanted to add pictures, and had plans to create a blog type section, but if I stuck with this layout, I feared the height of the page would become too tall, and it'd be unpleasant for users to navigate.<br /><br />I needed to create another menu. My earlier attempts at menus weren't very pretty, so I started from a clean slate. I ended up with a left vertical bar for navigation/social links and then a title on the top edge. I no longer had issues with content formatting -- the L shaped navigation bar on the top left created space for the main content on each page.
 
 #### Left Column
 
-<img className="img-wide" src="https://i.imgur.com/J9oQ6em.png" alt="old_website_screenshot_left_column" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-left-column-6EmlpfUL1BEgyeGDe5OqMqfJOJ1tJ3.webp" alt="old_website_screenshot_left_column" />
 
 The site was starting to feel more put together, but I had one major problem with it -- it didn't scale well on mobile. It would been great if all of my visitors were on desktop, but the majority of my traffic comes from mobile users. I also felt like the home page was a bit redundant since the main content was basically just another navigation menu, so that needed to change.
 
@@ -64,7 +64,7 @@ Bootstrap is a great tool for creating mobile-friendly websites, and I've had ex
 
 #### Current Version
 
-<img className="img-wide" src="https://i.imgur.com/Twc7PHV.png" alt="old_website_screenshot_current_version" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-personal-website/old-website-screenshot-main-InJQmH1vjrG1RjbaLoZ2ukWSIIR2ib.webp" alt="old_website_screenshot_current_version" />
 
 I'm very happy with how this site turned out. I think it scales well on both desktop and mobile, and I was also able to keep a similar design to the previous rendition. To minimize redundancies, I decided to get rid of the left pane altogether and chose to use an image based navigation method. I also moved the social links to the top, and on mobile they're pushed to the bottom to free up screen space.
 

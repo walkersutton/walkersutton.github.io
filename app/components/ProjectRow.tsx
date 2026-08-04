@@ -5,11 +5,14 @@ import CardImageBox from "./CardImageBox";
 export interface ProjectRowData {
   name: string;
   slug?: string;
-  year?: string;
+  date?: string;
   href?: string;
+  githubUrl?: string;
+  tiktokUrl?: string;
   blurb: string;
   image?: string;
   still?: string;
+  hasContent?: boolean;
 }
 
 function ProjectCardItem({ project }: { project: ProjectRowData }) {
@@ -19,9 +22,17 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
     Boolean(project.still) &&
     Boolean(project.image) &&
     project.still !== project.image;
-  const internalHref = project.slug ? `/projects/${project.slug}` : null;
+  // No write-up → skip the /projects/<slug> page and kick straight to the
+  // best external link (GitHub first).
+  const kickHref = !project.hasContent
+    ? (project.githubUrl ??
+        (project.href && project.href !== "#" ? project.href : undefined) ??
+        project.tiktokUrl) ?? null
+    : null;
+  const internalHref = !kickHref && project.slug ? `/projects/${project.slug}` : null;
   const externalHref =
-    !project.slug && project.href && project.href !== "#" ? project.href : null;
+    kickHref ??
+    (!project.slug && project.href && project.href !== "#" ? project.href : null);
 
   const baseLinkStyle = {
     cursor: soon ? "default" : "pointer",
@@ -59,7 +70,7 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
   };
 
   return (
-    <div className="project-card block break-inside-avoid mb-5">
+    <div className="project-card block break-inside-avoid mb-10">
       {stillSrc &&
         link(
           <CardImageBox>
@@ -69,28 +80,48 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
               alt={project.name}
               style={{ width: "100%", height: "auto", display: "block" }}
             />
-            {hasHoverImage && (
-              // Keep the GIF mounted so hover only changes presentation, not src.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={project.image}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                decoding="async"
-                fetchPriority="low"
-                className="project-card-gif"
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  display: "block",
-                  pointerEvents: "none",
-                }}
-              />
-            )}
+            {hasHoverImage &&
+              (project.image!.toLowerCase().endsWith(".mp4") ? (
+                // Keep the video mounted so hover only changes presentation, not src.
+                <video
+                  src={project.image}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="project-card-gif"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                    pointerEvents: "none",
+                  }}
+                />
+              ) : (
+                // Keep the GIF mounted so hover only changes presentation, not src.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={project.image}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
+                  className="project-card-gif"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                    pointerEvents: "none",
+                  }}
+                />
+              ))}
             {soon && (
               <div
                 style={{
@@ -152,12 +183,28 @@ export function ProjectHomeGrid({
   const displayedProjects = maxProjects
     ? projects.slice(0, maxProjects)
     : projects;
+  const leftColumn = displayedProjects.filter((_, i) => i % 2 === 0);
+  const rightColumn = displayedProjects.filter((_, i) => i % 2 === 1);
 
   return (
-    <div className="columns-1 sm:columns-2 gap-x-5">
-      {displayedProjects.map((project) => (
-        <ProjectCardItem key={project.name} project={project} />
-      ))}
-    </div>
+    <>
+      <div className="flex flex-col sm:hidden">
+        {displayedProjects.map((project) => (
+          <ProjectCardItem key={project.name} project={project} />
+        ))}
+      </div>
+      <div className="hidden sm:flex gap-x-10">
+        <div className="flex flex-col flex-1">
+          {leftColumn.map((project) => (
+            <ProjectCardItem key={project.name} project={project} />
+          ))}
+        </div>
+        <div className="flex flex-col flex-1">
+          {rightColumn.map((project) => (
+            <ProjectCardItem key={project.name} project={project} />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import LeafletOverviewMapLoader from "./LeafletOverviewMapLoader";
 import { useMapShare } from "../trips/useMapShare";
-import { formatUpdated } from "../trips/mapshare";
+import { formatUpdated, type MapShareResponse } from "../trips/mapshare";
 import type { TripEntry } from "@/lib/trips";
 
 // Height of the persistent glass header (h-[70px] row + 1px bottom border). The
@@ -18,11 +18,13 @@ const HEADER_H = 71;
 export default function HomeTripsHero({
   trips,
   activeTripName,
+  initialMapShare,
 }: {
   trips: TripEntry[];
   activeTripName: string;
+  initialMapShare?: MapShareResponse;
 }) {
-  const data = useMapShare();
+  const data = useMapShare(initialMapShare);
   const liveTrack = useMemo(
     () =>
       data.tracks.flatMap((track) =>

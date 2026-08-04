@@ -4,11 +4,12 @@ import React from "react";
 import NewsletterForm from "./NewsletterForm";
 import chronicallyOnline from "@/data/chronicallyOnline.json";
 
+// Icons are sized a touch larger on mobile, where they're the only tap target
+// in the footer's social row. Per-icon sizes differ slightly to optically match.
 function InstagramIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      className="w-[22px] h-[22px] sm:w-[18px] sm:h-[18px]"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -25,7 +26,11 @@ function InstagramIcon() {
 
 function XIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+    <svg
+      className="w-[21px] h-[21px] sm:w-[17px] sm:h-[17px]"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
@@ -33,7 +38,11 @@ function XIcon() {
 
 function YouTubeIcon() {
   return (
-    <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+    <svg
+      className="w-[23px] h-[23px] sm:w-[19px] sm:h-[19px]"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
       <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.08 0 12 0 12s0 3.92.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14c.5-1.88.5-5.8.5-5.8s0-3.92-.5-5.8ZM9.6 15.57V8.43L15.82 12 9.6 15.57Z" />
     </svg>
   );
@@ -78,13 +87,10 @@ function SocialLink({
 
 export default function Footer() {
   return (
-    <footer
-      className="w-full max-w-[1080px] mx-auto flex flex-col gap-5 pt-6 pb-8"
-      style={{ borderTop: "1px solid var(--color-rule)" }}
-    >
+    <footer className="w-full max-w-[1080px] mx-auto flex flex-col gap-5 pt-12 pb-8">
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <NewsletterForm />
-        <div className="flex gap-4">
+        <div className="flex gap-5 sm:gap-4">
           {SOCIAL.map(({ label, href, icon }) => (
             <SocialLink key={label} label={label} href={href} icon={icon} />
           ))}

@@ -1,9 +1,63 @@
 {
-  "enabled": false,
+  "enabled": true,
   "bannerEnabled": false,
-  "bannerText": "hike round the 'ol woods",
-  "bannerLink": "/",
-  "latestText": "new insta post",
-  "latestHref": "https://instagram.com/bandiitb0y",
-  "activeTripName": "hike round the 'ol woods"
+  "bannerText": "riding to new york",
+  "bannerLink": "/trips/live",
+  "latestText": "",
+  "latestHref": "",
+  "activeTripName": "Day 1: SF -> Saccc",
+  "socialLatestPosts": [
+    {
+      "platform": "YouTube",
+      "account": "UCRFNhYIsc_YWhpjlwAOExJA",
+      "text": "new youtube vid",
+      "href": "https://www.youtube.com/watch?v=Qjvl8BJIjUw",
+      "publishedAt": "2026-07-15T05:18:10+00:00"
+    },
+    {
+      "platform": "Instagram",
+      "account": "noshwalker",
+      "text": "new insta post",
+      "href": "https://www.instagram.com/p/DZ_EV4qAYAD/",
+      "publishedAt": "2026-06-24T22:29:38+0000"
+    },
+    {
+      "platform": "Bluesky",
+      "account": "walkersutton.com",
+      "text": "new bluesky post",
+      "href": "https://bsky.app/profile/walkersutton.com/post/3mnnyjs6u4z2e",
+      "publishedAt": "2026-06-07T01:15:01.000Z"
+    },
+    {
+      "platform": "Instagram",
+      "account": "bandiitb0y",
+      "text": "new insta post",
+      "href": "https://www.instagram.com/p/DDS5F2wST7u/",
+      "publishedAt": "2024-12-07T23:14:05+0000"
+    }
+  ],
+  "youtubeChannelId": "UCRFNhYIsc_YWhpjlwAOExJA",
+  "instagramAccounts": [
+    {
+      "userId": "17841448468655618",
+      "accessToken": "IGAAMxPyqzsnhBZAFpsOTNfNUVpcjJ1aVdfcm5LQV9xblp0UG10bGxKYWV2LVQ3N25JaTlWcVFQVDhfRWVXWkJBdVBTQlJ3VlEweWJ1SVY0UHpUdGVHalYtdkQxa1V6aTE0MlRPV3hKQ3JiUUw3THJfRkZAzRWlueTNMWWJyamJHQQZDZD",
+      "username": "noshwalker"
+    },
+    {
+      "userId": "17841401369710684",
+      "accessToken": "IGAAMxPyqzsnhBZAFpTTUhsWHplN3FmRmo1Ui1ZAdkZAIc1BWOUFzeEI2dkt0WjNtdXpkVWswSFM0b2NWTzQ4OVVuMzRQTDVKaXpRcjZAhdkdlLUFyamEzdHdoMXBYUVUyT1MtMk5NejNubVE4OGNNTDdlbWdycEFKTnVXZAm44RHcxNAZDZD",
+      "username": "bandiitb0y"
+    }
+  ],
+  "blueskyHandle": "walkersutton.com",
+  "liveReportEntries": [
+    {
+      "id": "e8cf8a84-3de6-4fae-b6e9-f5ed07b75937",
+      "date": "2026-08-04T14:20:52.853Z",
+      "text": "Early morning at coffee shop in San Rafael. Last minute route planning before hitting FedEx to ship my laptop off. First stop: The Pacific",
+      "images": [
+        "https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/IMG_0194-S8MoewyzHnTXtaDDbNp61ctjAWv16n.jpg"
+      ]
+    }
+  ]
 }

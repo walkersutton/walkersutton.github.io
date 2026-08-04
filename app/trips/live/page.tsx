@@ -1,11 +1,40 @@
 import { redirect } from "next/navigation";
-import TripMap from "../TripMap";
-import { buildTripEntries } from "@/lib/trips";
-import { getLiveEnabled, getActiveTripName } from "@/lib/live-state";
+import TripMap, { type LiveReportPreview } from "../TripMap";
+import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
+
+function fmtDateLabel(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d);
+}
+
+// First sentence or two of an entry, trimmed to a readable preview length.
+function toExcerpt(text: string): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (!clean) return "";
+  const sentences = clean.match(/[^.!?]+[.!?]+/g);
+  let out =
+    sentences && sentences.length
+      ? sentences.slice(0, 2).map((s) => s.trim()).join(" ")
+      : clean;
+  if (out.length > 180) out = `${out.slice(0, 179).trimEnd()}…`;
+  return out;
+}
 
 export default async function TripLivePage() {
   if (!process.env.GARMIN_MAPSHARE_KML_URL) redirect("/trips");
-  const [isOnTrip, activeTripName] = await Promise.all([getLiveEnabled(), getActiveTripName()]);
+  const [isOnTrip, activeTripName, entries] = await Promise.all([
+    getLiveEnabled(),
+    getActiveTripName(),
+    getLiveReportEntries(),
+  ]);
   if (!isOnTrip) redirect("/trips");
-  return <TripMap trips={buildTripEntries()} isOnTrip={isOnTrip} activeTripName={activeTripName} />;
+
+  const recentPosts: LiveReportPreview[] = entries.slice(0, 2).map((entry) => ({
+    id: entry.id,
+    dateLabel: fmtDateLabel(entry.date),
+    excerpt: toExcerpt(entry.text),
+  }));
+
+  return <TripMap isOnTrip={isOnTrip} activeTripName={activeTripName} recentPosts={recentPosts} />;
 }

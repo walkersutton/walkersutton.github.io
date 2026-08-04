@@ -1,5 +1,5 @@
 import { getAllPosts } from "./posts";
-import { getAllProjects } from "./projects";
+import { getAllProjects, getProjectLink } from "./projects";
 import { buildTripEntries } from "./trips";
 import { getSocialLatest, getLatestTemplates } from "./live-state";
 import { renderLatestTemplate, type LatestTemplates } from "./latest-templates";
@@ -24,7 +24,7 @@ export function getLatestProjectCandidate(templates: LatestTemplates): LatestFal
   const latest = dated.sort((a, b) => Date.parse(b.date!) - Date.parse(a.date!))[0];
   return {
     text: renderLatestTemplate(templates.project, latest.name),
-    href: `/projects/${latest.slug}`,
+    href: getProjectLink(latest).href,
     publishedAt: latest.date!,
   };
 }

@@ -4,8 +4,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
+    "dev": "dotenvx run --quiet --overload -- next dev --turbopack",
+    "img": "dotenvx run --quiet --overload -- node scripts/img.mts",
+    "migrate:imgur": "dotenvx run --quiet --overload -- node scripts/migrate-imgur.mts",
+    "build": "dotenvx run --quiet --overload -- next build",
     "start": "npx serve out",
     "lint": "eslint app/ lib/",
     "typecheck": "tsc --noEmit",
@@ -13,10 +15,11 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^2.17.2",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
     "@types/leaflet": "^1.9.21",
-    "@vercel/edge-config": "^1.4.3",
+    "@vercel/blob": "^2.5.0",
     "gh-pages": "^6.3.0",
     "gray-matter": "^4.0.3",
     "leaflet": "^1.9.4",
@@ -39,6 +42,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "husky": "^9.1.7",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
