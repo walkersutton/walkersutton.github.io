@@ -91,6 +91,12 @@ function parseGxTrack(placemark: string) {
   return coords;
 }
 
+/** Sortable timestamp for a point; -Infinity when it has no usable time. */
+function timeValue(point: MapPoint): number {
+  const at = point.time ? Date.parse(point.time) : NaN;
+  return Number.isFinite(at) ? at : -Infinity;
+}
+
 function parseKml(kml: string) {
   const placemarks = Array.from(
     kml.matchAll(/<Placemark\b[^>]*>([\s\S]*?)<\/Placemark>/gi),
@@ -132,16 +138,28 @@ function parseKml(kml: string) {
 
   const trackPoints = tracks.flatMap((track) => track.coordinates);
   const allPoints = [...trackPoints, ...points];
-  const latestPoint =
-    [...allPoints]
-      .filter((point) => point.time)
-      .sort((a, b) => Date.parse(b.time ?? "") - Date.parse(a.time ?? ""))[0] ??
-    points.at(-1) ??
-    trackPoints.at(-1);
+
+  // Scan for the max rather than sorting: a single unparseable <when> makes a
+  // Date.parse comparator return NaN, and an inconsistent comparator leaves the
+  // whole array in an arbitrary order — which would strand the "you are here"
+  // marker on some earlier point. Points with no usable time are skipped here
+  // and fall back to document order below.
+  let latestPoint: MapPoint | undefined;
+  let latestAt = -Infinity;
+  for (const point of allPoints) {
+    const at = timeValue(point);
+    if (at > latestAt) {
+      latestAt = at;
+      latestPoint = point;
+    }
+  }
+  latestPoint ??= points.at(-1) ?? trackPoints.at(-1);
 
   return {
     tracks,
-    points: points.sort((a, b) => Date.parse(b.time ?? "") - Date.parse(a.time ?? "")),
+    // Newest first, with unparseable times sorting last instead of poisoning
+    // the comparator with NaN.
+    points: [...points].sort((a, b) => timeValue(b) - timeValue(a)),
     latestPoint,
     totalPoints: allPoints.length,
   };
@@ -161,6 +179,24 @@ async function loadDummyKml(): Promise<{ data: MapShareResponse; status: number;
     status: 200,
     cacheControl: "no-store",
   };
+}
+
+// Garmin's Feed/Share endpoint takes d1 (window start) and d2 (window end).
+// A d2 baked into the configured URL pins the feed to a window that ended in
+// the past, so the feed keeps returning the same final position no matter how
+// far the tracker has moved since — the map looks frozen while MapShare itself
+// is current. Drop d2 so the window always runs to now; keep d1, which is
+// usually a deliberate trip-start bound.
+function withOpenEndedWindow(feedUrl: string): string {
+  try {
+    const url = new URL(feedUrl);
+    if (!url.searchParams.has("d2")) return feedUrl;
+    url.searchParams.delete("d2");
+    return url.toString();
+  } catch {
+    // Not parseable as a URL — hand it back untouched and let fetch complain.
+    return feedUrl;
+  }
 }
 
 // Shared by the /api/mapshare route (client polling) and server components
@@ -195,7 +231,7 @@ export async function getMapShareData(options?: {
   }
 
   try {
-    const response = await fetch(feedUrl, {
+    const response = await fetch(withOpenEndedWindow(feedUrl), {
       headers: {
         Accept: "application/vnd.google-earth.kml+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
       },

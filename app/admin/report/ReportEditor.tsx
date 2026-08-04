@@ -25,7 +25,11 @@ export default function ReportEditor() {
       const fd = new FormData();
       fd.set("text", text);
       for (const url of imageUrls) fd.append("imageUrl", url);
-      await publishReportEntry(fd);
+      const result = await publishReportEntry(fd);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
 
       setText("");
       setFiles([]);

@@ -18,8 +18,23 @@ type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: strin
 // store of record when no token is configured (plain local dev). The state
 // includes Instagram access tokens, so it must never move to a public store.
 function blobOptions(): { access: "private"; token: string } | null {
-  const token = process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN;
-  return token ? { access: "private", token } : null;
+  // A dedicated "live-state" store injects LIVE_STATE_BLOB_READ_WRITE_TOKEN;
+  // Vercel's default Blob integration injects BLOB_READ_WRITE_TOKEN. Accept
+  // either, preferring the dedicated store. Reading only the prefixed name
+  // meant a deployment carrying just the default token found no store at all,
+  // so every admin write fell through to the fs.writeFileSync below and died
+  // against Vercel's read-only filesystem. Blobs are written with
+  // access: "private" either way, so sharing the default store still keeps the
+  // Instagram tokens in this state out of public reach.
+  const token =
+    process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN ?? process.env.BLOB_READ_WRITE_TOKEN;
+  // The committed .env carries dotenvx ciphertext, and Next loads .env at
+  // runtime. If the value still looks encrypted then the deployment never
+  // supplied a real token and dotenvx didn't run — passing it to the Blob SDK
+  // only yields "Invalid token: unable to extract store ID", which says
+  // nothing about the actual misconfiguration. Treat it as absent.
+  if (!token || token.startsWith("encrypted:")) return null;
+  return { access: "private", token };
 }
 
 function readLocalState(): LiveState {
@@ -64,6 +79,17 @@ async function writeState(patch: Partial<LiveState>): Promise<void> {
       contentType: "application/json",
     });
     return;
+  }
+  // No store configured. Locally the committed JSON is the store of record, so
+  // writing it is correct. On Vercel the filesystem is read-only: the write
+  // throws EROFS, which surfaces to the admin as a generic server-action error
+  // that looks like the save simply did nothing. Say what's actually wrong.
+  if (process.env.VERCEL) {
+    throw new Error(
+      "No Blob store is configured, so admin changes cannot be saved. Set " +
+        "BLOB_READ_WRITE_TOKEN (or LIVE_STATE_BLOB_READ_WRITE_TOKEN) in the " +
+        "deployment environment.",
+    );
   }
   fs.writeFileSync(STATE_FILE, JSON.stringify({ ...readLocalState(), ...patch }, null, 2));
 }

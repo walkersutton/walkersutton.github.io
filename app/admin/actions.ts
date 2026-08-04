@@ -149,13 +149,18 @@ export async function saveInstagramAccounts(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
-export async function publishReportEntry(formData: FormData) {
+// Returns the failure rather than throwing it: Next replaces a thrown server
+// action error with an opaque digest in production, which reaches the editor as
+// a generic message and reads as "the button did nothing".
+export async function publishReportEntry(
+  formData: FormData,
+): Promise<{ ok: true } | { ok: false; error: string }> {
   await assertAuth();
   const text = (formData.get("text") as string | null)?.trim() ?? "";
   const images = (formData.getAll("imageUrl") as string[])
     .map((url) => url.trim())
     .filter(Boolean);
-  if (!text && images.length === 0) return;
+  if (!text && images.length === 0) return { ok: false, error: "Nothing to publish." };
 
   const entries = await getLiveReportEntries();
   entries.unshift({
@@ -164,9 +169,17 @@ export async function publishReportEntry(formData: FormData) {
     text,
     images,
   });
-  await setLiveReportEntries(entries);
+
+  try {
+    await setLiveReportEntries(entries);
+  } catch (error) {
+    console.error("publishReportEntry: failed to persist entry", error);
+    return { ok: false, error: (error as Error).message || "Could not save the update." };
+  }
+
   revalidatePath("/trips/live/report");
   revalidatePath("/admin/report");
+  return { ok: true };
 }
 
 export async function updateReportEntry(formData: FormData) {
