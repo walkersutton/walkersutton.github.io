@@ -1,8 +1,29 @@
 import crypto from "crypto";
 
-// Sessions carry their issue time so they expire server-side. Bump this and the
-// cookie maxAge in app/admin/actions.ts together.
+// Sessions carry their issue time so they expire server-side.
 export const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
+
+// The token is signed on whichever serverless instance handled the login and
+// verified on whichever one handles the next request. Those are different
+// machines, so a token can legitimately look very slightly future-dated. Reject
+// only clearly bogus issue times, not sub-second skew.
+const CLOCK_SKEW_TOLERANCE_MS = 1000 * 60 * 5; // 5 minutes
+
+// Single source of truth for how the session cookie is written, so that login
+// and logout can't drift apart on `path` (a mismatch leaves logout unable to
+// clear the cookie it set).
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  // "lax", not "strict": with strict the browser withholds the cookie on any
+  // cross-site top-level navigation, so arriving at /admin from a bookmark
+  // manager, a chat link, or an OAuth-style redirect shows the login form even
+  // though the session is perfectly valid. Lax still withholds the cookie on
+  // cross-site POSTs, which is the CSRF case that matters here.
+  sameSite: "lax",
+  path: "/admin",
+  maxAge: SESSION_MAX_AGE_MS / 1000,
+} as const;
 
 function secret(): string {
   const value = process.env.ADMIN_SECRET ?? process.env.ADMIN_PASSWORD;
@@ -39,7 +60,13 @@ export function verifyToken(token: string): boolean {
   if (!issuedAt || !mac) return false;
 
   const age = Date.now() - Number(issuedAt);
-  if (!Number.isFinite(age) || age < 0 || age > SESSION_MAX_AGE_MS) return false;
+  if (
+    !Number.isFinite(age) ||
+    age < -CLOCK_SKEW_TOLERANCE_MS ||
+    age > SESSION_MAX_AGE_MS
+  ) {
+    return false;
+  }
 
   try {
     return safeEqual(mac, sign(issuedAt));

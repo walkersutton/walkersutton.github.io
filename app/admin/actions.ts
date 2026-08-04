@@ -3,7 +3,7 @@
 import { cookies, draftMode } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { SESSION_MAX_AGE_MS, signToken, verifyPassword, verifyToken } from "@/lib/admin-auth";
+import { SESSION_COOKIE_OPTIONS, signToken, verifyPassword, verifyToken } from "@/lib/admin-auth";
 import {
   setLiveEnabled,
   setBannerEnabled,
@@ -39,19 +39,18 @@ export async function login(_prev: { error?: string }, formData: FormData) {
     return { error: "Wrong password." };
   }
   const store = await cookies();
-  store.set("admin_session", signToken(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/admin",
-    maxAge: SESSION_MAX_AGE_MS / 1000,
-  });
+  store.set("admin_session", signToken(), SESSION_COOKIE_OPTIONS);
   redirect("/admin");
 }
 
 export async function logout() {
   const store = await cookies();
-  store.delete("admin_session");
+  // Delete with the same path the cookie was written at: the browser keys
+  // cookies by (name, domain, path), so a bare delete() emits an expiry for
+  // path "/" and leaves the real /admin cookie untouched. Only one expiry can
+  // be queued per cookie name here — the response cookie store is keyed by
+  // name — so it has to be the one that matches SESSION_COOKIE_OPTIONS.
+  store.delete({ name: "admin_session", path: SESSION_COOKIE_OPTIONS.path });
   redirect("/admin");
 }
 
