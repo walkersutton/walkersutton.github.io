@@ -11,7 +11,7 @@ const DEFAULT_BLUESKY_HANDLE = "walkersutton.com";
 
 export type LiveReportEntry = { id: string; date: string; text: string; images: string[] };
 
-type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[] };
+type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string };
 
 // State lives in the private "live-state" Blob store (the deployment
 // filesystem is ephemeral, so admin writes must go somewhere durable). The
@@ -166,6 +166,18 @@ export async function getLiveReportEntries(): Promise<LiveReportEntry[]> {
 
 export async function setLiveReportEntries(liveReportEntries: LiveReportEntry[]): Promise<void> {
   await writeState({ liveReportEntries });
+}
+
+/**
+ * Set from /admin so the feed can be changed from a phone without touching the
+ * deployment environment. Takes precedence over GARMIN_MAPSHARE_KML_URL.
+ */
+export async function getMapShareFeedUrl(): Promise<string | null> {
+  return (await readState()).mapShareFeedUrl?.trim() || null;
+}
+
+export async function setMapShareFeedUrl(mapShareFeedUrl: string): Promise<void> {
+  await writeState({ mapShareFeedUrl: mapShareFeedUrl.trim() });
 }
 
 export async function getYouTubeChannelId(): Promise<string | null> {

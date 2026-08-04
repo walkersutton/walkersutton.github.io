@@ -17,6 +17,7 @@ import {
   setLatestTemplates,
   getLiveReportEntries,
   setLiveReportEntries,
+  setMapShareFeedUrl,
 } from "@/lib/live-state";
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
@@ -52,6 +53,62 @@ export async function logout() {
   // name — so it has to be the one that matches SESSION_COOKIE_OPTIONS.
   store.delete({ name: "admin_session", path: SESSION_COOKIE_OPTIONS.path });
   redirect("/admin");
+}
+
+/**
+ * Garmin's MapShare *page* is share.garmin.com/<name>, but the KML the map
+ * needs is share.garmin.com/Feed/Share/<name>. Copying the link on a phone
+ * gives you the former, so accept it and convert rather than rejecting it.
+ */
+function toFeedUrl(url: URL): URL {
+  if (!url.hostname.endsWith("garmin.com")) return url;
+  if (/^\/Feed\/Share\//i.test(url.pathname)) return url;
+
+  const name = url.pathname.split("/").filter(Boolean).pop();
+  if (!name) return url;
+
+  const feed = new URL(url.toString());
+  feed.pathname = `/Feed/Share/${name}`;
+  return feed;
+}
+
+export async function saveMapShareFeedUrl(
+  _prev: { error?: string; saved?: string },
+  formData: FormData,
+): Promise<{ error?: string; saved?: string }> {
+  await assertAuth();
+  const raw = (formData.get("feedUrl") as string | null)?.trim() ?? "";
+
+  if (!raw) {
+    try {
+      await setMapShareFeedUrl("");
+    } catch (error) {
+      return { error: (error as Error).message || "Could not clear the feed URL." };
+    }
+    revalidatePath("/", "layout");
+    return { saved: "" };
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return { error: "That is not a valid URL. It should start with https://" };
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    return { error: "That is not an http(s) URL." };
+  }
+
+  const feedUrl = toFeedUrl(parsed).toString();
+  try {
+    await setMapShareFeedUrl(feedUrl);
+  } catch (error) {
+    return { error: (error as Error).message || "Could not save the feed URL." };
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/mapshare");
+  return { saved: feedUrl };
 }
 
 export async function setLive(enabled: boolean) {

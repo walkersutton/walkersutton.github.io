@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import TripMap, { type LiveReportPreview } from "../TripMap";
 import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
+import { resolveFeedSource } from "@/lib/mapshare-server";
 
 function fmtDateLabel(iso: string): string {
   const d = new Date(iso);
@@ -22,7 +23,11 @@ function toExcerpt(text: string): string {
 }
 
 export default async function TripLivePage() {
-  if (!process.env.GARMIN_MAPSHARE_KML_URL) redirect("/trips");
+  // Resolved rather than reading the env var directly: the URL may be set in
+  // admin instead, and an undecrypted env value is truthy but unusable.
+  const feed = await resolveFeedSource();
+  if (feed.kind === "missing" || feed.kind === "encrypted") redirect("/trips");
+
   const [isOnTrip, activeTripName, entries] = await Promise.all([
     getLiveEnabled(),
     getActiveTripName(),

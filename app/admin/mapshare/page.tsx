@@ -1,4 +1,6 @@
 import { getMapShareDiagnostics } from "@/lib/mapshare-server";
+import { getMapShareFeedUrl } from "@/lib/live-state";
+import FeedUrlForm from "./FeedUrlForm";
 
 // A page, not a route handler, so the admin layout's auth gate covers it: this
 // exposes raw position data, unlike /admin/session which exposes nothing.
@@ -49,8 +51,15 @@ function Row({ label, value, bad }: { label: string; value: string; bad?: boolea
   );
 }
 
+const SOURCE_LABEL: Record<string, string> = {
+  stored: "set here in admin",
+  env: "deployment environment",
+  encrypted: "environment, but still encrypted",
+  missing: "not configured anywhere",
+};
+
 export default async function MapShareDebugPage() {
-  const d = await getMapShareDiagnostics();
+  const [d, storedUrl] = await Promise.all([getMapShareDiagnostics(), getMapShareFeedUrl()]);
 
   const newestAgeMins = d.newest ? (Date.now() - Date.parse(d.newest)) / 60000 : undefined;
   // Garmin trackers commonly send every 10 minutes; anything beyond an hour is
@@ -61,14 +70,17 @@ export default async function MapShareDebugPage() {
     <div style={{ marginBottom: 40 }}>
       <p style={{ ...LABEL, marginBottom: 12 }}>MapShare feed</p>
 
+      <FeedUrlForm current={storedUrl} />
+
       {!d.configured && (
         <p style={{ fontSize: 13, color: "var(--accent-red, #c0392b)" }}>
-          GARMIN_MAPSHARE_KML_URL is not set in this deployment.
+          No feed URL is set here or in the deployment environment.
         </p>
       )}
 
       {d.configured && (
         <>
+          <Row label="Reading feed from" value={SOURCE_LABEL[d.source] ?? d.source} />
           <Row label="Feed host" value={d.feedHost || "—"} />
           <Row label="HTTP status" value={d.status ? String(d.status) : "—"} bad={!!d.error} />
           {d.error && <Row label="Error" value={d.error} bad />}

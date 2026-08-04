@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { MapPoint, MapShareResponse, MapTrack } from "@/app/trips/mapshare";
 import { encryptedEnvMessage, isEncrypted } from "@/lib/env";
+import { getMapShareFeedUrl } from "@/lib/live-state";
 
 const DUMMY_KML_PATH = path.join(
   process.cwd(),
@@ -200,8 +201,27 @@ function withOpenEndedWindow(feedUrl: string): string {
   }
 }
 
+export type FeedSource =
+  /** Set from /admin; wins over the environment so it can be fixed from a phone. */
+  | { kind: "stored"; url: string }
+  | { kind: "env"; url: string }
+  /** Configured but still ciphertext, which is a misconfiguration, not "unset". */
+  | { kind: "encrypted" }
+  | { kind: "missing" };
+
+export async function resolveFeedSource(): Promise<FeedSource> {
+  const stored = await getMapShareFeedUrl();
+  if (stored) return { kind: "stored", url: stored };
+
+  const raw = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
+  if (!raw) return { kind: "missing" };
+  if (isEncrypted(raw)) return { kind: "encrypted" };
+  return { kind: "env", url: raw };
+}
+
 export type MapShareDiagnostics = {
   configured: boolean;
+  source: FeedSource["kind"];
   feedHost?: string;
   hasD1: boolean;
   hasD2: boolean;
@@ -226,22 +246,23 @@ export type MapShareDiagnostics = {
  * params are set.
  */
 export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
-  const rawFeedUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
-  if (!rawFeedUrl) return { configured: false, hasD1: false, hasD2: false };
+  const source = await resolveFeedSource();
+  if (source.kind === "missing") return { configured: false, source: "missing", hasD1: false, hasD2: false };
 
-  // Check before parsing: "encrypted:..." is a valid URL as far as the URL
+  // Checked before parsing: "encrypted:..." is a valid URL as far as the URL
   // constructor is concerned (opaque scheme, blank host, no query), so it would
   // otherwise be reported as a feed with no bounds that simply failed to fetch.
-  if (isEncrypted(rawFeedUrl)) {
+  if (source.kind === "encrypted") {
     return {
       configured: true,
+      source: "encrypted",
       hasD1: false,
       hasD2: false,
       error: encryptedEnvMessage("GARMIN_MAPSHARE_KML_URL"),
     };
   }
 
-  const feedUrl = rawFeedUrl;
+  const feedUrl = source.url;
 
   let feedHost: string | undefined;
   let hasD1 = false;
@@ -267,6 +288,7 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
     if (!response.ok) {
       return {
         configured: true,
+        source: source.kind,
         feedHost,
         hasD1,
         hasD2,
@@ -286,6 +308,7 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
 
     return {
       configured: true,
+      source: source.kind,
       feedHost,
       hasD1,
       hasD2,
@@ -303,6 +326,7 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
   } catch (error) {
     return {
       configured: true,
+      source: source.kind,
       feedHost,
       hasD1,
       hasD2,
@@ -317,17 +341,18 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
 export async function getMapShareData(options?: {
   forceDummy?: boolean;
 }): Promise<{ data: MapShareResponse; status: number; cacheControl: string }> {
-  const configuredUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
   const forceDummy = options?.forceDummy || process.env.TRIPS_USE_DUMMY_KML === "true";
 
   if (forceDummy) {
     return loadDummyKml();
   }
 
+  const source = await resolveFeedSource();
+
   // Ciphertext is truthy, so without this it reaches fetch() and comes back as
   // a bare "fetch failed" — indistinguishable from Garmin being down, which is
   // a very different thing to go and fix.
-  if (isEncrypted(configuredUrl)) {
+  if (source.kind === "encrypted") {
     const message = encryptedEnvMessage("GARMIN_MAPSHARE_KML_URL");
     console.error(`MapShare feed misconfigured: ${message}`);
     return {
@@ -344,7 +369,7 @@ export async function getMapShareData(options?: {
     };
   }
 
-  const feedUrl = configuredUrl;
+  const feedUrl = source.kind === "missing" ? undefined : source.url;
 
   if (!feedUrl) {
     try {
