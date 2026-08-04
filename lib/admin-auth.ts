@@ -75,6 +75,68 @@ export function verifyToken(token: string): boolean {
   }
 }
 
+/**
+ * Same checks as verifyToken, but reports which one failed so /admin/session
+ * can explain a rejected session on a phone, where DevTools isn't practical.
+ * Never returns any part of the token, the MAC, or the signing secret.
+ */
+export function describeToken(
+  token: string | undefined,
+): { ok: boolean; verdict: string; issuedAt?: Date } {
+  if (!token) {
+    return {
+      ok: false,
+      verdict:
+        "No admin_session cookie arrived with this request. Either you have not signed in on this host, or the cookie is being written for a different host than the one you are reading.",
+    };
+  }
+
+  const [issuedAt, mac] = token.split(".");
+  if (!issuedAt || !mac) {
+    return {
+      ok: false,
+      verdict:
+        "Cookie is in the older format that predates server-side expiry, so it is rejected. Signing in once replaces it.",
+    };
+  }
+
+  const ms = Number(issuedAt);
+  if (!Number.isFinite(ms)) {
+    return { ok: false, verdict: "Cookie has a non-numeric issue time and cannot be read." };
+  }
+
+  const at = new Date(ms);
+  const age = Date.now() - ms;
+  if (age > SESSION_MAX_AGE_MS) {
+    return { ok: false, verdict: "Session is past its 30-day lifetime. Sign in again.", issuedAt: at };
+  }
+  if (age < -CLOCK_SKEW_TOLERANCE_MS) {
+    return {
+      ok: false,
+      verdict:
+        "Issue time is further in the future than the allowed clock skew, so this server considers it invalid.",
+      issuedAt: at,
+    };
+  }
+
+  let signatureOk = false;
+  try {
+    signatureOk = safeEqual(mac, sign(issuedAt));
+  } catch {
+    signatureOk = false;
+  }
+  if (!signatureOk) {
+    return {
+      ok: false,
+      verdict:
+        "Signature does not match. The cookie was signed with a different ADMIN_SECRET/ADMIN_PASSWORD than this deployment is running with — usually a rotated password, or a value that reaches one deployment decrypted and another still encrypted.",
+      issuedAt: at,
+    };
+  }
+
+  return { ok: true, verdict: "Session cookie is valid. Admin pages should load signed in.", issuedAt: at };
+}
+
 export function verifyPassword(input: string): boolean {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected) return false;
