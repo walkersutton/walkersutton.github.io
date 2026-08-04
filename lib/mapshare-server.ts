@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { MapPoint, MapShareResponse, MapTrack } from "@/app/trips/mapshare";
 import { encryptedEnvMessage, isEncrypted } from "@/lib/env";
-import { getMapShareFeedUrl } from "@/lib/live-state";
+import { getMapShareFeedUrl, getMapShareStartDate } from "@/lib/live-state";
 
 const DUMMY_KML_PATH = path.join(
   process.cwd(),
@@ -221,21 +221,51 @@ const DEFAULT_WINDOW_DAYS = 7;
 // So: always drop d2, and supply a rolling d1 when none was configured. An
 // explicit d1 is left alone, since that is usually a deliberate trip-start
 // bound and the whole trip is what the map wants to show.
-function withOpenEndedWindow(feedUrl: string): string {
+export type WindowOrigin = "trip-start" | "configured-url" | "rolling-default";
+
+/** Garmin wants seconds precision, no milliseconds. */
+function toGarminTime(date: Date): string {
+  return `${date.toISOString().slice(0, 19)}Z`;
+}
+
+/**
+ * The d1 actually sent, and why. A trip start set in admin wins: it is the most
+ * deliberate and most recently expressed intent, and it is the only one that
+ * can cover a trip longer than the rolling default.
+ */
+function resolveWindowStart(
+  url: URL,
+  tripStartDate: string | null,
+): { d1: string; origin: WindowOrigin } {
+  if (tripStartDate) {
+    const parsed = new Date(`${tripStartDate}T00:00:00Z`);
+    if (!Number.isNaN(parsed.getTime())) {
+      return { d1: toGarminTime(parsed), origin: "trip-start" };
+    }
+  }
+
+  const configured = url.searchParams.get("d1");
+  if (configured) return { d1: configured, origin: "configured-url" };
+
+  const since = new Date(Date.now() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  return { d1: toGarminTime(since), origin: "rolling-default" };
+}
+
+function withOpenEndedWindow(
+  feedUrl: string,
+  tripStartDate: string | null,
+): { url: string; windowStart: string; origin: WindowOrigin } {
   try {
     const url = new URL(feedUrl);
     url.searchParams.delete("d2");
 
-    if (!url.searchParams.has("d1")) {
-      const since = new Date(Date.now() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-      // Garmin wants seconds precision, no milliseconds.
-      url.searchParams.set("d1", `${since.toISOString().slice(0, 19)}Z`);
-    }
+    const { d1, origin } = resolveWindowStart(url, tripStartDate);
+    url.searchParams.set("d1", d1);
 
-    return url.toString();
+    return { url: url.toString(), windowStart: d1, origin };
   } catch {
     // Not parseable as a URL — hand it back untouched and let fetch complain.
-    return feedUrl;
+    return { url: feedUrl, windowStart: "", origin: "configured-url" };
   }
 }
 
@@ -284,8 +314,9 @@ export type MapShareDiagnostics = {
   configured: boolean;
   source: FeedSource["kind"];
   feedHost?: string;
-  hasD1: boolean;
   hasD2: boolean;
+  windowStart?: string;
+  windowOrigin?: WindowOrigin;
   status?: number;
   bytes?: number;
   placemarks?: number;
@@ -308,7 +339,7 @@ export type MapShareDiagnostics = {
  */
 export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
   const source = await resolveFeedSource();
-  if (source.kind === "missing") return { configured: false, source: "missing", hasD1: false, hasD2: false };
+  if (source.kind === "missing") return { configured: false, source: "missing", hasD2: false };
 
   // Checked before parsing: "encrypted:..." is a valid URL as far as the URL
   // constructor is concerned (opaque scheme, blank host, no query), so it would
@@ -317,7 +348,6 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
     return {
       configured: true,
       source: "encrypted",
-      hasD1: false,
       hasD2: false,
       error: encryptedEnvMessage("GARMIN_MAPSHARE_KML_URL"),
     };
@@ -326,19 +356,22 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
   const feedUrl = source.url;
 
   let feedHost: string | undefined;
-  let hasD1 = false;
   let hasD2 = false;
   try {
     const url = new URL(feedUrl);
     feedHost = url.host;
-    hasD1 = url.searchParams.has("d1");
     hasD2 = url.searchParams.has("d2");
   } catch {
     // Leave the fields unset; the fetch below will report the real problem.
   }
 
+  const { url: requestUrl, windowStart, origin: windowOrigin } = withOpenEndedWindow(
+    feedUrl,
+    await getMapShareStartDate(),
+  );
+
   try {
-    const response = await fetch(withOpenEndedWindow(feedUrl), {
+    const response = await fetch(requestUrl, {
       headers: {
         Accept:
           "application/vnd.google-earth.kml+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
@@ -351,8 +384,9 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
         configured: true,
         source: source.kind,
         feedHost,
-        hasD1,
         hasD2,
+        windowStart,
+        windowOrigin,
         status: response.status,
         error: `Garmin responded with ${response.status}`,
       };
@@ -371,8 +405,9 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
       configured: true,
       source: source.kind,
       feedHost,
-      hasD1,
       hasD2,
+      windowStart,
+      windowOrigin,
       status: response.status,
       bytes: kml.length,
       placemarks,
@@ -389,8 +424,9 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
       configured: true,
       source: source.kind,
       feedHost,
-      hasD1,
       hasD2,
+      windowStart,
+      windowOrigin,
       error: (error as Error).message || "Fetch failed",
     };
   }
@@ -451,7 +487,8 @@ export async function getMapShareData(options?: {
   }
 
   try {
-    const response = await fetch(withOpenEndedWindow(feedUrl), {
+    const { url: requestUrl } = withOpenEndedWindow(feedUrl, await getMapShareStartDate());
+    const response = await fetch(requestUrl, {
       headers: {
         Accept: "application/vnd.google-earth.kml+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
       },

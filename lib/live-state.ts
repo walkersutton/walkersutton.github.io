@@ -11,7 +11,7 @@ const DEFAULT_BLUESKY_HANDLE = "walkersutton.com";
 
 export type LiveReportEntry = { id: string; date: string; text: string; images: string[] };
 
-type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string };
+type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string; mapShareStartDate?: string };
 
 // State lives in the private "live-state" Blob store (the deployment
 // filesystem is ephemeral, so admin writes must go somewhere durable). The
@@ -178,6 +178,18 @@ export async function getMapShareFeedUrl(): Promise<string | null> {
 
 export async function setMapShareFeedUrl(mapShareFeedUrl: string): Promise<void> {
   await writeState({ mapShareFeedUrl: mapShareFeedUrl.trim() });
+}
+
+/**
+ * Trip start as YYYY-MM-DD. Becomes the feed's d1 bound, so the map shows the
+ * whole trip rather than a rolling window that would truncate a long one.
+ */
+export async function getMapShareStartDate(): Promise<string | null> {
+  return (await readState()).mapShareStartDate?.trim() || null;
+}
+
+export async function setMapShareStartDate(mapShareStartDate: string): Promise<void> {
+  await writeState({ mapShareStartDate: mapShareStartDate.trim() });
 }
 
 export async function getYouTubeChannelId(): Promise<string | null> {

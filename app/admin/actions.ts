@@ -18,6 +18,7 @@ import {
   getLiveReportEntries,
   setLiveReportEntries,
   setMapShareFeedUrl,
+  setMapShareStartDate,
 } from "@/lib/live-state";
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
@@ -72,43 +73,59 @@ function toFeedUrl(url: URL): URL {
   return feed;
 }
 
-export async function saveMapShareFeedUrl(
+export async function saveMapShareSettings(
   _prev: { error?: string; saved?: string },
   formData: FormData,
 ): Promise<{ error?: string; saved?: string }> {
   await assertAuth();
   const raw = (formData.get("feedUrl") as string | null)?.trim() ?? "";
+  const startDate = (formData.get("startDate") as string | null)?.trim() ?? "";
 
-  if (!raw) {
-    try {
-      await setMapShareFeedUrl("");
-    } catch (error) {
-      return { error: (error as Error).message || "Could not clear the feed URL." };
+  // Empty clears it and falls back to the rolling window.
+  if (startDate) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+      return { error: "Trip start must be a date, e.g. 2026-08-04." };
     }
-    revalidatePath("/", "layout");
-    return { saved: "" };
+    const parsedDate = new Date(`${startDate}T00:00:00Z`);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return { error: "That trip start date does not exist." };
+    }
+    // A start in the future means the feed's window has not opened yet and
+    // Garmin returns nothing, which looks exactly like a broken feed.
+    if (parsedDate.getTime() > Date.now() + 24 * 60 * 60 * 1000) {
+      return { error: "Trip start is in the future, so the feed would return no points." };
+    }
   }
 
-  let parsed: URL;
-  try {
-    parsed = new URL(raw);
-  } catch {
-    return { error: "That is not a valid URL. It should start with https://" };
-  }
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    return { error: "That is not an http(s) URL." };
+  let feedUrl = "";
+  if (raw) {
+    let parsed: URL;
+    try {
+      parsed = new URL(raw);
+    } catch {
+      return { error: "That is not a valid URL. It should start with https://" };
+    }
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      return { error: "That is not an http(s) URL." };
+    }
+    feedUrl = toFeedUrl(parsed).toString();
   }
 
-  const feedUrl = toFeedUrl(parsed).toString();
   try {
     await setMapShareFeedUrl(feedUrl);
+    await setMapShareStartDate(startDate);
   } catch (error) {
-    return { error: (error as Error).message || "Could not save the feed URL." };
+    return { error: (error as Error).message || "Could not save." };
   }
 
   revalidatePath("/", "layout");
   revalidatePath("/admin/mapshare");
-  return { saved: feedUrl };
+  return {
+    saved: [
+      feedUrl ? `Feed: ${feedUrl}` : "Feed cleared — using the deployment environment.",
+      startDate ? `Trip start: ${startDate}` : "Trip start cleared — using a rolling 7-day window.",
+    ].join(" · "),
+  };
 }
 
 export async function setLive(enabled: boolean) {

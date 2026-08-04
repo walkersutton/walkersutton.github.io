@@ -1,5 +1,5 @@
 import { getMapShareDiagnostics } from "@/lib/mapshare-server";
-import { getMapShareFeedUrl } from "@/lib/live-state";
+import { getMapShareFeedUrl, getMapShareStartDate } from "@/lib/live-state";
 import FeedUrlForm from "./FeedUrlForm";
 
 // A page, not a route handler, so the admin layout's auth gate covers it: this
@@ -51,6 +51,12 @@ function Row({ label, value, bad }: { label: string; value: string; bad?: boolea
   );
 }
 
+const WINDOW_ORIGIN_LABEL: Record<string, string> = {
+  "trip-start": "from the trip start date above",
+  "configured-url": "from the feed URL's own d1",
+  "rolling-default": "rolling 7-day default",
+};
+
 const SOURCE_LABEL: Record<string, string> = {
   stored: "set here in admin",
   env: "deployment environment",
@@ -59,7 +65,11 @@ const SOURCE_LABEL: Record<string, string> = {
 };
 
 export default async function MapShareDebugPage() {
-  const [d, storedUrl] = await Promise.all([getMapShareDiagnostics(), getMapShareFeedUrl()]);
+  const [d, storedUrl, storedStartDate] = await Promise.all([
+    getMapShareDiagnostics(),
+    getMapShareFeedUrl(),
+    getMapShareStartDate(),
+  ]);
 
   const newestAgeMins = d.newest ? (Date.now() - Date.parse(d.newest)) / 60000 : undefined;
   // Garmin trackers commonly send every 10 minutes; anything beyond an hour is
@@ -70,7 +80,7 @@ export default async function MapShareDebugPage() {
     <div style={{ marginBottom: 40 }}>
       <p style={{ ...LABEL, marginBottom: 12 }}>MapShare feed</p>
 
-      <FeedUrlForm current={storedUrl} />
+      <FeedUrlForm current={storedUrl} currentStartDate={storedStartDate} />
 
       {!d.configured && (
         <p style={{ fontSize: 13, color: "var(--accent-red, #c0392b)" }}>
@@ -84,7 +94,14 @@ export default async function MapShareDebugPage() {
           <Row label="Feed host" value={d.feedHost || "—"} />
           <Row label="HTTP status" value={d.status ? String(d.status) : "—"} bad={!!d.error} />
           {d.error && <Row label="Error" value={d.error} bad />}
-          <Row label="Trip-start bound (d1)" value={d.hasD1 ? "set" : "not set"} />
+          <Row
+            label="Window start (d1)"
+            value={
+              d.windowStart
+                ? `${d.windowStart} — ${WINDOW_ORIGIN_LABEL[d.windowOrigin ?? "rolling-default"]}`
+                : "—"
+            }
+          />
           <Row
             label="End bound (d2) in config"
             value={d.hasD2 ? "set — stripped before fetching" : "not set"}
