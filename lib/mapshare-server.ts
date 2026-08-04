@@ -199,6 +199,103 @@ function withOpenEndedWindow(feedUrl: string): string {
   }
 }
 
+export type MapShareDiagnostics = {
+  configured: boolean;
+  feedHost?: string;
+  hasD1: boolean;
+  hasD2: boolean;
+  status?: number;
+  bytes?: number;
+  placemarks?: number;
+  tracks?: number;
+  points?: number;
+  totalPoints?: number;
+  newest?: string;
+  oldest?: string;
+  error?: string;
+  rawHead?: string;
+  rawLastPlacemark?: string;
+};
+
+/**
+ * Fetches the configured feed with every cache bypassed and reports what came
+ * back, so a stale map can be diagnosed from a phone without DevTools. Never
+ * returns the feed URL itself — it embeds the MapShare id, which is the only
+ * thing protecting the location history — just its host and which date-window
+ * params are set.
+ */
+export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
+  const feedUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
+  if (!feedUrl) return { configured: false, hasD1: false, hasD2: false };
+
+  let feedHost: string | undefined;
+  let hasD1 = false;
+  let hasD2 = false;
+  try {
+    const url = new URL(feedUrl);
+    feedHost = url.host;
+    hasD1 = url.searchParams.has("d1");
+    hasD2 = url.searchParams.has("d2");
+  } catch {
+    // Leave the fields unset; the fetch below will report the real problem.
+  }
+
+  try {
+    const response = await fetch(withOpenEndedWindow(feedUrl), {
+      headers: {
+        Accept:
+          "application/vnd.google-earth.kml+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return {
+        configured: true,
+        feedHost,
+        hasD1,
+        hasD2,
+        status: response.status,
+        error: `Garmin responded with ${response.status}`,
+      };
+    }
+
+    const kml = await response.text();
+    const parsed = parseKml(kml);
+    const placemarks = kml.match(/<Placemark\b/gi)?.length ?? 0;
+    const times = [...parsed.tracks.flatMap((t) => t.coordinates), ...parsed.points]
+      .map((p) => (p.time ? Date.parse(p.time) : NaN))
+      .filter((n) => Number.isFinite(n));
+
+    const lastPlacemark = [...kml.matchAll(/<Placemark\b[\s\S]*?<\/Placemark>/gi)].at(-1)?.[0];
+
+    return {
+      configured: true,
+      feedHost,
+      hasD1,
+      hasD2,
+      status: response.status,
+      bytes: kml.length,
+      placemarks,
+      tracks: parsed.tracks.length,
+      points: parsed.points.length,
+      totalPoints: parsed.totalPoints,
+      newest: times.length ? new Date(Math.max(...times)).toISOString() : undefined,
+      oldest: times.length ? new Date(Math.min(...times)).toISOString() : undefined,
+      rawHead: kml.slice(0, 900),
+      rawLastPlacemark: lastPlacemark?.slice(0, 900),
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      feedHost,
+      hasD1,
+      hasD2,
+      error: (error as Error).message || "Fetch failed",
+    };
+  }
+}
+
 // Shared by the /api/mapshare route (client polling) and server components
 // that need the live feed before first paint (avoids a client-side flash of
 // stale/fallback content while the client's own fetch is in flight).
