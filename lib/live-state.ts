@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import type { InstagramAccount, SocialPost } from "./social-latest";
 import { DEFAULT_LATEST_TEMPLATES, type LatestTemplates } from "./latest-templates";
+import { isEncrypted } from "./env";
 
 const STATE_FILE = path.join(process.cwd(), "data", "live-state.json");
 const STATE_BLOB_PATH = "live-state.json";
@@ -28,12 +29,10 @@ function blobOptions(): { access: "private"; token: string } | null {
   // Instagram tokens in this state out of public reach.
   const token =
     process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN ?? process.env.BLOB_READ_WRITE_TOKEN;
-  // The committed .env carries dotenvx ciphertext, and Next loads .env at
-  // runtime. If the value still looks encrypted then the deployment never
-  // supplied a real token and dotenvx didn't run — passing it to the Blob SDK
-  // only yields "Invalid token: unable to extract store ID", which says
-  // nothing about the actual misconfiguration. Treat it as absent.
-  if (!token || token.startsWith("encrypted:")) return null;
+  // A value that is still dotenvx ciphertext never decrypted at runtime.
+  // Passing it to the Blob SDK only yields "Invalid token: unable to extract
+  // store ID", which says nothing about the real misconfiguration.
+  if (!token || isEncrypted(token)) return null;
   return { access: "private", token };
 }
 

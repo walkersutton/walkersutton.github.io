@@ -69,7 +69,7 @@ export default async function MapShareDebugPage() {
 
       {d.configured && (
         <>
-          <Row label="Feed host" value={d.feedHost ?? "(unparseable URL)"} />
+          <Row label="Feed host" value={d.feedHost || "—"} />
           <Row label="HTTP status" value={d.status ? String(d.status) : "—"} bad={!!d.error} />
           {d.error && <Row label="Error" value={d.error} bad />}
           <Row label="Trip-start bound (d1)" value={d.hasD1 ? "set" : "not set"} />

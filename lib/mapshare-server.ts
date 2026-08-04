@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { MapPoint, MapShareResponse, MapTrack } from "@/app/trips/mapshare";
+import { encryptedEnvMessage, isEncrypted } from "@/lib/env";
 
 const DUMMY_KML_PATH = path.join(
   process.cwd(),
@@ -225,8 +226,22 @@ export type MapShareDiagnostics = {
  * params are set.
  */
 export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
-  const feedUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
-  if (!feedUrl) return { configured: false, hasD1: false, hasD2: false };
+  const rawFeedUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
+  if (!rawFeedUrl) return { configured: false, hasD1: false, hasD2: false };
+
+  // Check before parsing: "encrypted:..." is a valid URL as far as the URL
+  // constructor is concerned (opaque scheme, blank host, no query), so it would
+  // otherwise be reported as a feed with no bounds that simply failed to fetch.
+  if (isEncrypted(rawFeedUrl)) {
+    return {
+      configured: true,
+      hasD1: false,
+      hasD2: false,
+      error: encryptedEnvMessage("GARMIN_MAPSHARE_KML_URL"),
+    };
+  }
+
+  const feedUrl = rawFeedUrl;
 
   let feedHost: string | undefined;
   let hasD1 = false;
@@ -302,12 +317,34 @@ export async function getMapShareDiagnostics(): Promise<MapShareDiagnostics> {
 export async function getMapShareData(options?: {
   forceDummy?: boolean;
 }): Promise<{ data: MapShareResponse; status: number; cacheControl: string }> {
-  const feedUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
+  const configuredUrl = process.env.GARMIN_MAPSHARE_KML_URL ?? process.env.GARMIN_KML_FEED_URL;
   const forceDummy = options?.forceDummy || process.env.TRIPS_USE_DUMMY_KML === "true";
 
   if (forceDummy) {
     return loadDummyKml();
   }
+
+  // Ciphertext is truthy, so without this it reaches fetch() and comes back as
+  // a bare "fetch failed" — indistinguishable from Garmin being down, which is
+  // a very different thing to go and fix.
+  if (isEncrypted(configuredUrl)) {
+    const message = encryptedEnvMessage("GARMIN_MAPSHARE_KML_URL");
+    console.error(`MapShare feed misconfigured: ${message}`);
+    return {
+      data: {
+        configured: false,
+        fetchedAt: new Date().toISOString(),
+        tracks: [],
+        points: [],
+        totalPoints: 0,
+        error: message,
+      },
+      status: 500,
+      cacheControl: "no-store",
+    };
+  }
+
+  const feedUrl = configuredUrl;
 
   if (!feedUrl) {
     try {
