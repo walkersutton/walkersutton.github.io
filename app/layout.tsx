@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import GoatCounterRouteTracker from "./components/GoatCounterRouteTracker";
 import { sfProDisplay, sfProText } from "./fonts";
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/config";
@@ -68,6 +69,8 @@ export default async function RootLayout({
         data-goatcounter="https://walker.goatcounter.com/count"
         src="//gc.zgo.at/count.js"
       />
+      {/* count.js only fires on document load; this reports next/link navigations. */}
+      <GoatCounterRouteTracker />
       <body
         className={`bg-[var(--color-bg)] text-[var(--color-text)] antialiased overflow-x-hidden px-4 md:px-8 md:overflow-x-visible min-h-screen flex flex-col`}
       >
