@@ -52,15 +52,33 @@ async function readBlobState(opts: { access: "private"; token: string }): Promis
   return (await new Response(result.stream).json()) as LiveState;
 }
 
+// Rendering /admin calls a dozen of the getters below, and every one of them
+// used to be its own round trip to the Blob store. That was slow, and worse, it
+// was inconsistent: any single read that failed fell back to the committed seed,
+// so one flaky request made one field on the page quietly show a months-old
+// value while its neighbours showed the live one. Saving from that page then
+// looked like it had reverted. One cached read per burst of work instead.
+const CACHE_TTL_MS = 5000;
+let cached: { state: LiveState; at: number; fromWrite: boolean } | null = null;
+
 async function readState(): Promise<LiveState> {
   const opts = blobOptions();
-  if (opts) {
-    try {
-      const state = await readBlobState(opts);
-      if (state) return state;
-    } catch {
-      // Render from the committed seed rather than erroring the page.
+  if (!opts) return readLocalState();
+
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.state;
+
+  try {
+    const state = await readBlobState(opts);
+    if (state) {
+      cached = { state, at: Date.now(), fromWrite: false };
+      return state;
     }
+  } catch (err) {
+    // The seed is whatever was last committed to git, so serving it here is how
+    // a transient blob failure turns into "my save came undone". The last state
+    // we actually read is stale by seconds; prefer it.
+    console.error("live-state: blob read failed, serving last known state", err);
+    if (cached) return cached.state;
   }
   return readLocalState();
 }
@@ -68,15 +86,27 @@ async function readState(): Promise<LiveState> {
 async function writeState(patch: Partial<LiveState>): Promise<void> {
   const opts = blobOptions();
   if (opts) {
+    // Every write is a read-modify-write of the whole document, so the base it
+    // merges onto has to be current. Blob reads are only eventually consistent:
+    // re-reading right after our own write can hand back the pre-write copy,
+    // and merging onto that silently undoes the save that came before. When the
+    // state in hand is one we just wrote, it is the freshest thing available.
+    //
     // Unlike readState, blob errors propagate here: silently writing to the
     // local file on Vercel would drop the update on the next cold start.
-    const current = (await readBlobState(opts)) ?? readLocalState();
+    const ours =
+      cached && cached.fromWrite && Date.now() - cached.at < CACHE_TTL_MS ? cached.state : null;
+    const current = ours ?? (await readBlobState(opts)) ?? readLocalState();
+    const merged = { ...current, ...patch };
     const { put } = await import("@vercel/blob");
-    await put(STATE_BLOB_PATH, JSON.stringify({ ...current, ...patch }, null, 2), {
+    await put(STATE_BLOB_PATH, JSON.stringify(merged, null, 2), {
       ...opts,
       allowOverwrite: true,
       contentType: "application/json",
     });
+    // Serve what we wrote until the store catches up, so the re-render that
+    // revalidatePath triggers can't paint the old value back into the form.
+    cached = { state: merged, at: Date.now(), fromWrite: true };
     return;
   }
   // No store configured. Locally the committed JSON is the store of record, so

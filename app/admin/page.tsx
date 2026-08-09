@@ -14,7 +14,8 @@ import {
   saveBannerLink,
   saveActiveTripName,
 } from "./actions";
-import { ROW, LABEL, INPUT, BTN } from "./styles";
+import { ROW, LABEL, BTN } from "./styles";
+import TextSettingRow from "./TextSettingRow";
 
 export const dynamic = "force-dynamic";
 
@@ -51,11 +52,12 @@ export default async function AdminGeneralPage() {
         </form>
       </div>
 
-      <form action={saveActiveTripName} style={ROW}>
-        <span style={LABEL}>Active trip</span>
-        <input name="activeTripName" defaultValue={activeTripName} style={{ ...INPUT, flex: 1 }} />
-        <button type="submit" style={BTN(false)}>Save</button>
-      </form>
+      <TextSettingRow
+        label="Active trip"
+        name="activeTripName"
+        value={activeTripName}
+        action={saveActiveTripName}
+      />
 
       <div style={ROW}>
         <span style={LABEL}>Banner</span>
@@ -67,17 +69,20 @@ export default async function AdminGeneralPage() {
         </form>
       </div>
 
-      <form action={saveBannerText} style={ROW}>
-        <span style={LABEL}>Banner text</span>
-        <input name="bannerText" defaultValue={bannerText} style={{ ...INPUT, flex: 1 }} />
-        <button type="submit" style={BTN(false)}>Save</button>
-      </form>
+      <TextSettingRow
+        label="Banner text"
+        name="bannerText"
+        value={bannerText}
+        action={saveBannerText}
+      />
 
-      <form action={saveBannerLink} style={{ ...ROW, borderBottom: "none" }}>
-        <span style={LABEL}>Banner link</span>
-        <input name="bannerLink" defaultValue={bannerLink} style={{ ...INPUT, flex: 1 }} />
-        <button type="submit" style={BTN(false)}>Save</button>
-      </form>
+      <TextSettingRow
+        label="Banner link"
+        name="bannerLink"
+        value={bannerLink}
+        action={saveBannerLink}
+        last
+      />
     </div>
   );
 }

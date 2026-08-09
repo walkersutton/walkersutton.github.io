@@ -21,7 +21,7 @@ import {
 } from "@/lib/latest";
 import { LATEST_TEMPLATE_LABELS, type LatestTemplateKey } from "@/lib/latest-templates";
 import InstagramAccountsEditor from "../InstagramAccountsEditor";
-import { ROW, LABEL, INPUT, BTN } from "../styles";
+import { ROW, LABEL, INPUT, BTN, FIELD_GRID } from "../styles";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +71,16 @@ export default async function AdminLatestPage() {
         {autoFetchedItems.length ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
             {autoFetchedItems.map((item) => (
-              <div key={item.key} style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
+              <div
+                key={item.key}
+                style={{
+                  fontSize: 12,
+                  color: "var(--color-text-faint)",
+                  // Post URLs have no spaces to break at and would otherwise
+                  // push the whole column past the edge of the screen.
+                  overflowWrap: "anywhere",
+                }}
+              >
                 <span style={{ color: "var(--color-text)", fontWeight: 600 }}>{item.label}</span>
                 {item.detail ? ` (${item.detail})` : ""}
                 {" "}
@@ -146,27 +155,33 @@ export default async function AdminLatestPage() {
         <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
           prefix + content + suffix, per platform/channel — use {"{title}"} in content where the item&apos;s own name should be inserted
         </span>
+        {/* Label above the fields rather than beside them: a label plus three
+            inputs on one line has nowhere to go on a phone. */}
         {(Object.keys(LATEST_TEMPLATE_LABELS) as LatestTemplateKey[]).map((key) => (
-          <div key={key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ ...LABEL, minWidth: 130 }}>{LATEST_TEMPLATE_LABELS[key]}</span>
-            <input
-              name={`${key}.prefix`}
-              placeholder="Prefix"
-              defaultValue={latestTemplates[key].prefix}
-              style={{ ...INPUT, flex: 1 }}
-            />
-            <input
-              name={`${key}.content`}
-              placeholder="Content"
-              defaultValue={latestTemplates[key].content}
-              style={{ ...INPUT, flex: 1 }}
-            />
-            <input
-              name={`${key}.suffix`}
-              placeholder="Suffix"
-              defaultValue={latestTemplates[key].suffix}
-              style={{ ...INPUT, flex: 1 }}
-            />
+          <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <span style={{ ...LABEL, minWidth: 0, fontSize: 12 }}>
+              {LATEST_TEMPLATE_LABELS[key]}
+            </span>
+            <div style={FIELD_GRID}>
+              <input
+                name={`${key}.prefix`}
+                placeholder="Prefix"
+                defaultValue={latestTemplates[key].prefix}
+                style={INPUT}
+              />
+              <input
+                name={`${key}.content`}
+                placeholder="Content"
+                defaultValue={latestTemplates[key].content}
+                style={INPUT}
+              />
+              <input
+                name={`${key}.suffix`}
+                placeholder="Suffix"
+                defaultValue={latestTemplates[key].suffix}
+                style={INPUT}
+              />
+            </div>
           </div>
         ))}
         <div>

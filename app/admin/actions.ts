@@ -23,6 +23,7 @@ import {
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
 import { DEFAULT_LATEST_TEMPLATES, type LatestTemplateKey, type LatestTemplates } from "@/lib/latest-templates";
+import type { SaveResult } from "./types";
 
 async function assertAuth() {
   const store = await cookies();
@@ -148,31 +149,37 @@ export async function setBanner(enabled: boolean) {
   revalidatePath("/", "layout");
 }
 
-export async function saveBannerText(formData: FormData) {
+// These three report what was stored rather than returning void: an empty field
+// used to be a silent no-op that left the old value on screen, which is
+// indistinguishable from a save that failed.
+export async function saveBannerText(_prev: SaveResult, formData: FormData): Promise<SaveResult> {
   await assertAuth();
-  const text = (formData.get("bannerText") as string | null) ?? "";
-  if (text.trim()) {
-    await setBannerText(text);
-    revalidatePath("/", "layout");
-  }
+  const text = (formData.get("bannerText") as string | null)?.trim() ?? "";
+  if (!text) return { error: "Banner text can't be empty." };
+  await setBannerText(text);
+  revalidatePath("/", "layout");
+  return { saved: text };
 }
 
-export async function saveBannerLink(formData: FormData) {
+export async function saveBannerLink(_prev: SaveResult, formData: FormData): Promise<SaveResult> {
   await assertAuth();
   const link = (formData.get("bannerLink") as string | null)?.trim() ?? "";
-  if (link) {
-    await setBannerLink(link);
-    revalidatePath("/", "layout");
-  }
+  if (!link) return { error: "Banner link can't be empty." };
+  await setBannerLink(link);
+  revalidatePath("/", "layout");
+  return { saved: link };
 }
 
-export async function saveActiveTripName(formData: FormData) {
+export async function saveActiveTripName(
+  _prev: SaveResult,
+  formData: FormData,
+): Promise<SaveResult> {
   await assertAuth();
   const name = (formData.get("activeTripName") as string | null)?.trim() ?? "";
-  if (name) {
-    await setActiveTripName(name);
-    revalidatePath("/", "layout");
-  }
+  if (!name) return { error: "Trip name can't be empty." };
+  await setActiveTripName(name);
+  revalidatePath("/", "layout");
+  return { saved: name };
 }
 
 export async function saveLatestOverride(formData: FormData) {

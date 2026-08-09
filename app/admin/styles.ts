@@ -28,6 +28,16 @@ export const INPUT: React.CSSProperties = {
   color: "var(--color-text)",
 };
 
+// Fields that sit side by side on a wide screen and stack on a narrow one.
+// auto-fit does it without a media query, which inline styles can't express.
+export const FIELD_GRID: React.CSSProperties = {
+  display: "grid",
+  // 190px is chosen so a phone gets one full-width field per line while the
+  // 640px admin column still fits all three across.
+  gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+  gap: 8,
+};
+
 // 44px tall so it stays a comfortable thumb target on a phone.
 export const BTN = (active: boolean): React.CSSProperties => ({
   background: active ? "var(--color-text)" : "transparent",
