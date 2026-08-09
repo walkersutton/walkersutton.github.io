@@ -57,7 +57,6 @@ export default function ReportEditor() {
           type="file"
           accept={REPORT_IMAGE_ACCEPT}
           multiple
-          capture="environment"
           onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
           style={{ fontSize: 12, color: "var(--color-text-variant)" }}
         />
