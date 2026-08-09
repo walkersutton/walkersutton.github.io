@@ -4,14 +4,18 @@ import { useRef, useState } from "react";
 import { SITE_CONFIG } from "@/lib/config";
 import type { LiveReportEntry } from "@/lib/live-state";
 import { updateReportEntry, deleteReportEntry } from "../actions";
-import { INPUT, BTN } from "../styles";
-import { REPORT_IMAGE_ACCEPT, uploadReportImages } from "./upload-images";
+import { BTN } from "../styles";
+import AutoGrowTextarea from "./AutoGrowTextarea";
+import PhotoField from "./PhotoField";
+import { uploadReportImages } from "./upload-images";
 
+// Vertical padding rather than a bare 12px word: these sit inches from Delete on
+// a phone, so they need room around them.
 const TEXT_LINK: React.CSSProperties = {
   background: "none",
   border: "none",
-  padding: 0,
-  fontSize: 12,
+  padding: "8px 2px",
+  fontSize: 13,
   color: "var(--color-text-faint)",
   cursor: "pointer",
   fontFamily: "inherit",
@@ -47,6 +51,12 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
     setNewFiles([]);
     setError(null);
     setEditing(true);
+  }
+
+  // Delete sits a thumb-width from Edit, and there's no undo behind it.
+  function confirmDelete() {
+    if (!window.confirm("Delete this update?")) return;
+    void deleteReportEntry(entry.id);
   }
 
   function cancelEditing() {
@@ -89,25 +99,21 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
       <div
         style={{
           display: "flex",
-          alignItems: "baseline",
+          alignItems: "center",
           justifyContent: "space-between",
           gap: 12,
           marginBottom: 8,
         }}
       >
-        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text)" }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)" }}>
           {fmtEntryDate(entry.date)}
         </span>
         {!editing && (
-          <span style={{ display: "flex", gap: 14 }}>
+          <span style={{ display: "flex", gap: 20 }}>
             <button type="button" onClick={startEditing} style={TEXT_LINK}>
               Edit
             </button>
-            <button
-              type="button"
-              onClick={() => deleteReportEntry(entry.id)}
-              style={TEXT_LINK}
-            >
+            <button type="button" onClick={confirmDelete} style={TEXT_LINK}>
               Delete
             </button>
           </span>
@@ -116,11 +122,11 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
 
       {editing ? (
         <form onSubmit={onSave}>
-          <textarea
+          <AutoGrowTextarea
             value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={5}
-            style={{ ...INPUT, width: "100%", resize: "vertical", lineHeight: 1.6 }}
+            onChange={setText}
+            ariaLabel="Update text"
+            minRows={4}
           />
 
           {images.length > 0 && (
@@ -139,15 +145,19 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
                     onClick={() => setImages(images.filter((url) => url !== src))}
                     style={{
                       position: "absolute",
-                      top: -6,
-                      right: -6,
-                      height: 20,
-                      width: 20,
+                      top: -8,
+                      right: -8,
+                      height: 28,
+                      width: 28,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 0,
                       borderRadius: "50%",
                       border: "none",
                       background: "var(--color-text)",
                       color: "var(--color-bg)",
-                      fontSize: 12,
+                      fontSize: 16,
                       lineHeight: 1,
                       cursor: "pointer",
                     }}
@@ -159,29 +169,21 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
             </div>
           )}
 
-          <div style={{ marginTop: 12 }}>
-            <input
-              ref={fileRef}
-              type="file"
-              accept={REPORT_IMAGE_ACCEPT}
-              multiple
-              onChange={(e) => setNewFiles(Array.from(e.target.files ?? []))}
-              style={{ fontSize: 12, color: "var(--color-text-variant)" }}
-            />
-            {newFiles.length > 0 && (
-              <span style={{ fontSize: 12, color: "var(--color-text-faint)", marginLeft: 8 }}>
-                {newFiles.length} photo{newFiles.length !== 1 ? "s" : ""} to add
-              </span>
-            )}
-          </div>
+          <PhotoField
+            files={newFiles}
+            onChange={setNewFiles}
+            inputRef={fileRef}
+            label="Add photos"
+            countNoun="to add"
+          />
 
           {error && (
-            <div style={{ fontSize: 12, color: "var(--accent-red, #c0392b)", marginTop: 10 }}>
+            <div style={{ fontSize: 13, color: "var(--accent-red, #c0392b)", marginTop: 10 }}>
               {error}
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 12, marginTop: 14, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 16, marginTop: 14, alignItems: "center" }}>
             <button
               type="submit"
               disabled={busy}

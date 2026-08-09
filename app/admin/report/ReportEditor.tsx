@@ -2,8 +2,10 @@
 
 import { useRef, useState } from "react";
 import { publishReportEntry } from "../actions";
-import { INPUT, BTN } from "../styles";
-import { REPORT_IMAGE_ACCEPT, uploadReportImages } from "./upload-images";
+import { BTN } from "../styles";
+import AutoGrowTextarea from "./AutoGrowTextarea";
+import PhotoField from "./PhotoField";
+import { uploadReportImages } from "./upload-images";
 
 export default function ReportEditor() {
   const [text, setText] = useState("");
@@ -43,38 +45,34 @@ export default function ReportEditor() {
 
   return (
     <form onSubmit={onSubmit} style={{ marginBottom: 32 }}>
-      <textarea
+      <AutoGrowTextarea
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={setText}
         placeholder="What happened today…"
-        rows={5}
-        style={{ ...INPUT, width: "100%", resize: "vertical", lineHeight: 1.6 }}
+        ariaLabel="Update text"
+        minRows={4}
       />
 
-      <div style={{ marginTop: 12 }}>
-        <input
-          ref={fileRef}
-          type="file"
-          accept={REPORT_IMAGE_ACCEPT}
-          multiple
-          onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-          style={{ fontSize: 12, color: "var(--color-text-variant)" }}
-        />
-        {files.length > 0 && (
-          <span style={{ fontSize: 12, color: "var(--color-text-faint)", marginLeft: 8 }}>
-            {files.length} photo{files.length !== 1 ? "s" : ""} selected
-          </span>
-        )}
-      </div>
+      <PhotoField
+        files={files}
+        onChange={setFiles}
+        inputRef={fileRef}
+        label="Add photos"
+        countNoun="selected"
+      />
 
       {error && (
-        <div style={{ fontSize: 12, color: "var(--accent-red, #c0392b)", marginTop: 10 }}>
+        <div style={{ fontSize: 13, color: "var(--accent-red, #c0392b)", marginTop: 10 }}>
           {error}
         </div>
       )}
 
       <div style={{ marginTop: 16 }}>
-        <button type="submit" disabled={busy} style={{ ...BTN(false), opacity: busy ? 0.5 : 1 }}>
+        <button
+          type="submit"
+          disabled={busy}
+          style={{ ...BTN(false), opacity: busy ? 0.5 : 1, width: "100%", maxWidth: 260 }}
+        >
           {busy ? "Publishing…" : "Publish update"}
         </button>
       </div>

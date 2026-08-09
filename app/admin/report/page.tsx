@@ -40,8 +40,8 @@ export default async function AdminReportPage() {
               style={{
                 background: "none",
                 border: "none",
-                padding: 0,
-                fontSize: 12,
+                padding: "8px 2px",
+                fontSize: 13,
                 color: "var(--color-text-faint)",
                 cursor: "pointer",
                 fontFamily: "inherit",
