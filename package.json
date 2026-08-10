@@ -7,6 +7,7 @@
     "dev": "dotenvx run --quiet --overload -- next dev --turbopack",
     "img": "dotenvx run --quiet --overload -- node scripts/img.mts",
     "migrate:imgur": "dotenvx run --quiet --overload -- node scripts/migrate-imgur.mts",
+    "shrink:report-photos": "dotenvx run --quiet --overload -- node scripts/shrink-report-photos.mts",
     "build": "dotenvx run --quiet --overload -- next build",
     "start": "npx serve out",
     "lint": "eslint app/ lib/",

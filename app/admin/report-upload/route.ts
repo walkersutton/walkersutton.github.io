@@ -30,6 +30,16 @@ export async function POST(request: Request): Promise<NextResponse> {
         return {
           allowedContentTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
           addRandomSuffix: true,
+          // Every URL carries a random suffix, so a blob's bytes never change
+          // once written and the edge can hold onto them for as long as it
+          // likes. The default is a month, after which each region's first
+          // request pulls the file out of the store again and bills the
+          // transfer; a year makes those re-fetches twelve times rarer.
+          cacheControlMaxAge: 365 * 24 * 60 * 60,
+          // The client downscales before uploading, so anything this large is a
+          // photo that failed to re-encode or a file picked by mistake. Cap it
+          // rather than let one upload cost gigabytes of transfer later.
+          maximumSizeInBytes: 15 * 1024 * 1024,
         };
       },
       onUploadCompleted: async () => {

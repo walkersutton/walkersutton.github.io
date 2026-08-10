@@ -137,6 +137,14 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
                   <img
                     src={src}
                     alt=""
+                    width={72}
+                    height={72}
+                    // These thumbnails are the full-size upload scaled down by
+                    // the browser, so a long trip's worth of them is tens of
+                    // megabytes of Blob transfer on every load of this page.
+                    // Only fetch the ones actually scrolled into view.
+                    loading="lazy"
+                    decoding="async"
                     style={{ height: 72, width: 72, objectFit: "cover", borderRadius: 4 }}
                   />
                   <button
@@ -219,6 +227,10 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
                   key={src}
                   src={src}
                   alt=""
+                  width={72}
+                  height={72}
+                  loading="lazy"
+                  decoding="async"
                   style={{ height: 72, width: 72, objectFit: "cover", borderRadius: 4 }}
                 />
               ))}

@@ -117,6 +117,27 @@ npx vercel blob get-store          # name, access mode, size
 
 store is **public** access — blob URLs are plain CDN links, no signing. don't put anything private in there.
 
+### keeping data transfer down
+
+the free tier includes 10GB/month of blob data transfer, and every byte a
+visitor downloads from a blob URL counts. two things keep it in check:
+
+- photos posted from `/admin/report` are downscaled to 1600px webp in the
+  browser before upload, so a 4MB camera original becomes ~200KB. `pnpm img`
+  does the same for post images.
+- uploads are written with a one-year edge cache. blob URLs are immutable
+  (random suffix per file), so the store only serves a file again when some
+  region's cache expires.
+
+photos uploaded before that was in place are still full size. shrink them and
+repoint the live state at the smaller copies:
+
+```sh
+pnpm shrink:report-photos           # report only
+pnpm shrink:report-photos --apply
+pnpm shrink:report-photos --apply --prune   # also delete the originals
+```
+
 ### imgur migration
 
 one-shot, already run: all 17 imgur images are on blob now. kept around in case an old draft still has imgur links.

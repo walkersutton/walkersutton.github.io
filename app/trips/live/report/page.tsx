@@ -152,6 +152,11 @@ export default async function LiveReportPage() {
                             key={src}
                             src={src}
                             alt=""
+                            // A trip's report grows without bound, and every
+                            // photo on it is a Blob download. Only pay for the
+                            // ones a reader actually scrolls to.
+                            loading="lazy"
+                            decoding="async"
                             className="w-full"
                             style={{ borderRadius: 6, maxWidth: "100%", height: "auto" }}
                           />
