@@ -298,6 +298,29 @@ export async function clearReportEntries() {
   revalidatePath("/admin/report");
 }
 
+/**
+ * One batch of the photo backfill (see lib/report-photos.ts). Batched rather
+ * than done in one shot so it fits inside a function invocation, and so it can
+ * be driven from a phone: keep calling until `converted` comes back 0.
+ */
+export async function shrinkReportPhotosBatch(): Promise<
+  { ok: true; converted: number; saved: number; remaining: number } | { ok: false; error: string }
+> {
+  await assertAuth();
+  try {
+    const { shrinkReportPhotos } = await import("@/lib/report-photos");
+    const result = await shrinkReportPhotos();
+    if (result.converted > 0) {
+      revalidatePath("/trips/live/report");
+      revalidatePath("/admin/report");
+    }
+    return { ok: true, ...result };
+  } catch (error) {
+    console.error("shrinkReportPhotosBatch: failed", error);
+    return { ok: false, error: (error as Error).message || "Could not shrink photos." };
+  }
+}
+
 export async function saveLatestTemplates(formData: FormData) {
   await assertAuth();
   const keys = Object.keys(DEFAULT_LATEST_TEMPLATES) as LatestTemplateKey[];

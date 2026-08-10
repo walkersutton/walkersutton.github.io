@@ -129,14 +129,11 @@ visitor downloads from a blob URL counts. two things keep it in check:
   (random suffix per file), so the store only serves a file again when some
   region's cache expires.
 
-photos uploaded before that was in place are still full size. shrink them and
-repoint the live state at the smaller copies:
-
-```sh
-pnpm shrink:report-photos           # report only
-pnpm shrink:report-photos --apply
-pnpm shrink:report-photos --apply --prune   # also delete the originals
-```
+photos uploaded before that was in place are still full size. **Shrink old
+photos** at the bottom of `/admin/report` re-encodes them and repoints the live
+state at the smaller copies — it works from a phone, runs a few photos per
+request so nothing times out, and is safe to stop and resume. the originals are
+left in the store, so putting an old URL back undoes a conversion.
 
 ### imgur migration
 

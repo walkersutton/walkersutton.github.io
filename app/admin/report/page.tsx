@@ -2,8 +2,12 @@ import { getLiveReportEntries } from "@/lib/live-state";
 import { clearReportEntries } from "../actions";
 import ReportEditor from "./ReportEditor";
 import ReportEntryItem from "./ReportEntryItem";
+import ShrinkPhotosButton from "./ShrinkPhotosButton";
 
 export const dynamic = "force-dynamic";
+// Server Actions on this page run under this budget, and the photo backfill
+// downloads and re-encodes a batch of full-size photos per call.
+export const maxDuration = 60;
 
 export default async function AdminReportPage() {
   const entries = await getLiveReportEntries();
@@ -62,6 +66,22 @@ export default async function AdminReportPage() {
           {entries.map((entry) => (
             <ReportEntryItem key={entry.id} entry={entry} />
           ))}
+        </div>
+      )}
+
+      {entries.some((entry) => entry.images.length > 0) && (
+        <div
+          style={{
+            marginTop: 32,
+            paddingTop: 16,
+            borderTop: "1px solid var(--color-border-faint)",
+          }}
+        >
+          <div style={{ fontSize: 13, color: "var(--color-text-faint)" }}>
+            Photos posted before the app started shrinking them are still full
+            camera size, which is what runs down the Blob transfer allowance.
+          </div>
+          <ShrinkPhotosButton />
         </div>
       )}
     </div>
