@@ -1,11 +1,6 @@
 import { SITE_CONFIG } from "./config";
 
 /**
- * The zone a report entry should be rendered in: the one it was posted from,
- * falling back to the site's for entries written before that was recorded (and
- * for anything a browser reports that Intl doesn't recognise).
- */
-/**
  * Offered when correcting an entry's zone by hand. A ride across the US only
  * passes through these, and a full IANA list is unusable on a phone. Arizona is
  * separate because it doesn't observe DST, so it isn't Mountain in summer.
@@ -28,6 +23,11 @@ export function isValidTimeZone(tz: string): boolean {
   }
 }
 
+/**
+ * The zone a report entry should be rendered in: the one it was posted from,
+ * falling back to the site's for entries written before that was recorded (and
+ * for anything a browser reports that Intl doesn't recognise).
+ */
 export function entryTimeZone(tz?: string): string {
   if (!tz || !isValidTimeZone(tz)) return SITE_CONFIG.timeZone;
   return tz;
