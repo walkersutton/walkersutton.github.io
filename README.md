@@ -128,6 +128,8 @@ visitor downloads from a blob URL counts. two things keep it in check:
 - uploads are written with a one-year edge cache. blob URLs are immutable
   (random suffix per file), so the store only serves a file again when some
   region's cache expires.
+- the live report pages at 20 updates (`?page=2` and on), and its photos load
+  lazily, so reading the last few days costs the last few days.
 
 photos uploaded before that was in place are still full size. **Shrink old
 photos** at the bottom of `/admin/report` fixes those: the server lists what's

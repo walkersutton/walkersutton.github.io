@@ -56,8 +56,38 @@ function groupByDay(entries: LiveReportEntry[]): { key: string; entries: LiveRep
   return groups;
 }
 
-export default async function LiveReportPage() {
-  const [isOnTrip, tripName, entries] = await Promise.all([
+/**
+ * Updates per page. A long trip's report is mostly photos, and every one a
+ * reader scrolls past is a download from the store — lazy loading means an
+ * unread photo costs nothing, but reaching the bottom of a two-month trip
+ * would still pull every photo in it. A page bounds what one visit can fetch,
+ * and most readers only want the last few days anyway.
+ */
+const PAGE_SIZE = 20;
+
+// Padded rather than a bare word: these are the only tap targets at the foot of
+// a long scroll on a phone.
+const PAGER_LINK: React.CSSProperties = {
+  fontSize: 13,
+  fontWeight: 500,
+  color: "var(--color-text-faint)",
+  textDecoration: "underline",
+  textUnderlineOffset: "2px",
+  padding: "10px 0",
+};
+
+/** Page 1 is the bare URL; deeper pages carry ?page=N. */
+function pageHref(page: number): string {
+  return page <= 1 ? "/trips/live/report" : `/trips/live/report?page=${page}`;
+}
+
+export default async function LiveReportPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const [{ page }, isOnTrip, tripName, entries] = await Promise.all([
+    searchParams,
     getLiveEnabled(),
     getActiveTripName(),
     getLiveReportEntries(),
@@ -65,7 +95,15 @@ export default async function LiveReportPage() {
 
   if (!isOnTrip && entries.length === 0) redirect("/trips");
 
-  const groups = groupByDay(entries);
+  const totalPages = Math.max(1, Math.ceil(entries.length / PAGE_SIZE));
+  // Anything unparseable, out of range, or hand-typed lands on page 1 rather
+  // than an empty page.
+  const requested = Number.parseInt(page ?? "1", 10);
+  const currentPage =
+    Number.isFinite(requested) && requested >= 1 && requested <= totalPages ? requested : 1;
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const groups = groupByDay(entries.slice(start, start + PAGE_SIZE));
 
   return (
     <PageContainer>
@@ -173,6 +211,41 @@ export default async function LiveReportPage() {
               </section>
             ))}
           </div>
+        )}
+
+        {totalPages > 1 && (
+          <nav
+            aria-label="Trip report pages"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 16,
+              marginTop: 40,
+              paddingTop: 20,
+              borderTop: "1px solid var(--color-border-faint)",
+            }}
+          >
+            {/* The empty spans hold the ends of the row, so "Page 2 of 5"
+                stays centred whether or not both links are there. */}
+            {currentPage > 1 ? (
+              <Link href={pageHref(currentPage - 1)} style={PAGER_LINK}>
+                ← Newer
+              </Link>
+            ) : (
+              <span />
+            )}
+            <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
+              Page {currentPage} of {totalPages}
+            </span>
+            {currentPage < totalPages ? (
+              <Link href={pageHref(currentPage + 1)} style={PAGER_LINK}>
+                Older →
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
         )}
 
         <div
