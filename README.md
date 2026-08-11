@@ -130,10 +130,15 @@ visitor downloads from a blob URL counts. two things keep it in check:
   region's cache expires.
 
 photos uploaded before that was in place are still full size. **Shrink old
-photos** at the bottom of `/admin/report` re-encodes them and repoints the live
-state at the smaller copies — it works from a phone, runs a few photos per
-request so nothing times out, and is safe to stop and resume. the originals are
-left in the store, so putting an old URL back undoes a conversion.
+photos** at the bottom of `/admin/report` fixes those: the server lists what's
+oversized (`head()` reads a blob's size without downloading it), then the
+browser pulls each one back through `/admin/report-photo`, re-encodes it on a
+canvas, and uploads the smaller copy. same code path as a normal upload, so
+there's no image library in the deployment to go wrong.
+
+it commits one photo at a time — stop it whenever, tap again later, converted
+photos are already under the threshold and get skipped. originals stay in the
+store, so putting an old URL back undoes a conversion.
 
 ### imgur migration
 

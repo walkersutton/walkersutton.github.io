@@ -1,18 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { shrinkReportPhotosBatch } from "../actions";
+import { listReportPhotosToShrink, replaceReportPhotoUrl } from "../actions";
 import { BTN } from "../styles";
+import { shrinkExistingPhoto } from "./upload-images";
 
 const MB = (bytes: number) => `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
 
-/** Stop rather than loop forever if a pass keeps reporting work left to do. */
-const MAX_PASSES = 40;
-
 /**
- * Runs the photo backfill a batch at a time (see lib/report-photos.ts). Each
- * batch is its own server round trip, so a dropped connection on the trail
- * costs at most the batch in flight — everything already converted is saved.
+ * Works through the photos already in the store, one at a time: fetch,
+ * re-encode here, upload the smaller copy, repoint the report at it.
+ *
+ * Each photo is committed on its own, so losing signal halfway through costs
+ * only the photo in flight — tap again later and it picks up where it stopped,
+ * because a converted photo no longer counts as oversized.
  */
 export default function ShrinkPhotosButton() {
   const [busy, setBusy] = useState(false);
@@ -25,33 +26,46 @@ export default function ShrinkPhotosButton() {
     setError(null);
     setStatus("Checking photos…");
 
-    let converted = 0;
-    let saved = 0;
     try {
-      for (let pass = 0; pass < MAX_PASSES; pass++) {
-        const result = await shrinkReportPhotosBatch();
-        if (!result.ok) {
-          setError(result.error);
-          break;
-        }
-        // A pass that converts nothing means everything left is already as
-        // small as it is going to get.
-        if (result.converted === 0) break;
+      const listed = await listReportPhotosToShrink();
+      if (!listed.ok) {
+        setError(listed.error);
+        return;
+      }
+      if (listed.photos.length === 0) {
+        setStatus("Nothing to shrink — every photo is already small.");
+        return;
+      }
 
-        converted += result.converted;
+      let done = 0;
+      let saved = 0;
+      let skipped = 0;
+
+      for (const [i, photo] of listed.photos.entries()) {
+        setStatus(`Shrinking photo ${i + 1} of ${listed.photos.length}…`);
+        const result = await shrinkExistingPhoto(photo.url);
+        if (!result) {
+          skipped++;
+          continue;
+        }
+
+        const saveResult = await replaceReportPhotoUrl(photo.url, result.url);
+        if (!saveResult.ok) {
+          setError(saveResult.error);
+          return;
+        }
+        done++;
         saved += result.saved;
-        setStatus(
-          `Shrunk ${converted} photo${converted === 1 ? "" : "s"}, saved ${MB(saved)}` +
-            (result.remaining > 0 ? ` — ${result.remaining} to go…` : "…"),
-        );
       }
 
       setStatus(
-        converted === 0
-          ? "Nothing to shrink — every photo is already small."
-          : `Done. Shrunk ${converted} photo${converted === 1 ? "" : "s"} and saved ${MB(saved)} per read of the report.`,
+        done === 0
+          ? "Nothing to shrink — every photo is already as small as it gets."
+          : `Done. Shrunk ${done} photo${done === 1 ? "" : "s"}, saving ${MB(saved)} per read of the report` +
+              (skipped > 0 ? `. ${skipped} already small enough.` : "."),
       );
     } catch (err) {
+      // Whatever was converted before this point is already saved.
       setError((err as Error).message || "Could not shrink photos.");
     } finally {
       setBusy(false);

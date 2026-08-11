@@ -94,6 +94,39 @@ async function prepare(file: File): Promise<File> {
   return shrunk;
 }
 
+/**
+ * Backfill for a photo already in the store: pull it back through the proxy
+ * route, re-encode it here, and upload the smaller copy. Returns the new URL
+ * and the bytes saved, or null if it was already as small as it is going to
+ * get.
+ *
+ * The re-encoding happens in this browser rather than in a function because a
+ * server-side resize means shipping libvips into the deployment, which is a
+ * fight with output tracing that isn't worth having for a one-off cleanup. The
+ * phone that took the photos can do it.
+ */
+export async function shrinkExistingPhoto(
+  url: string,
+): Promise<{ url: string; saved: number } | null> {
+  const response = await fetch(`/admin/report-photo?url=${encodeURIComponent(url)}`);
+  if (!response.ok) throw new Error(`Could not read the photo (${response.status})`);
+
+  const blob = await response.blob();
+  const name = decodeURIComponent(new URL(url).pathname).split("/").pop() || "photo.jpg";
+  const original = new File([blob], name, { type: blob.type });
+
+  const shrunk = await reencode(original);
+  // An already-optimised photo can come out bigger; leaving it alone is the
+  // right answer, and the caller stops when nothing in a pass shrinks.
+  if (shrunk.size >= original.size) return null;
+
+  const uploaded = await upload(shrunk.name, shrunk, {
+    access: "public",
+    handleUploadUrl: "/admin/report-upload",
+  });
+  return { url: uploaded.url, saved: original.size - shrunk.size };
+}
+
 export async function uploadReportImages(files: File[]): Promise<string[]> {
   const urls: string[] = [];
   for (const raw of files) {

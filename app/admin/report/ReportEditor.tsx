@@ -26,6 +26,10 @@ export default function ReportEditor() {
 
       const fd = new FormData();
       fd.set("text", text);
+      // Where the update was written from. The server only sees UTC and the
+      // reader only sees their own zone, so this is the one place the trip's
+      // actual local time exists.
+      fd.set("tz", Intl.DateTimeFormat().resolvedOptions().timeZone);
       for (const url of imageUrls) fd.append("imageUrl", url);
       const result = await publishReportEntry(fd);
       if (!result.ok) {

@@ -49,6 +49,21 @@ function sign(issuedAt: string): string {
     .digest("hex");
 }
 
+/**
+ * Whether the caller holds a valid admin session. For route handlers — Server
+ * Actions have their own assertAuth, which throws instead of returning.
+ */
+export async function isAdminSession(): Promise<boolean> {
+  const { cookies } = await import("next/headers");
+  const token = (await cookies()).get("admin_session")?.value;
+  if (!token) return false;
+  try {
+    return verifyToken(token);
+  } catch {
+    return false;
+  }
+}
+
 export function signToken(): string {
   const issuedAt = Date.now().toString();
   return `${issuedAt}.${sign(issuedAt)}`;

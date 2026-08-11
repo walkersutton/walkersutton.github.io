@@ -9,7 +9,19 @@ const STATE_BLOB_PATH = "live-state.json";
 const DEFAULT_BANNER_TEXT = "Walker is currently on trail";
 const DEFAULT_BLUESKY_HANDLE = "walkersutton.com";
 
-export type LiveReportEntry = { id: string; date: string; text: string; images: string[] };
+/**
+ * `tz` is the IANA zone the update was posted from, captured in the browser at
+ * publish time. A trip crosses time zones, and a timestamp rendered in a fixed
+ * site zone quietly claims the post happened an hour or three from when it did.
+ * Entries written before this existed have no tz and fall back to the site's.
+ */
+export type LiveReportEntry = {
+  id: string;
+  date: string;
+  text: string;
+  images: string[];
+  tz?: string;
+};
 
 type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string; mapShareStartDate?: string };
 

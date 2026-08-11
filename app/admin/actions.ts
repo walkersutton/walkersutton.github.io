@@ -20,6 +20,7 @@ import {
   setMapShareFeedUrl,
   setMapShareStartDate,
 } from "@/lib/live-state";
+import { isValidTimeZone } from "@/lib/report-time";
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
 import { DEFAULT_LATEST_TEMPLATES, type LatestTemplateKey, type LatestTemplates } from "@/lib/latest-templates";
@@ -243,12 +244,19 @@ export async function publishReportEntry(
     .filter(Boolean);
   if (!text && images.length === 0) return { ok: false, error: "Nothing to publish." };
 
+  // An unrecognised zone is dropped rather than stored: rendering falls back to
+  // the site zone, which is the same behaviour as an entry posted before this
+  // was recorded.
+  const posted = (formData.get("tz") as string | null)?.trim() ?? "";
+  const tz = posted && isValidTimeZone(posted) ? posted : undefined;
+
   const entries = await getLiveReportEntries();
   entries.unshift({
     id: crypto.randomUUID(),
     date: new Date().toISOString(),
     text,
     images,
+    tz,
   });
 
   try {
@@ -298,26 +306,36 @@ export async function clearReportEntries() {
   revalidatePath("/admin/report");
 }
 
-/**
- * One batch of the photo backfill (see lib/report-photos.ts). Batched rather
- * than done in one shot so it fits inside a function invocation, and so it can
- * be driven from a phone: keep calling until `converted` comes back 0.
- */
-export async function shrinkReportPhotosBatch(): Promise<
-  { ok: true; converted: number; saved: number; remaining: number } | { ok: false; error: string }
+/** The photos the backfill should work through (see lib/report-photos.ts). */
+export async function listReportPhotosToShrink(): Promise<
+  { ok: true; photos: { url: string; size: number }[] } | { ok: false; error: string }
 > {
   await assertAuth();
   try {
-    const { shrinkReportPhotos } = await import("@/lib/report-photos");
-    const result = await shrinkReportPhotos();
-    if (result.converted > 0) {
-      revalidatePath("/trips/live/report");
-      revalidatePath("/admin/report");
-    }
-    return { ok: true, ...result };
+    const { listOversizedReportPhotos } = await import("@/lib/report-photos");
+    return { ok: true, photos: await listOversizedReportPhotos() };
   } catch (error) {
-    console.error("shrinkReportPhotosBatch: failed", error);
-    return { ok: false, error: (error as Error).message || "Could not shrink photos." };
+    console.error("listReportPhotosToShrink: failed", error);
+    return { ok: false, error: (error as Error).message || "Could not list photos." };
+  }
+}
+
+/** Records one converted photo. Called once per photo, so an interrupted run
+ *  keeps everything it finished. */
+export async function replaceReportPhotoUrl(
+  oldUrl: string,
+  newUrl: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAuth();
+  try {
+    const { replaceReportPhoto } = await import("@/lib/report-photos");
+    await replaceReportPhoto(oldUrl, newUrl);
+    revalidatePath("/trips/live/report");
+    revalidatePath("/admin/report");
+    return { ok: true };
+  } catch (error) {
+    console.error("replaceReportPhotoUrl: failed", error);
+    return { ok: false, error: (error as Error).message || "Could not save the change." };
   }
 }
 

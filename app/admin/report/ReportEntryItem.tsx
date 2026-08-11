@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { SITE_CONFIG } from "@/lib/config";
+import { entryTimeZone } from "@/lib/report-time";
 import type { LiveReportEntry } from "@/lib/live-state";
 import { updateReportEntry, deleteReportEntry } from "../actions";
 import { BTN } from "../styles";
@@ -23,7 +23,9 @@ const TEXT_LINK: React.CSSProperties = {
   textUnderlineOffset: 3,
 };
 
-function fmtEntryDate(iso: string): string {
+/** Shown in the zone the update was posted from, same as the public page, so
+ *  this is where a wrong zone would be caught. */
+function fmtEntryDate(iso: string, tz: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return new Intl.DateTimeFormat("en-US", {
@@ -32,7 +34,8 @@ function fmtEntryDate(iso: string): string {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZone: SITE_CONFIG.timeZone,
+    timeZone: tz,
+    timeZoneName: "short",
   }).format(d);
 }
 
@@ -106,7 +109,7 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
         }}
       >
         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)" }}>
-          {fmtEntryDate(entry.date)}
+          {fmtEntryDate(entry.date, entryTimeZone(entry.tz))}
         </span>
         {!editing && (
           <span style={{ display: "flex", gap: 20 }}>

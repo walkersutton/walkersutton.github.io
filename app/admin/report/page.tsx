@@ -5,8 +5,8 @@ import ReportEntryItem from "./ReportEntryItem";
 import ShrinkPhotosButton from "./ShrinkPhotosButton";
 
 export const dynamic = "force-dynamic";
-// Server Actions on this page run under this budget, and the photo backfill
-// downloads and re-encodes a batch of full-size photos per call.
+// Server Actions on this page run under this budget, and listing the photos to
+// shrink is one head() per photo in the trip.
 export const maxDuration = 60;
 
 export default async function AdminReportPage() {
@@ -80,6 +80,8 @@ export default async function AdminReportPage() {
           <div style={{ fontSize: 13, color: "var(--color-text-faint)" }}>
             Photos posted before the app started shrinking them are still full
             camera size, which is what runs down the Blob transfer allowance.
+            Shrinking pulls each one back to this phone to re-encode it, so do
+            it on wifi if you can. Safe to stop and pick up later.
           </div>
           <ShrinkPhotosButton />
         </div>
