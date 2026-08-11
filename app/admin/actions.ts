@@ -286,6 +286,11 @@ export async function updateReportEntry(formData: FormData) {
 
   entry.text = text;
   entry.images = images;
+  // The zone an update was posted from is editable because it can be wrong:
+  // entries written before it was recorded default to the site's, and a phone
+  // that hasn't caught up with the ride reports the old one.
+  const tz = (formData.get("tz") as string | null)?.trim() ?? "";
+  if (tz && isValidTimeZone(tz)) entry.tz = tz;
   await setLiveReportEntries(entries);
   revalidatePath("/trips/live/report");
   revalidatePath("/admin/report");

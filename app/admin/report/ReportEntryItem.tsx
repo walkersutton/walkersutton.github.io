@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { entryTimeZone } from "@/lib/report-time";
+import { entryTimeZone, TRIP_TIME_ZONES } from "@/lib/report-time";
 import type { LiveReportEntry } from "@/lib/live-state";
 import { updateReportEntry, deleteReportEntry } from "../actions";
-import { BTN } from "../styles";
+import { BTN, INPUT } from "../styles";
 import AutoGrowTextarea from "./AutoGrowTextarea";
 import PhotoField from "./PhotoField";
 import { uploadReportImages } from "./upload-images";
@@ -43,14 +43,22 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(entry.text);
   const [images, setImages] = useState(entry.images);
+  const [tz, setTz] = useState(entryTimeZone(entry.tz));
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Whatever the entry already uses has to be selectable, or saving an edit
+  // would quietly move it to whichever zone happened to be first in the list.
+  const zoneOptions = TRIP_TIME_ZONES.some((zone) => zone.value === tz)
+    ? TRIP_TIME_ZONES
+    : [{ value: tz, label: tz }, ...TRIP_TIME_ZONES];
+
   function startEditing() {
     setText(entry.text);
     setImages(entry.images);
+    setTz(entryTimeZone(entry.tz));
     setNewFiles([]);
     setError(null);
     setEditing(true);
@@ -84,6 +92,7 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
       const fd = new FormData();
       fd.set("id", entry.id);
       fd.set("text", text);
+      fd.set("tz", tz);
       for (const url of [...images, ...uploaded]) fd.append("imageUrl", url);
       await updateReportEntry(fd);
 
@@ -131,6 +140,34 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
             ariaLabel="Update text"
             minRows={4}
           />
+
+          {/* Updates posted before the app recorded a zone read as Pacific,
+              which is wrong for everywhere east of Nevada. Fixing it here
+              re-renders the time and, for a late-evening post, moves it under
+              the right day heading. */}
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginTop: 12,
+              fontSize: 13,
+              color: "var(--color-text-faint)",
+            }}
+          >
+            Posted in
+            <select
+              value={tz}
+              onChange={(e) => setTz(e.target.value)}
+              style={{ ...INPUT, minHeight: 40, fontSize: 13 }}
+            >
+              {zoneOptions.map((zone) => (
+                <option key={zone.value} value={zone.value}>
+                  {zone.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
           {images.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
