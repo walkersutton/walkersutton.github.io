@@ -36,13 +36,17 @@ export const metadata: Metadata = {
 import { CartProvider } from "@/context/CartContext";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
-import HideOnTrips from "./components/HideOnTrips";
+import HideOnPaths from "./components/HideOnPaths";
 import Banner from "./components/Banner";
 import { getBannerEnabled, getBannerText, getBannerLink, getLiveEnabled } from "@/lib/live-state";
 import { getAllTripSlugs } from "@/lib/trips";
 import { draftMode } from "next/headers";
 
 export const dynamic = "force-dynamic";
+
+// Routes that render as a standalone page rather than part of the site: no
+// header, no footer, nothing but what the page itself puts on screen.
+const BARE_ROUTES = ["/links"];
 
 export default async function RootLayout({
   children,
@@ -80,11 +84,13 @@ export default async function RootLayout({
               <Banner text={bannerText} href={bannerLink} />
             </div>
           )}
-          <Header homeGlass={isLive} showTrips={hasTrips} />
+          <HideOnPaths paths={BARE_ROUTES}>
+            <Header homeGlass={isLive} showTrips={hasTrips} />
+          </HideOnPaths>
           <div className="flex-grow">{children}</div>
-          <HideOnTrips>
+          <HideOnPaths paths={["/trips", ...BARE_ROUTES]}>
             <Footer />
-          </HideOnTrips>
+          </HideOnPaths>
         </CartProvider>
       </body>
     </html>

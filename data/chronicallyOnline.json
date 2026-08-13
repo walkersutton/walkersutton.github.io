@@ -2,8 +2,7 @@
   {
     "name": "X",
     "href": "https://x.com/walkercsutton",
-    "footer": true,
-    "links": true
+    "footer": true
   },
   {
     "name": "GitHub",
@@ -12,14 +11,12 @@
   {
     "name": "YouTube",
     "href": "http://www.youtube.com/@walkersutton",
-    "footer": true,
-    "links": true
+    "footer": true
   },
   {
     "name": "Instagram",
     "href": "https://www.instagram.com/bandiitb0y/",
-    "footer": true,
-    "links": true
+    "footer": true
   },
   {
     "name": "TikTok",
