@@ -1,4 +1,6 @@
+import Pager from "@/app/components/Pager";
 import { getLiveReportEntries } from "@/lib/live-state";
+import { paginate } from "@/lib/paginate";
 import { clearReportEntries } from "../actions";
 import ReportEditor from "./ReportEditor";
 import ReportEntryItem from "./ReportEntryItem";
@@ -9,8 +11,21 @@ export const dynamic = "force-dynamic";
 // shrink is one head() per photo in the trip.
 export const maxDuration = 60;
 
-export default async function AdminReportPage() {
-  const entries = await getLiveReportEntries();
+/** Page 1 is the bare URL, so the link in the admin nav never carries a page. */
+function pageHref(page: number): string {
+  return page <= 1 ? "/admin/report" : `/admin/report?page=${page}`;
+}
+
+export default async function AdminReportPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const [{ page }, entries] = await Promise.all([searchParams, getLiveReportEntries()]);
+  // Same paging as the public report: the thumbnails here are the full-size
+  // uploads scaled down by the browser, and this is the page that gets reloaded
+  // after every post.
+  const { pageItems, currentPage, totalPages } = paginate(entries, page);
 
   return (
     <div>
@@ -36,6 +51,7 @@ export default async function AdminReportPage() {
           }}
         >
           {entries.length} update{entries.length !== 1 ? "s" : ""}
+          {totalPages > 1 && ` · page ${currentPage}/${totalPages}`}
         </span>
         {entries.length > 0 && (
           <form action={clearReportEntries}>
@@ -63,11 +79,18 @@ export default async function AdminReportPage() {
         <p style={{ fontSize: 13, color: "var(--color-text-faint)" }}>No updates yet.</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          {entries.map((entry) => (
+          {pageItems.map((entry) => (
             <ReportEntryItem key={entry.id} entry={entry} />
           ))}
         </div>
       )}
+
+      <Pager
+        currentPage={currentPage}
+        totalPages={totalPages}
+        hrefFor={pageHref}
+        label="Update pages"
+      />
 
       {entries.some((entry) => entry.images.length > 0) && (
         <div
