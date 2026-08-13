@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SkullMark from "@/app/components/SkullMark";
 import chronicallyOnline from "@/data/chronicallyOnline.json";
 import { SITE_CONFIG } from "@/lib/config";
 import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
@@ -12,18 +13,41 @@ export const metadata: Metadata = {
   description: "Walker Sutton's links.",
 };
 
-type LinkItem = { label: string; note?: string; href: string; external?: boolean };
+function StravaIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066M10.463 0l-7 13.828h4.169l2.831 5.598 2.836-5.598h4.172z" />
+    </svg>
+  );
+}
+
+/** Keyed by the social's name in chronicallyOnline.json, same as the footer. */
+const ICONS: Record<string, () => React.ReactElement> = {
+  Strava: StravaIcon,
+};
+
+type LinkItem = {
+  label: string;
+  href: string;
+  external?: boolean;
+  icon?: () => React.ReactElement;
+};
 
 /**
  * `links: true` in the JSON picks what shows up here, the same way `footer:
  * true` picks the icons in the footer — featuring another profile is one flag,
- * not a code change.
+ * plus an icon here if it has one.
  */
 const SOCIAL_LINKS: LinkItem[] = (
   chronicallyOnline as { name: string; href: string; links?: boolean }[]
 )
   .filter((social) => social.links)
-  .map((social) => ({ label: social.name, href: social.href, external: true }));
+  .map((social) => ({
+    label: social.name,
+    href: social.href,
+    external: true,
+    icon: ICONS[social.name],
+  }));
 
 // A row is the whole tap target — full width, thumb-height, and spaced far
 // enough apart that the wrong one is hard to hit one-handed on a bike.
@@ -31,6 +55,7 @@ const ROW: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  gap: 9,
   minHeight: 60,
   padding: "16px 20px",
   border: "1.5px solid var(--color-text)",
@@ -42,16 +67,23 @@ const ROW: React.CSSProperties = {
   textAlign: "center",
 };
 
-function LinkRow({ label, href, external }: LinkItem) {
+function LinkRow({ label, href, external, icon: Icon }: LinkItem) {
+  const body = (
+    <>
+      {Icon && <Icon />}
+      {label}
+    </>
+  );
+
   // Internal links go through next/link so they navigate client-side and get
   // counted; external ones are plain anchors that leave the site.
   return external ? (
     <a href={href} target="_blank" rel="noopener noreferrer" style={ROW}>
-      {label}
+      {body}
     </a>
   ) : (
     <Link href={href} style={ROW}>
-      {label}
+      {body}
     </Link>
   );
 }
@@ -86,28 +118,34 @@ export default async function LinksPage() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "64px 0 72px",
+        padding: "52px 0 72px",
       }}
     >
       <div style={{ width: "100%", maxWidth: 400 }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
+          <SkullMark />
+        </div>
+
+        <h1
+          className="font-semibold leading-[1.1] tracking-[-0.025em] text-center"
+          style={{ fontSize: "clamp(26px,7vw,34px)", color: "var(--color-text)" }}
+        >
+          {SITE_CONFIG.title}
+        </h1>
+
+        {/* Sits under the name as its subtitle, so the gap below the heading
+            block is the same whether or not there's a trip on. */}
         {isOnTrip && (
           <div
-            className="flex items-center justify-center gap-[6px] text-[10.5px] font-semibold uppercase tracking-[0.13em] mb-[10px]"
-            style={{ color: "var(--accent-green)" }}
+            className="flex items-center justify-center gap-[6px] text-[10.5px] font-semibold uppercase tracking-[0.13em]"
+            style={{ color: "var(--accent-green)", marginTop: 10 }}
           >
             <span className="trips-live-dot" />
             {tripName}
           </div>
         )}
 
-        <h1
-          className="font-semibold leading-[1.1] tracking-[-0.025em] text-center"
-          style={{ fontSize: "clamp(26px,7vw,34px)", color: "var(--color-text)", marginBottom: 28 }}
-        >
-          {SITE_CONFIG.title}
-        </h1>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <nav style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 34 }}>
           {links.map((item) => (
             <LinkRow key={item.href} {...item} />
           ))}
