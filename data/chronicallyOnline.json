@@ -2,7 +2,8 @@
   {
     "name": "X",
     "href": "https://x.com/walkercsutton",
-    "footer": true
+    "footer": true,
+    "links": true
   },
   {
     "name": "GitHub",
@@ -11,12 +12,14 @@
   {
     "name": "YouTube",
     "href": "http://www.youtube.com/@walkersutton",
-    "footer": true
+    "footer": true,
+    "links": true
   },
   {
     "name": "Instagram",
     "href": "https://www.instagram.com/bandiitb0y/",
-    "footer": true
+    "footer": true,
+    "links": true
   },
   {
     "name": "TikTok",
@@ -24,7 +27,8 @@
   },
   {
     "name": "Strava",
-    "href": "https://www.strava.com/athletes/2700105"
+    "href": "https://www.strava.com/athletes/2700105",
+    "links": true
   },
   {
     "name": "Spotify",

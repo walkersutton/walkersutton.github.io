@@ -12,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const projects = getAllProjects().filter((p) => !p.hide && p.hasContent);
   const trips = buildTripEntries();
 
-  const staticPaths = ["", "/posts", "/projects", "/trips"];
+  const staticPaths = ["", "/posts", "/projects", "/trips", "/links"];
 
   const staticRoutes: MetadataRoute.Sitemap = staticPaths.map((path) => ({
     url: `${SITE_CONFIG.siteUrl}${path}`,
