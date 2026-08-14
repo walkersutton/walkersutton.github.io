@@ -7,6 +7,7 @@ const TABS = [
   { href: "/admin", label: "General" },
   { href: "/admin/latest", label: "Latest" },
   { href: "/admin/report", label: "Report" },
+  { href: "/admin/links", label: "Links" },
 ];
 
 const TAB_LINK = (active: boolean): React.CSSProperties => ({

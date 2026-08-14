@@ -19,7 +19,9 @@ import {
   setLiveReportEntries,
   setMapShareFeedUrl,
   setMapShareStartDate,
+  setSiteLinks,
 } from "@/lib/live-state";
+import { isAllowedHref } from "@/lib/links";
 import { isValidTimeZone } from "@/lib/report-time";
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
@@ -309,6 +311,40 @@ export async function clearReportEntries() {
   await setLiveReportEntries([]);
   revalidatePath("/trips/live/report");
   revalidatePath("/admin/report");
+}
+
+/**
+ * Replaces the whole /links list. Rows arrive as parallel label/href arrays,
+ * in the order they appear on screen, so reordering is just a re-submit.
+ */
+export async function saveSiteLinks(_prev: SaveResult, formData: FormData): Promise<SaveResult> {
+  await assertAuth();
+  const labels = (formData.getAll("label") as string[]).map((value) => value.trim());
+  const hrefs = (formData.getAll("href") as string[]).map((value) => value.trim());
+
+  // A half-filled row is a row being typed, not an error worth blocking on.
+  const rows = labels
+    .map((label, i) => ({ label, href: hrefs[i] ?? "" }))
+    .filter((row) => row.label || row.href);
+
+  const incomplete = rows.find((row) => !row.label || !row.href);
+  if (incomplete) {
+    return { error: `"${incomplete.label || incomplete.href}" needs both a label and a link.` };
+  }
+  const bad = rows.find((row) => !isAllowedHref(row.href));
+  if (bad) {
+    return { error: `${bad.href} isn't a link — use https://… or a path like /trips.` };
+  }
+
+  try {
+    await setSiteLinks(rows);
+  } catch (error) {
+    return { error: (error as Error).message || "Could not save." };
+  }
+
+  revalidatePath("/links");
+  revalidatePath("/admin/links");
+  return { saved: `${rows.length} link${rows.length === 1 ? "" : "s"}` };
 }
 
 /** The photos the backfill should work through (see lib/report-photos.ts). */

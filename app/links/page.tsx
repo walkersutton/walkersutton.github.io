@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SkullMark from "@/app/components/SkullMark";
-import chronicallyOnline from "@/data/chronicallyOnline.json";
 import { SITE_CONFIG } from "@/lib/config";
-import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
+import {
+  getLiveEnabled,
+  getActiveTripName,
+  getLiveReportEntries,
+  getSiteLinks,
+} from "@/lib/live-state";
 
 // Reads live state to decide whether the trip links belong on the page.
 export const dynamic = "force-dynamic";
@@ -24,33 +28,16 @@ function StravaIcon() {
   );
 }
 
-/** Keyed by the social's name in chronicallyOnline.json, same as the footer. */
-const ICONS: Record<string, () => React.ReactElement> = {
-  Strava: StravaIcon,
-};
-
-type LinkItem = {
-  label: string;
-  href: string;
-  external?: boolean;
-  icon?: () => React.ReactElement;
-};
-
 /**
- * `links: true` in the JSON picks what shows up here, the same way `footer:
- * true` picks the icons in the footer — featuring another profile is one flag,
- * plus an icon here if it has one.
+ * Matched against a row's label, lower-cased, so a link typed in admin picks up
+ * its logo without anything else to fill in. A label with no icon here is
+ * simply text, which is what most of them will be.
  */
-const SOCIAL_LINKS: LinkItem[] = (
-  chronicallyOnline as { name: string; href: string; links?: boolean }[]
-)
-  .filter((social) => social.links)
-  .map((social) => ({
-    label: social.name,
-    href: social.href,
-    external: true,
-    icon: ICONS[social.name],
-  }));
+const ICONS: Record<string, () => React.ReactElement> = {
+  strava: StravaIcon,
+};
+
+type LinkItem = { label: string; href: string };
 
 // A row is the whole tap target — full width, thumb-height, and spaced far
 // enough apart that the wrong one is hard to hit one-handed on a bike.
@@ -70,7 +57,8 @@ const ROW: React.CSSProperties = {
   textAlign: "center",
 };
 
-function LinkRow({ label, href, external, icon: Icon }: LinkItem) {
+function LinkRow({ label, href }: LinkItem) {
+  const Icon = ICONS[label.trim().toLowerCase()];
   const body = (
     <>
       {Icon && <Icon />}
@@ -78,36 +66,39 @@ function LinkRow({ label, href, external, icon: Icon }: LinkItem) {
     </>
   );
 
-  // Internal links go through next/link so they navigate client-side and get
-  // counted; external ones are plain anchors that leave the site.
-  return external ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" style={ROW}>
-      {body}
-    </a>
-  ) : (
+  // A row pointing somewhere on this site navigates client-side and gets
+  // counted; anything else is a plain anchor that leaves the site. Which one it
+  // is comes from the href, since admin just types a link.
+  return href.startsWith("/") ? (
     <Link href={href} style={ROW}>
       {body}
     </Link>
+  ) : (
+    <a href={href} target="_blank" rel="noopener noreferrer" style={ROW}>
+      {body}
+    </a>
   );
 }
 
 export default async function LinksPage() {
-  const [isOnTrip, tripName, entries] = await Promise.all([
+  const [isOnTrip, tripName, entries, saved] = await Promise.all([
     getLiveEnabled(),
     getActiveTripName(),
     getLiveReportEntries(),
+    getSiteLinks(),
   ]);
 
-  // The tracker is only a live feed while there is a trip to track, and the
-  // report is worth linking to for as long as it has anything in it. A dead
-  // link at the top of a link page is worse than one fewer link.
+  // The trip links are automatic rather than rows in admin: the tracker is only
+  // a live feed while there is a trip to track, and the report is worth linking
+  // to for as long as it has updates in it. A dead link at the top of a link
+  // page is worse than one fewer link, and nobody should have to remember to
+  // take these down. Everything below them is whatever /admin/links says.
   const links: LinkItem[] = [
     ...(isOnTrip ? [{ label: "Live tracker", href: "/trips/live" }] : []),
     ...(isOnTrip || entries.length > 0
       ? [{ label: "Trip report", href: "/trips/live/report" }]
       : []),
-    { label: "Website", href: "/" },
-    ...SOCIAL_LINKS,
+    ...saved,
   ];
 
   return (
