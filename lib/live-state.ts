@@ -31,7 +31,9 @@ type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: strin
 // committed data/live-state.json is the seed when the store is empty, and the
 // store of record when no token is configured (plain local dev). The state
 // includes Instagram access tokens, so it must never move to a public store.
-function blobOptions(): { access: "private"; token: string } | null {
+export type StateBlobOptions = { access: "private"; token: string };
+
+export function stateBlobOptions(): StateBlobOptions | null {
   // A dedicated "live-state" store injects LIVE_STATE_BLOB_READ_WRITE_TOKEN;
   // Vercel's default Blob integration injects BLOB_READ_WRITE_TOKEN. Accept
   // either, preferring the dedicated store. Reading only the prefixed name
@@ -58,7 +60,7 @@ function readLocalState(): LiveState {
 }
 
 // Returns null when the store has no state yet; throws on auth/network errors.
-async function readBlobState(opts: { access: "private"; token: string }): Promise<LiveState | null> {
+async function readBlobState(opts: StateBlobOptions): Promise<LiveState | null> {
   const { get } = await import("@vercel/blob");
   const result = await get(STATE_BLOB_PATH, opts);
   if (!result?.stream) return null;
@@ -74,30 +76,69 @@ async function readBlobState(opts: { access: "private"; token: string }): Promis
 const CACHE_TTL_MS = 5000;
 let cached: { state: LiveState; at: number; fromWrite: boolean } | null = null;
 
-async function readState(): Promise<LiveState> {
-  const opts = blobOptions();
-  if (!opts) return readLocalState();
+/**
+ * `degraded` means the store is configured but we could not reach it and had to
+ * fall back to the committed seed. The seed is months-old git data that looks
+ * exactly like real state, so callers holding anything a reader would believe —
+ * the trip report above all — have to be able to tell the difference.
+ */
+type StateRead = { state: LiveState; degraded: boolean };
 
-  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.state;
+async function readStateResult(): Promise<StateRead> {
+  const opts = stateBlobOptions();
+  // No store configured: the committed JSON *is* the store of record.
+  if (!opts) return { state: readLocalState(), degraded: false };
+
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+    return { state: cached.state, degraded: false };
+  }
 
   try {
     const state = await readBlobState(opts);
     if (state) {
       cached = { state, at: Date.now(), fromWrite: false };
-      return state;
+      return { state, degraded: false };
     }
+    // A store that has never been written: seeding it from git is the point.
+    return { state: readLocalState(), degraded: false };
   } catch (err) {
     // The seed is whatever was last committed to git, so serving it here is how
     // a transient blob failure turns into "my save came undone". The last state
     // we actually read is stale by seconds; prefer it.
     console.error("live-state: blob read failed, serving last known state", err);
-    if (cached) return cached.state;
+    if (cached) return { state: cached.state, degraded: false };
+    return { state: readLocalState(), degraded: true };
   }
-  return readLocalState();
 }
 
-async function writeState(patch: Partial<LiveState>): Promise<void> {
-  const opts = blobOptions();
+async function readState(): Promise<LiveState> {
+  return (await readStateResult()).state;
+}
+
+/**
+ * A patch computed from the state it is merging onto.
+ *
+ * Read-modify-write used to happen in the caller: read the entries, splice, and
+ * hand the whole new array back as a patch. Between those two steps the read
+ * could fall back to the seed and the write would then replace every update on
+ * the trip with month-old git data plus one. Passing a function instead means
+ * the modify step runs against the same authoritative state the write merges
+ * onto, inside the one place that knows whether that state is real.
+ *
+ * Returning null aborts the write, so a no-op stays a no-op.
+ */
+type StateMutator = (current: LiveState) => Partial<LiveState> | null;
+
+function applyPatch(
+  current: LiveState,
+  patch: Partial<LiveState> | StateMutator,
+): LiveState | null {
+  const resolved = typeof patch === "function" ? patch(current) : patch;
+  return resolved === null ? null : { ...current, ...resolved };
+}
+
+async function writeState(patch: Partial<LiveState> | StateMutator): Promise<void> {
+  const opts = stateBlobOptions();
   if (opts) {
     // Every write is a read-modify-write of the whole document, so the base it
     // merges onto has to be current. Blob reads are only eventually consistent:
@@ -110,7 +151,8 @@ async function writeState(patch: Partial<LiveState>): Promise<void> {
     const ours =
       cached && cached.fromWrite && Date.now() - cached.at < CACHE_TTL_MS ? cached.state : null;
     const current = ours ?? (await readBlobState(opts)) ?? readLocalState();
-    const merged = { ...current, ...patch };
+    const merged = applyPatch(current, patch);
+    if (merged === null) return;
     const { put } = await import("@vercel/blob");
     await put(STATE_BLOB_PATH, JSON.stringify(merged, null, 2), {
       ...opts,
@@ -133,7 +175,9 @@ async function writeState(patch: Partial<LiveState>): Promise<void> {
         "deployment environment.",
     );
   }
-  fs.writeFileSync(STATE_FILE, JSON.stringify({ ...readLocalState(), ...patch }, null, 2));
+  const merged = applyPatch(readLocalState(), patch);
+  if (merged === null) return;
+  fs.writeFileSync(STATE_FILE, JSON.stringify(merged, null, 2));
 }
 
 export async function getLiveEnabled(): Promise<boolean> {
@@ -202,13 +246,106 @@ export async function getSocialLatest(): Promise<{ text: string; href: string; p
   return { text: top.text, href: top.href, publishedAt: top.publishedAt };
 }
 
-export async function getLiveReportEntries(): Promise<LiveReportEntry[]> {
-  const entries = (await readState()).liveReportEntries ?? [];
+function sortedEntries(entries: LiveReportEntry[]): LiveReportEntry[] {
   return [...entries].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 }
 
+/**
+ * Throws rather than falling back to the seed. Every other setting degrades
+ * cosmetically — a stale banner is a stale banner — but the report is a diary
+ * with dates on it, and serving the committed seed would quietly tell readers
+ * the trip is back on its first day. An error is honest; that isn't.
+ */
+export async function getLiveReportEntries(): Promise<LiveReportEntry[]> {
+  const { state, degraded } = await readStateResult();
+  if (degraded) {
+    throw new Error("live-state: the trip report is unreadable — the Blob store did not respond.");
+  }
+  return sortedEntries(state.liveReportEntries ?? []);
+}
+
+/**
+ * For pages that only mention the report in passing — a link to it, a two-line
+ * preview. They should not 500 because the store blinked, and an empty preview
+ * is at least not a false one.
+ */
+export async function getLiveReportEntriesOrNone(): Promise<LiveReportEntry[]> {
+  const { state, degraded } = await readStateResult();
+  return degraded ? [] : sortedEntries(state.liveReportEntries ?? []);
+}
+
+/**
+ * Replaces the entire list. Only for deliberate wholesale changes; adding,
+ * editing and deleting go through the operations below, which never send a list
+ * they read a moment earlier back as a patch.
+ */
 export async function setLiveReportEntries(liveReportEntries: LiveReportEntry[]): Promise<void> {
   await writeState({ liveReportEntries });
+}
+
+/** Newest entry wins if the id already exists, so a retried publish can't double-post. */
+export async function addLiveReportEntry(entry: LiveReportEntry): Promise<void> {
+  await writeState((current) => ({
+    liveReportEntries: [entry, ...(current.liveReportEntries ?? []).filter((e) => e.id !== entry.id)],
+  }));
+}
+
+/** Returns the stored entry, or null if it is no longer there to edit. */
+export async function updateLiveReportEntry(
+  id: string,
+  patch: { text: string; images: string[]; tz?: string },
+): Promise<LiveReportEntry | null> {
+  let saved: LiveReportEntry | null = null;
+  await writeState((current) => {
+    const entries = current.liveReportEntries ?? [];
+    if (!entries.some((e) => e.id === id)) return null;
+    return {
+      liveReportEntries: entries.map((e) => {
+        if (e.id !== id) return e;
+        saved = { ...e, text: patch.text, images: patch.images, tz: patch.tz ?? e.tz };
+        return saved;
+      }),
+    };
+  });
+  return saved;
+}
+
+export async function removeLiveReportEntry(id: string): Promise<void> {
+  await writeState((current) => {
+    const entries = current.liveReportEntries ?? [];
+    if (!entries.some((e) => e.id === id)) return null;
+    return { liveReportEntries: entries.filter((e) => e.id !== id) };
+  });
+}
+
+export async function replaceLiveReportPhoto(oldUrl: string, newUrl: string): Promise<void> {
+  await writeState((current) => {
+    const entries = current.liveReportEntries ?? [];
+    if (!entries.some((e) => e.images.includes(oldUrl))) return null;
+    return {
+      liveReportEntries: entries.map((e) => ({
+        ...e,
+        images: e.images.map((url) => (url === oldUrl ? newUrl : url)),
+      })),
+    };
+  });
+}
+
+/**
+ * Puts back updates that are in the archive but not in the state. Ids already
+ * present are left alone, so this can never overwrite an edit.
+ */
+export async function restoreLiveReportEntries(entries: LiveReportEntry[]): Promise<number> {
+  let restored = 0;
+  await writeState((current) => {
+    const existing = current.liveReportEntries ?? [];
+    const have = new Set(existing.map((e) => e.id));
+    const missing = entries.filter((e) => !have.has(e.id));
+    restored = missing.length;
+    if (missing.length === 0) return null;
+    return { liveReportEntries: sortedEntries([...existing, ...missing]) };
+  });
+  return restored;
 }
 
 /**

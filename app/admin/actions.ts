@@ -16,11 +16,23 @@ import {
   setInstagramAccounts,
   setLatestTemplates,
   getLiveReportEntries,
+  addLiveReportEntry,
+  updateLiveReportEntry,
+  removeLiveReportEntry,
+  restoreLiveReportEntries,
   setLiveReportEntries,
   setMapShareFeedUrl,
   setMapShareStartDate,
   setSiteLinks,
 } from "@/lib/live-state";
+import type { LiveReportEntry } from "@/lib/live-state";
+import {
+  archiveReportEntry,
+  findMissingEntryIds,
+  forgetAllArchivedEntries,
+  forgetArchivedEntry,
+  readArchivedEntries,
+} from "@/lib/report-archive";
 import { isAllowedHref } from "@/lib/links";
 import { isValidTimeZone } from "@/lib/report-time";
 import { refreshSocialLatest } from "@/lib/social-latest";
@@ -252,17 +264,27 @@ export async function publishReportEntry(
   const posted = (formData.get("tz") as string | null)?.trim() ?? "";
   const tz = posted && isValidTimeZone(posted) ? posted : undefined;
 
-  const entries = await getLiveReportEntries();
-  entries.unshift({
+  const entry: LiveReportEntry = {
     id: crypto.randomUUID(),
     date: new Date().toISOString(),
     text,
     images,
     tz,
-  });
+  };
+
+  // Archive before the state write, not after. If the write below fails, or
+  // succeeds and is then clobbered by something else, the update still exists
+  // somewhere and /admin/report offers to put it back. The other order would
+  // leave the only copy in whatever the state write produced.
+  try {
+    await archiveReportEntry(entry);
+  } catch (error) {
+    // A missing safety net is not a reason to refuse to publish from a tent.
+    console.error("publishReportEntry: could not archive entry", error);
+  }
 
   try {
-    await setLiveReportEntries(entries);
+    await addLiveReportEntry(entry);
   } catch (error) {
     console.error("publishReportEntry: failed to persist entry", error);
     return { ok: false, error: (error as Error).message || "Could not save the update." };
@@ -282,26 +304,34 @@ export async function updateReportEntry(formData: FormData) {
     .filter(Boolean);
   if (!id || (!text && images.length === 0)) return;
 
-  const entries = await getLiveReportEntries();
-  const entry = entries.find((e) => e.id === id);
-  if (!entry) return;
-
-  entry.text = text;
-  entry.images = images;
   // The zone an update was posted from is editable because it can be wrong:
   // entries written before it was recorded default to the site's, and a phone
   // that hasn't caught up with the ride reports the old one.
-  const tz = (formData.get("tz") as string | null)?.trim() ?? "";
-  if (tz && isValidTimeZone(tz)) entry.tz = tz;
-  await setLiveReportEntries(entries);
+  const rawTz = (formData.get("tz") as string | null)?.trim() ?? "";
+  const tz = rawTz && isValidTimeZone(rawTz) ? rawTz : undefined;
+
+  const saved = await updateLiveReportEntry(id, { text, images, tz });
+  if (!saved) return;
+
+  try {
+    await archiveReportEntry(saved);
+  } catch (error) {
+    console.error("updateReportEntry: could not archive entry", error);
+  }
   revalidatePath("/trips/live/report");
   revalidatePath("/admin/report");
 }
 
 export async function deleteReportEntry(id: string) {
   await assertAuth();
-  const entries = await getLiveReportEntries();
-  await setLiveReportEntries(entries.filter((e) => e.id !== id));
+  await removeLiveReportEntry(id);
+  // A deliberate delete has to reach the archive too, or the next restore would
+  // bring it straight back.
+  try {
+    await forgetArchivedEntry(id);
+  } catch (error) {
+    console.error("deleteReportEntry: could not drop archived entry", error);
+  }
   revalidatePath("/trips/live/report");
   revalidatePath("/admin/report");
 }
@@ -309,8 +339,36 @@ export async function deleteReportEntry(id: string) {
 export async function clearReportEntries() {
   await assertAuth();
   await setLiveReportEntries([]);
+  try {
+    await forgetAllArchivedEntries();
+  } catch (error) {
+    console.error("clearReportEntries: could not empty the archive", error);
+  }
   revalidatePath("/trips/live/report");
   revalidatePath("/admin/report");
+}
+
+/**
+ * Puts back updates the archive still holds but the report has lost. Restoring
+ * only ever adds: an id already in the report is left exactly as it is.
+ */
+export async function restoreMissingReportEntries(): Promise<
+  { ok: true; restored: number } | { ok: false; error: string }
+> {
+  await assertAuth();
+  try {
+    const missingIds = await findMissingEntryIds(await getLiveReportEntries());
+    if (missingIds.length === 0) return { ok: true, restored: 0 };
+
+    const entries = await readArchivedEntries(missingIds);
+    const restored = await restoreLiveReportEntries(entries);
+    revalidatePath("/trips/live/report");
+    revalidatePath("/admin/report");
+    return { ok: true, restored };
+  } catch (error) {
+    console.error("restoreMissingReportEntries: failed", error);
+    return { ok: false, error: (error as Error).message || "Could not restore updates." };
+  }
 }
 
 /**

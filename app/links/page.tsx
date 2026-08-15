@@ -5,7 +5,7 @@ import { SITE_CONFIG } from "@/lib/config";
 import {
   getLiveEnabled,
   getActiveTripName,
-  getLiveReportEntries,
+  getLiveReportEntriesOrNone,
   getSiteLinks,
 } from "@/lib/live-state";
 
@@ -84,7 +84,7 @@ export default async function LinksPage() {
   const [isOnTrip, tripName, entries, saved] = await Promise.all([
     getLiveEnabled(),
     getActiveTripName(),
-    getLiveReportEntries(),
+    getLiveReportEntriesOrNone(),
     getSiteLinks(),
   ]);
 

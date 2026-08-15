@@ -142,6 +142,42 @@ it commits one photo at a time — stop it whenever, tap again later, converted
 photos are already under the threshold and get skipped. originals stay in the
 store, so putting an old URL back undoes a conversion.
 
+## Trip report durability
+
+the report is an array inside one JSON document (`live-state.json`, private
+blob store). every save is therefore a read-modify-write of the whole list, and
+`put(..., { allowOverwrite: true })` keeps no version history — so a save that
+merges onto a stale read doesn't lose *an* update, it replaces the whole trip
+and there's nothing to roll back to.
+
+three things stop that:
+
+- **the modify step runs inside the write.** `addLiveReportEntry`,
+  `updateLiveReportEntry`, `removeLiveReportEntry` and `replaceLiveReportPhoto`
+  pass a function to `writeState`, which applies it to the same state it is
+  merging onto. no caller ever reads a list and hands it back wholesale. adding
+  a new report operation? do it the same way — `setLiveReportEntries` is only
+  for "clear all".
+- **a failed read is never mistaken for data.** when the blob store is
+  configured but doesn't answer, `readState` used to fall back to the committed
+  `data/live-state.json` — months-old git data that looks exactly like real
+  state. `getLiveReportEntries` now throws instead, and pages that only mention
+  the report in passing use `getLiveReportEntriesOrNone`. the seed is only ever
+  used for a store that has genuinely never been written.
+- **every update is also written to its own blob**, `report-entries/<id>.json`
+  (`lib/report-archive.ts`), before it goes into the state. nothing there is
+  read-modify-written, so nothing there can be clobbered. an update that is in
+  the archive but not in the report went missing by accident, and `/admin/report`
+  says so at the top of the page with a **Restore them** button. a deliberate
+  delete removes the archived copy too, so restoring can't resurrect it.
+
+```sh
+npx vercel blob list --prefix report-entries/   # what was actually published
+```
+
+**Clear all** empties the archive as well, which is why it asks first. that one
+really is unrecoverable.
+
 ### imgur migration
 
 one-shot, already run: all 17 imgur images are on blob now. kept around in case an old draft still has imgur links.

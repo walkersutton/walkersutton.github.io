@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import TripMap, { type LiveReportPreview } from "../TripMap";
-import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
+import { getLiveEnabled, getActiveTripName, getLiveReportEntriesOrNone } from "@/lib/live-state";
 import { getMapSharePageUrl, resolveFeedSource } from "@/lib/mapshare-server";
 
 function fmtDateLabel(iso: string): string {
@@ -31,7 +31,7 @@ export default async function TripLivePage() {
   const [isOnTrip, activeTripName, entries, mapSharePageUrl] = await Promise.all([
     getLiveEnabled(),
     getActiveTripName(),
-    getLiveReportEntries(),
+    getLiveReportEntriesOrNone(),
     getMapSharePageUrl(),
   ]);
   if (!isOnTrip) redirect("/trips");

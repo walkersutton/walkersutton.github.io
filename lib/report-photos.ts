@@ -1,4 +1,4 @@
-import { getLiveReportEntries, setLiveReportEntries } from "./live-state";
+import { getLiveReportEntries, replaceLiveReportPhoto } from "./live-state";
 import { isEncrypted } from "./env";
 
 /**
@@ -57,23 +57,16 @@ export async function listOversizedReportPhotos(): Promise<OversizedPhoto[]> {
 /**
  * Point the report at a shrunk copy of one photo.
  *
- * The state is re-read here rather than being passed in wholesale: the trip is
- * live, and an update published while the browser was converting photos has to
- * survive. Replacing one URL at a time also means an interrupted backfill keeps
- * everything it had already done.
+ * The swap happens against the state the write itself is merging onto, not a
+ * copy read beforehand: the trip is live, converting a photo takes as long as
+ * it takes over a tent's worth of signal, and an update published in that window
+ * has to survive. Replacing one URL at a time also means an interrupted backfill
+ * keeps everything it had already done.
  *
  * The original is left in the store. Nothing points at it any more, and storage
  * is not the quota under pressure — but it does mean a bad conversion can be
  * undone by putting the old URL back.
  */
 export async function replaceReportPhoto(oldUrl: string, newUrl: string): Promise<void> {
-  const entries = await getLiveReportEntries();
-  if (!entries.some((entry) => entry.images.includes(oldUrl))) return;
-
-  await setLiveReportEntries(
-    entries.map((entry) => ({
-      ...entry,
-      images: entry.images.map((url) => (url === oldUrl ? newUrl : url)),
-    })),
-  );
+  await replaceLiveReportPhoto(oldUrl, newUrl);
 }

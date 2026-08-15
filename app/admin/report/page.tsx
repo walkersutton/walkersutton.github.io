@@ -1,9 +1,11 @@
 import Pager from "@/app/components/Pager";
 import { getLiveReportEntries } from "@/lib/live-state";
+import { findMissingEntryIds } from "@/lib/report-archive";
 import { paginate } from "@/lib/paginate";
-import { clearReportEntries } from "../actions";
+import ClearAllButton from "./ClearAllButton";
 import ReportEditor from "./ReportEditor";
 import ReportEntryItem from "./ReportEntryItem";
+import ReportRecovery from "./ReportRecovery";
 import ShrinkPhotosButton from "./ShrinkPhotosButton";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +29,21 @@ export default async function AdminReportPage({
   // after every post.
   const { pageItems, currentPage, totalPages } = paginate(entries, page);
 
+  // One list() against the archive, no downloads. Anything it holds that the
+  // report doesn't is an update that went missing rather than one that was
+  // deleted, so it is worth checking on the page that would notice.
+  let missing: string[] = [];
+  try {
+    missing = await findMissingEntryIds(entries);
+  } catch (error) {
+    console.error("AdminReportPage: could not check the archive", error);
+  }
+
   return (
     <div>
       <ReportEditor />
+
+      {missing.length > 0 && <ReportRecovery missing={missing.length} />}
 
       <div
         style={{
@@ -53,26 +67,7 @@ export default async function AdminReportPage({
           {entries.length} update{entries.length !== 1 ? "s" : ""}
           {totalPages > 1 && ` · page ${currentPage}/${totalPages}`}
         </span>
-        {entries.length > 0 && (
-          <form action={clearReportEntries}>
-            <button
-              type="submit"
-              style={{
-                background: "none",
-                border: "none",
-                padding: "8px 2px",
-                fontSize: 13,
-                color: "var(--color-text-faint)",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                textDecoration: "underline",
-                textUnderlineOffset: 3,
-              }}
-            >
-              Clear all
-            </button>
-          </form>
-        )}
+        {entries.length > 0 && <ClearAllButton count={entries.length} />}
       </div>
 
       {entries.length === 0 ? (
