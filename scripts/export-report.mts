@@ -1,15 +1,20 @@
 /**
  * Export the live trip report into a static one under content/trips.
  *
- *   pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California" --dry
+ *   pnpm export:report                       # prompts for all of it
  *   pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California"
+ *
+ * With no --slug it reads the report first, prints what it found, and then asks
+ * for the title, slug, region and the two choices below — so the common case is
+ * one word to type and a few keys, and the flags are there for scripting.
  *
  * Reads every update out of the live-state Blob store, merges in anything the
  * per-update archive holds that the state array has lost, re-uploads each photo
  * through the same pipeline as `pnpm img`, and writes content/trips/<slug>.mdx.
  *
  * Flags:
- *   --slug <name>     output slug; content/trips/<slug>.mdx  (required)
+ *   --slug <name>     output slug; content/trips/<slug>.mdx. Passing it is what
+ *                     turns the prompts off
  *   --title <text>    frontmatter title, default: the active trip name
  *   --region <text>   frontmatter region
  *   --reuse-urls      keep each photo's existing URL; skip fetch/resize/upload
@@ -33,6 +38,7 @@ import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { KB, processImage } from "./lib/image.mts";
+import { isInteractive, paint, select, text } from "./lib/prompt.mts";
 
 /** Mirrors LiveReportEntry in lib/live-state.ts. */
 interface ReportEntry {
@@ -364,30 +370,105 @@ function parseArgs(argv: string[]): Opts {
   return opts;
 }
 
-async function main() {
-  const opts = parseArgs(process.argv.slice(2));
+/** "SF to NYC" → "sf-to-nyc", as a starting point for the slug prompt. */
+function slugFromTitle(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "trip"
+  );
+}
 
-  if (!opts.slug) {
+/** "Aug 4 – Aug 12" from the day keys, which are already yyyy-mm-dd, local. */
+function fmtRange(groups: DayGroup[]): string {
+  const show = (key: string) =>
+    new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(
+      new Date(`${key}T12:00:00Z`),
+    );
+  const first = show(groups[0].key);
+  const last = show(groups[groups.length - 1].key);
+  return first === last ? first : `${first} – ${last}`;
+}
+
+function slugComplaint(value: string): string | null {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(value)) {
+    return "lowercase letters, numbers and dashes only";
+  }
+  return null;
+}
+
+/**
+ * Everything the flags would have carried, asked for instead. Only reached when
+ * no --slug was passed, and only with a TTY to ask on.
+ */
+async function promptForOpts(opts: Opts, fallbackTitle: string): Promise<Opts> {
+  const title = await text("Title", { fallback: fallbackTitle });
+  const slug = await text("Slug", {
+    fallback: slugFromTitle(title),
+    validate: slugComplaint,
+  });
+  const region = await text("Region", {
+    validate: (value) => (value ? null : "needed — it shows under the title on the trip page"),
+  });
+
+  const reuseUrls = await select("Photos", [
+    {
+      label: "Re-upload through the image pipeline",
+      value: false,
+      hint: `1600px webp → trips/${slug}/`,
+    },
+    { label: "Keep the URLs they already have", value: true, hint: "no fetch, no upload" },
+  ]);
+
+  const times = await select("Posting times", [
+    { label: "Keep them", value: true, hint: "mdx comments — invisible to readers" },
+    { label: "Drop them", value: false },
+  ]);
+
+  const exists = existsSync(join("content", "trips", `${slug}.mdx`));
+  const action = await select("Ready", [
+    { label: "Dry run first", value: "dry", hint: "print it, upload nothing, write nothing" },
+    {
+      label: exists ? `Overwrite content/trips/${slug}.mdx` : `Write content/trips/${slug}.mdx`,
+      value: "write",
+    },
+    { label: "Cancel", value: "cancel" },
+  ]);
+  if (action === "cancel") process.exit(0);
+
+  return {
+    ...opts,
+    title,
+    slug,
+    region,
+    reuseUrls,
+    times,
+    dry: action === "dry",
+    force: opts.force || exists,
+  };
+}
+
+async function main() {
+  let opts = parseArgs(process.argv.slice(2));
+  // Flags drive the whole run when a slug is given; otherwise ask for one.
+  const interactive = !opts.slug;
+
+  if (interactive && !isInteractive()) {
     console.error(
-      'usage: pnpm export:report --slug <name> [--title <text>] [--region <text>] [--dry]',
+      "usage: pnpm export:report --slug <name> [--title <text>] [--region <text>] [--dry]\n" +
+        "       pnpm export:report              (prompts for all of it, needs a terminal)",
     );
     process.exitCode = 1;
     return;
   }
-  // Uploading needs the public store; --reuse-urls and --dry don't upload.
-  const uploads = !opts.reuseUrls && !opts.dry;
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
-  if (uploads && (!blobToken || blobToken.startsWith("encrypted:"))) {
-    console.error("BLOB_READ_WRITE_TOKEN missing — expected it in .env.local");
-    process.exitCode = 1;
-    return;
-  }
-
-  const outPath = join("content", "trips", `${opts.slug}.mdx`);
-  if (!opts.dry && !opts.force && existsSync(outPath)) {
-    console.error(`${outPath} already exists — pass --force to overwrite it`);
-    process.exitCode = 1;
-    return;
+  if (!interactive && !opts.dry && !opts.force) {
+    const outPath = join("content", "trips", `${opts.slug}.mdx`);
+    if (existsSync(outPath)) {
+      console.error(`${outPath} already exists — pass --force to overwrite it`);
+      process.exitCode = 1;
+      return;
+    }
   }
 
   // Phase 1 — collect every update, from both copies of the report.
@@ -395,7 +476,9 @@ async function main() {
   console.log(`reading ${source}`);
 
   const stateEntries = (state.liveReportEntries as ReportEntry[] | undefined) ?? [];
-  const archived = opts.local ? [] : await readMissingArchived(new Set(stateEntries.map((e) => e.id)));
+  const archived = opts.local
+    ? []
+    : await readMissingArchived(new Set(stateEntries.map((e) => e.id)));
   if (archived.length > 0) {
     console.log(`  recovered ${archived.length} update(s) the report had lost but the archive kept`);
   }
@@ -411,20 +494,34 @@ async function main() {
     return;
   }
 
-  opts.title ||= (state.activeTripName as string | undefined) ?? opts.slug;
-
   const groups = groupByDay(entries);
   const names = nameByUrl(groups);
   console.log(
-    `  ${entries.length} updates, ${groups.length} days, ${names.size} photos\n`,
+    `  ${entries.length} updates, ${groups.length} days, ${names.size} photos` +
+      `  ${paint.dim(fmtRange(groups))}\n`,
   );
 
-  // Phase 2 — fetch, re-encode and upload every photo. Nothing on disk yet.
+  // Phase 2 — settle the options, from the flags or from the prompts.
+  const activeTripName = state.activeTripName as string | undefined;
+  if (interactive) opts = await promptForOpts(opts, activeTripName ?? "");
+  else opts.title ||= activeTripName ?? opts.slug;
+
+  const outPath = join("content", "trips", `${opts.slug}.mdx`);
+  const uploads = !opts.reuseUrls && !opts.dry;
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (uploads && (!blobToken || blobToken.startsWith("encrypted:"))) {
+    console.error("\nBLOB_READ_WRITE_TOKEN missing — expected it in .env.local");
+    process.exitCode = 1;
+    return;
+  }
+
+  // Phase 3 — fetch, re-encode and upload every photo. Nothing on disk yet.
   const resolved = new Map<string, string>();
   if (opts.reuseUrls) {
     for (const url of names.keys()) resolved.set(url, url);
-    console.log("--reuse-urls: keeping the photos where they are\n");
+    console.log("\nkeeping the photos where they are");
   } else {
+    console.log("");
     for (const [url, name] of names) {
       const ext = extname(new URL(url).pathname).toLowerCase();
       const input = await fetchPhoto(url);
@@ -447,7 +544,7 @@ async function main() {
     }
   }
 
-  // Phase 3 — write the mdx, now that every photo resolved.
+  // Phase 4 — write the mdx, now that every photo resolved.
   const mdx = buildMdx(groups, resolved, opts);
 
   if (opts.dry) {

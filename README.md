@@ -184,8 +184,17 @@ once a trip is over, `pnpm export:report` turns the live report into a static
 one under `content/trips`.
 
 ```sh
+pnpm export:report
+```
+
+run bare it reads the report first, prints what it found, and then prompts for
+the rest — title, slug (defaulted from the title), region, whether to re-upload
+the photos, whether to keep the posting times, and a last dry-run/write/cancel.
+arrow keys or j/k to move, enter to pick, ctrl-c to bail. every flag below still
+works, and passing `--slug` is what turns the prompts off:
+
+```sh
 pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California" --dry
-pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California"
 ```
 
 it reads the report out of the blob store, merges back anything the archive
@@ -199,7 +208,7 @@ that aren't there.
 
 | flag | default | |
 | --- | --- | --- |
-| `--slug <name>` | — | output slug; `content/trips/<slug>.mdx` (required) |
+| `--slug <name>` | prompted for | output slug; `content/trips/<slug>.mdx`. passing it turns the prompts off |
 | `--title <text>` | the active trip name | frontmatter title |
 | `--region <text>` | — | frontmatter region |
 | `--reuse-urls` | off | keep each photo's existing URL; skip fetch/resize/upload |
