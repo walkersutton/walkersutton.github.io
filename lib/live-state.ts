@@ -3,7 +3,7 @@ import path from "path";
 import type { InstagramAccount, SocialPost } from "./social-latest";
 import { DEFAULT_LATEST_TEMPLATES, type LatestTemplates } from "./latest-templates";
 import { isEncrypted } from "./env";
-import { DEFAULT_LINKS, type SiteLink } from "./links";
+import { DEFAULT_LINKS, TRIP_LINKS, type SiteLink } from "./links";
 
 const STATE_FILE = path.join(process.cwd(), "data", "live-state.json");
 const STATE_BLOB_PATH = "live-state.json";
@@ -24,7 +24,7 @@ export type LiveReportEntry = {
   tz?: string;
 };
 
-type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string; mapShareStartDate?: string; links?: SiteLink[] };
+type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string; mapShareStartDate?: string; links?: SiteLink[]; linksOwnTripRows?: boolean };
 
 // State lives in the private "live-state" Blob store (the deployment
 // filesystem is ephemeral, so admin writes must go somewhere durable). The
@@ -407,11 +407,19 @@ export async function setLatestTemplates(latestTemplates: LatestTemplates): Prom
 /**
  * The rows on /links, in order. An empty saved list is honoured as "no rows" —
  * only a list that has never been saved falls back to the defaults.
+ *
+ * `linksOwnTripRows` marks a list saved since the trip rows became ordinary
+ * rows. Without it the list predates that change and is missing them, because
+ * /links used to add them itself — so hand them back once rather than let the
+ * page quietly lose its trip links. The flag goes on with the next save, which
+ * is what makes deleting them on purpose stick.
  */
 export async function getSiteLinks(): Promise<SiteLink[]> {
-  return (await readState()).links ?? DEFAULT_LINKS;
+  const { links, linksOwnTripRows } = await readState();
+  if (!links) return DEFAULT_LINKS;
+  return linksOwnTripRows ? links : [...TRIP_LINKS, ...links];
 }
 
 export async function setSiteLinks(links: SiteLink[]): Promise<void> {
-  await writeState({ links });
+  await writeState({ links, linksOwnTripRows: true });
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import type { SiteLink } from "@/lib/links";
+import { VISIBILITY_OPTIONS, type SiteLink } from "@/lib/links";
 import { BTN, INPUT } from "../styles";
 import type { SaveResult } from "../types";
 
@@ -22,8 +22,21 @@ const SMALL_BTN: React.CSSProperties = {
   whiteSpace: "nowrap",
 };
 
+// A native select rather than a segmented control: it's three choices on a
+// phone, and the OS picker is a better target than anything drawn here.
+const SELECT: React.CSSProperties = {
+  ...INPUT,
+  width: "100%",
+  // Matches the arrow buttons below it as a thumb target. The native dropdown
+  // arrow is left alone: stripping it makes this look like another text field,
+  // and there is no affordance left to say it isn't.
+  minHeight: 40,
+};
+
 /**
- * Edits the rows on /links: label, where it points, and what order they're in.
+ * Edits every row on /links: label, where it points, when it shows, and what
+ * order they're in. The trip rows are in here too — nothing on that page is
+ * editable only by changing the code.
  *
  * The list is submitted whole rather than row by row, so reordering and
  * deleting are the same save as an edit, and what you see is what the page
@@ -98,6 +111,23 @@ export default function LinksEditor({
             onChange={(e) => updateRow(i, { href: e.target.value })}
             style={INPUT}
           />
+          {/* Always submits a value, so it stays aligned with the label and
+              href arrays the save reads the rows out of. */}
+          <select
+            name="visibleWhen"
+            value={row.visibleWhen ?? "always"}
+            onChange={(e) =>
+              updateRow(i, { visibleWhen: e.target.value as SiteLink["visibleWhen"] })
+            }
+            aria-label={`When to show ${row.label || "this link"}`}
+            style={SELECT}
+          >
+            {VISIBILITY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
           <div style={{ display: "flex", gap: 8 }}>
             <button
               type="button"
@@ -126,7 +156,7 @@ export default function LinksEditor({
 
       {rows.length === 0 && (
         <p style={{ fontSize: 13, color: "var(--color-text-faint)" }}>
-          No links. The page will show only the trip links, when there&apos;s a trip.
+          No links. The page will show its heading and nothing else.
         </p>
       )}
 
