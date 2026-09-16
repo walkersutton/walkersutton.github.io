@@ -33,7 +33,7 @@ import {
   forgetArchivedEntry,
   readArchivedEntries,
 } from "@/lib/report-archive";
-import { isAllowedHref } from "@/lib/links";
+import { isAllowedHref, isLinkVisibility, type SiteLink } from "@/lib/links";
 import { isValidTimeZone } from "@/lib/report-time";
 import { refreshSocialLatest } from "@/lib/social-latest";
 import type { InstagramAccount } from "@/lib/social-latest";
@@ -372,17 +372,29 @@ export async function restoreMissingReportEntries(): Promise<
 }
 
 /**
- * Replaces the whole /links list. Rows arrive as parallel label/href arrays,
- * in the order they appear on screen, so reordering is just a re-submit.
+ * Replaces the whole /links list — every row on that page, the trip rows
+ * included. Rows arrive as parallel label/href/visibleWhen arrays, in the order
+ * they appear on screen, so reordering is just a re-submit.
  */
 export async function saveSiteLinks(_prev: SaveResult, formData: FormData): Promise<SaveResult> {
   await assertAuth();
   const labels = (formData.getAll("label") as string[]).map((value) => value.trim());
   const hrefs = (formData.getAll("href") as string[]).map((value) => value.trim());
+  const visibilities = (formData.getAll("visibleWhen") as string[]).map((value) => value.trim());
 
   // A half-filled row is a row being typed, not an error worth blocking on.
-  const rows = labels
-    .map((label, i) => ({ label, href: hrefs[i] ?? "" }))
+  const rows: SiteLink[] = labels
+    .map((label, i) => {
+      const visibleWhen = visibilities[i] ?? "";
+      return {
+        label,
+        href: hrefs[i] ?? "",
+        // "always" is the absence of a condition, so it is stored as one rather
+        // than written onto every ordinary row. An unrecognised value can only
+        // come from a hand-made request, and means the same thing.
+        ...(isLinkVisibility(visibleWhen) && visibleWhen !== "always" ? { visibleWhen } : {}),
+      };
+    })
     .filter((row) => row.label || row.href);
 
   const incomplete = rows.find((row) => !row.label || !row.href);

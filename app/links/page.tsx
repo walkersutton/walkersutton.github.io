@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SkullMark from "@/app/components/SkullMark";
 import { SITE_CONFIG } from "@/lib/config";
+import { isLinkVisible, type SiteLink } from "@/lib/links";
 import {
   getLiveEnabled,
   getActiveTripName,
@@ -37,8 +38,6 @@ const ICONS: Record<string, () => React.ReactElement> = {
   strava: StravaIcon,
 };
 
-type LinkItem = { label: string; href: string };
-
 // A row is the whole tap target — full width, thumb-height, and spaced far
 // enough apart that the wrong one is hard to hit one-handed on a bike.
 const ROW: React.CSSProperties = {
@@ -57,7 +56,7 @@ const ROW: React.CSSProperties = {
   textAlign: "center",
 };
 
-function LinkRow({ label, href }: LinkItem) {
+function LinkRow({ label, href }: SiteLink) {
   const Icon = ICONS[label.trim().toLowerCase()];
   const body = (
     <>
@@ -88,18 +87,13 @@ export default async function LinksPage() {
     getSiteLinks(),
   ]);
 
-  // The trip links are automatic rather than rows in admin: the tracker is only
-  // a live feed while there is a trip to track, and the report is worth linking
-  // to for as long as it has updates in it. A dead link at the top of a link
-  // page is worse than one fewer link, and nobody should have to remember to
-  // take these down. Everything below them is whatever /admin/links says.
-  const links: LinkItem[] = [
-    ...(isOnTrip ? [{ label: "Live tracker", href: "/trips/live" }] : []),
-    ...(isOnTrip || entries.length > 0
-      ? [{ label: "Trip report", href: "/trips/live/report" }]
-      : []),
-    ...saved,
-  ];
+  // Every row on this page comes from /admin/links, the trip rows included —
+  // there is nothing here that can only be changed by editing this file. What
+  // the trip rows keep is when they appear: a row set to follow the trip drops
+  // out once there is no trip, so nobody has to remember to take it down.
+  const links = saved.filter((link) =>
+    isLinkVisible(link, { isOnTrip, hasReport: entries.length > 0 }),
+  );
 
   return (
     // The layout hides the header and footer here (BARE_ROUTES), so this owns
@@ -140,8 +134,8 @@ export default async function LinksPage() {
         )}
 
         <nav style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 34 }}>
-          {links.map((item) => (
-            <LinkRow key={item.href} {...item} />
+          {links.map((item, i) => (
+            <LinkRow key={i} {...item} />
           ))}
         </nav>
       </div>

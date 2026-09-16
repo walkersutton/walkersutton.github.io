@@ -18,8 +18,9 @@ export default async function AdminLinksPage() {
         >
           /links
         </Link>
-        , in order. Live tracker and Trip report are added automatically while a
-        trip is on, so they don&apos;t need a row here.
+        , in order — all of them. A row set to follow the trip only appears
+        while there is one, so the tracker and report links take themselves down
+        when the trip ends.
       </p>
 
       <LinksEditor links={links} action={saveSiteLinks} />
