@@ -178,6 +178,50 @@ npx vercel blob list --prefix report-entries/   # what was actually published
 **Clear all** empties the archive as well, which is why it asks first. that one
 really is unrecoverable.
 
+### exporting to /trips
+
+once a trip is over, `pnpm export:report` turns the live report into a static
+one under `content/trips`.
+
+```sh
+pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California" --dry
+pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California"
+```
+
+it reads the report out of the blob store, merges back anything the archive
+holds that the state array has lost (same comparison `/admin/report` shows),
+reverses it into chronological order, re-uploads every photo through the same
+pipeline as `pnpm img` (1600px webp, `trips/<slug>/day-N-NN.webp`), and writes
+`content/trips/<slug>.mdx`: one `<DayMarker>` per day, an `<Img>` for a lone
+photo and a `<Gallery>` for several. every upload finishes before anything is
+written to disk, so a failure part-way can't leave the mdx pointing at photos
+that aren't there.
+
+| flag | default | |
+| --- | --- | --- |
+| `--slug <name>` | — | output slug; `content/trips/<slug>.mdx` (required) |
+| `--title <text>` | the active trip name | frontmatter title |
+| `--region <text>` | — | frontmatter region |
+| `--reuse-urls` | off | keep each photo's existing URL; skip fetch/resize/upload |
+| `--no-times` | off | drop posting times instead of keeping them as invisible mdx comments |
+| `--local` | off | read `data/live-state.json` instead of the blob store |
+| `--force` | off | overwrite an existing `<slug>.mdx` |
+| `--dry` | off | process and report, but don't upload or write |
+
+days are grouped the way `/trips/live/report` groups them — by the date where
+the update was written, in the zone it was posted from — so the exported days
+match what readers already saw. `<` and `{` in an update are written as html
+entities, since mdx would otherwise read them as jsx; bullets, bare urls and
+asterisks stay as markdown. posting times ride along as `{/* 7:20 AM PDT */}`,
+which `blockJS` strips before render, so they're an editing aid and invisible
+to readers.
+
+it exports text and photos only. `draft: true`, blank `subtitle=""` on every
+day marker and blank `alt=""` on every photo are all left for you — and
+distance, elevation, the date range and the map still come from
+`content/trips/<slug>.geojson`, which nothing here generates. without one the
+trip renders with empty stats and no date to sort on.
+
 ### imgur migration
 
 one-shot, already run: all 17 imgur images are on blob now. kept around in case an old draft still has imgur links.
