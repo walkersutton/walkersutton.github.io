@@ -225,6 +225,21 @@ asterisks stay as markdown. posting times ride along as `{/* 7:20 AM PDT */}`,
 which `blockJS` strips before render, so they're an editing aid and invisible
 to readers.
 
+the report lives in the private **live-state** store, not the public image
+store. `BLOB_READ_WRITE_TOKEN` alone isn't enough — the deployment is given
+`LIVE_STATE_BLOB_READ_WRITE_TOKEN` separately, and locally it has to be set too:
+
+```sh
+npx vercel env pull            # or copy it from the Vercel dashboard
+npx dotenvx set LIVE_STATE_BLOB_READ_WRITE_TOKEN "vercel_blob_rw_..."
+```
+
+without it the export stops rather than falling back to the committed
+`data/live-state.json`. that seed is months-old git data shaped exactly like a
+real trip, and the export writes files and uploads photos off what it reads, so
+a quiet fallback would spend real work on the wrong trip. `--local` exports the
+seed deliberately. the first line of every run names the store it read.
+
 it exports text and photos only. `draft: true`, blank `subtitle=""` on every
 day marker and blank `alt=""` on every photo are all left for you — and
 distance, elevation, the date range and the map still come from

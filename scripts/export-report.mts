@@ -73,17 +73,21 @@ const SITE_TZ = "America/Los_Angeles";
 
 // ── Reading the report ────────────────────────────────────────────
 
+/** Which env var supplied the token, so an empty result can say where it looked. */
+type TokenSource = "LIVE_STATE_BLOB_READ_WRITE_TOKEN" | "BLOB_READ_WRITE_TOKEN";
+
 /**
  * Same store and same token preference as lib/live-state.ts: the dedicated
  * live-state store when it is configured, Vercel's default Blob store
  * otherwise. A value that is still dotenvx ciphertext never decrypted and is
  * no more usable than a missing one.
  */
-function stateBlobOptions(): BlobOptions | null {
-  const token =
-    process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN ?? process.env.BLOB_READ_WRITE_TOKEN;
+function stateBlobOptions(): { blob: BlobOptions; via: TokenSource } | null {
+  const dedicated = process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN;
+  const via: TokenSource = dedicated ? "LIVE_STATE_BLOB_READ_WRITE_TOKEN" : "BLOB_READ_WRITE_TOKEN";
+  const token = dedicated ?? process.env.BLOB_READ_WRITE_TOKEN;
   if (!token || token.startsWith("encrypted:")) return null;
-  return { access: "private", token };
+  return { blob: { access: "private", token }, via };
 }
 
 async function readLocalState(): Promise<Record<string, unknown>> {
@@ -91,33 +95,65 @@ async function readLocalState(): Promise<Record<string, unknown>> {
 }
 
 /**
- * The committed data/live-state.json is only the seed the store was first
- * filled from, so falling back to it silently would export a months-old trip
- * as if it were the real one. Every fallback says so in `source`.
+ * Why a missing live-state.json is a hard stop rather than a fallback.
+ *
+ * lib/live-state.ts falls back to the committed data/live-state.json when the
+ * store has nothing, and is right to: seeding an empty store on first boot is
+ * what the seed is for. Exporting it is never what anyone wants. It is
+ * months-old git data shaped exactly like a real trip, and this script writes
+ * an mdx file and uploads photos off the back of what it reads, so a quiet
+ * fallback spends real work producing a real-looking export of the wrong trip.
+ *
+ * The likeliest cause is also not an empty store. BLOB_READ_WRITE_TOKEN points
+ * at the public image store, and only the deployment is given the dedicated
+ * one, so falling back to it locally looks in a store the report was never
+ * written to — at which point "the store is empty" is a false statement about
+ * a store nobody asked about.
  */
+function unreachable(via: TokenSource | null): Error {
+  if (via === null) {
+    return new Error(
+      "no usable Blob token: neither LIVE_STATE_BLOB_READ_WRITE_TOKEN nor\n" +
+        "BLOB_READ_WRITE_TOKEN is set, or both are still dotenvx ciphertext.\n\n" +
+        "pass --local to export the committed seed instead.",
+    );
+  }
+  if (via === "BLOB_READ_WRITE_TOKEN") {
+    return new Error(
+      `no ${STATE_BLOB_PATH} in the store BLOB_READ_WRITE_TOKEN points at.\n\n` +
+        "that is the public image store — the one `pnpm img` uploads to. the report\n" +
+        "lives in the separate private live-state store, whose token the deployment\n" +
+        "injects as LIVE_STATE_BLOB_READ_WRITE_TOKEN and which is not in .env:\n\n" +
+        "  npx vercel env pull                 # or copy it from the Vercel dashboard\n" +
+        '  npx dotenvx set LIVE_STATE_BLOB_READ_WRITE_TOKEN "vercel_blob_rw_..."\n\n' +
+        "pass --local to export the committed seed instead.",
+    );
+  }
+  return new Error(
+    `no ${STATE_BLOB_PATH} in the store LIVE_STATE_BLOB_READ_WRITE_TOKEN points at.\n` +
+      "either that is the wrong store's token, or the report has genuinely never\n" +
+      "been written. pass --local to export the committed seed instead.",
+  );
+}
+
 async function readState(
   opts: Opts,
 ): Promise<{ state: Record<string, unknown>; source: string }> {
-  if (opts.local) return { state: await readLocalState(), source: STATE_FILE };
-
-  const blob = stateBlobOptions();
-  if (!blob) {
-    return {
-      state: await readLocalState(),
-      source: `${STATE_FILE} — no Blob token in env, so this is the committed seed, NOT the live report`,
-    };
+  if (opts.local) {
+    return { state: await readLocalState(), source: `${STATE_FILE} (the committed seed)` };
   }
 
-  const result = await get(STATE_BLOB_PATH, blob);
-  if (!result?.stream) {
-    return {
-      state: await readLocalState(),
-      source: `${STATE_FILE} — the Blob store is empty, so this is the committed seed`,
-    };
-  }
+  const configured = stateBlobOptions();
+  if (!configured) throw unreachable(null);
+
+  const result = await get(STATE_BLOB_PATH, configured.blob);
+  if (!result?.stream) throw unreachable(configured.via);
+
   return {
     state: (await new Response(result.stream).json()) as Record<string, unknown>,
-    source: `Blob store ${STATE_BLOB_PATH}`,
+    // Naming the token is what makes a surprising entry count diagnosable:
+    // the store read is otherwise invisible.
+    source: `Blob store ${STATE_BLOB_PATH} (via ${configured.via})`,
   };
 }
 
@@ -130,8 +166,9 @@ async function readState(
  * archive gets merged back in rather than trusted to match.
  */
 async function readMissingArchived(have: Set<string>): Promise<ReportEntry[]> {
-  const blob = stateBlobOptions();
-  if (!blob) return [];
+  const configured = stateBlobOptions();
+  if (!configured) return [];
+  const blob = configured.blob;
 
   const pathnames: string[] = [];
   let cursor: string | undefined;
