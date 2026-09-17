@@ -11,7 +11,7 @@ type TripEntry = {
   href: string;
   stats: string;
   days: string;
-  coords: [number, number][];
+  segments: [number, number][][];
 };
 
 export default function HomeTripSection({ trips }: { trips: TripEntry[] }) {

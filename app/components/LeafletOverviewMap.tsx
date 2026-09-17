@@ -19,7 +19,7 @@ type TripEntry = {
   region: string;
   date: string;
   href: string;
-  coords: [number, number][];
+  segments: [number, number][][];
 };
 
 function usePulseIcon() {
@@ -101,7 +101,7 @@ export default function LeafletOverviewMap({
   // A live position alone (no breadcrumb track yet) still counts as live.
   const hasLive = livePositions.length > 0 || !!liveLatest;
   const allCoords = useMemo(
-    () => trips.flatMap((t) => t.coords as LatLngExpression[]),
+    () => trips.flatMap((t) => t.segments.flat() as LatLngExpression[]),
     [trips],
   );
   // When a live trip is present, focus the map on it; otherwise frame all trips.
@@ -138,7 +138,8 @@ export default function LeafletOverviewMap({
       {/* While a trip is live, show only its route — hide the past trips. */}
       {!hasLive &&
         trips.map((trip) => {
-        const positions = trip.coords as LatLngExpression[];
+        // Nested array = one ring per day, so Leaflet leaves the days unjoined.
+        const positions = trip.segments as LatLngExpression[][];
         if (positions.length === 0) return null;
 
         const effectiveHover = mapHoveredTrip ?? hoveredTrip;
@@ -180,7 +181,7 @@ export default function LeafletOverviewMap({
               </Tooltip>
             </Polyline>
             <CircleMarker
-              center={positions[0]}
+              center={positions[0][0]}
               radius={4}
               pathOptions={{
                 color: "#fff",
