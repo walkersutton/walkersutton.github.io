@@ -178,6 +178,36 @@ npx vercel blob list --prefix report-entries/   # what was actually published
 **Clear all** empties the archive as well, which is why it asks first. that one
 really is unrecoverable.
 
+### straight lines across the map
+
+`pnpm gaps` finds the "as the crow flies" segments in a trip's geojson.
+
+```sh
+pnpm gaps content/trips/pacific-to-atlantic.geojson
+pnpm gaps content/trips/*.geojson --ratio 12 --top 3
+```
+
+each LineString is drawn as one leaflet polyline, and leaflet joins every
+consecutive pair of coordinates with a straight segment — it has no idea a gap
+in the recording happened. so a line cutting across the landscape is never a
+rendering artifact: it's two points in the same LineString that are far apart.
+separate features are separate polylines and never get joined.
+
+gaps are ranked by how many times the track's own median spacing they are,
+not by raw distance. stored geometry is thinned to one point per minute, so
+baseline spacing is whatever a minute covers — ~0.04 mi on the hiking trips,
+~0.26 mi on the riding ones, more on a fast descent. a fixed mileage threshold
+either buries a hike's real gaps or drowns a road trip in ordinary ones.
+
+at the default 8x, every flagged gap across the existing trips is a ferry:
+anacortes↔orcas, the seattle waterfront, edmonds–kingston,
+fauntleroy–southworth. a gap isn't automatically wrong — a ferry, a train, a
+lift, or a paused recorder all leave one legitimately. splitting the LineString
+in two at the gap is what removes the line, since each feature draws
+separately; keep `date` on both halves so the per-day stats still add up, and
+mind `dist_m`, which is measured on the full-resolution track and would double
+if it were copied to both.
+
 ### exporting to /trips
 
 once a trip is over, `pnpm export:report` turns the live report into a static
