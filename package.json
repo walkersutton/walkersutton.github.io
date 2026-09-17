@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "dotenvx run --quiet --overload -- next dev --turbopack",
     "img": "dotenvx run --quiet --overload -- node scripts/img.mts",
+    "gaps": "node scripts/geojson-gaps.mts",
+    "export:report": "dotenvx run --quiet --overload -- node scripts/export-report.mts",
     "migrate:imgur": "dotenvx run --quiet --overload -- node scripts/migrate-imgur.mts",
     "build": "dotenvx run --quiet --overload -- next build",
     "start": "npx serve out",

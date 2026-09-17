@@ -13,6 +13,7 @@ import {
 import type { TripEntry, DayStat } from "@/lib/trips";
 import Gallery from "@/app/components/Gallery";
 import ProseImage from "@/app/components/ProseImage";
+import { hasTripReport } from "@/lib/trip-report";
 import LeafletReportMapLoader from "./LeafletReportMapLoader";
 import TripReportLayout from "./TripReportLayout";
 
@@ -140,6 +141,23 @@ export default async function TripReportPage(props: {
             </div>
           ))}
         </div>
+
+        {/* The unedited updates, when this trip was reported live */}
+        {hasTripReport(slug) && (
+          <div style={{ marginTop: 28 }}>
+            <Link
+              href={`/trips/${slug}/report`}
+              className="text-[13px] font-medium"
+              style={{
+                color: "var(--color-text-variant)",
+                textDecoration: "underline",
+                textUnderlineOffset: "2px",
+              }}
+            >
+              Read the original day-by-day report →
+            </Link>
+          </div>
+        )}
 
         {/* Prose */}
         <div

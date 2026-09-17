@@ -178,6 +178,139 @@ npx vercel blob list --prefix report-entries/   # what was actually published
 **Clear all** empties the archive as well, which is why it asks first. that one
 really is unrecoverable.
 
+### straight lines across the map
+
+`pnpm gaps` finds the "as the crow flies" segments in a trip's geojson.
+
+```sh
+pnpm gaps content/trips/pacific-to-atlantic.geojson
+pnpm gaps content/trips/*.geojson --ratio 12 --top 3
+```
+
+each LineString is drawn as one leaflet polyline, and leaflet joins every
+consecutive pair of coordinates with a straight segment — it has no idea a gap
+in the recording happened. so a line cutting across the landscape is never a
+rendering artifact: it's two points in the same LineString that are far apart.
+separate features are separate polylines and never get joined.
+
+gaps are ranked by how many times the track's own median spacing they are,
+not by raw distance. stored geometry is thinned to one point per minute, so
+baseline spacing is whatever a minute covers — ~0.04 mi on the hiking trips,
+~0.26 mi on the riding ones, more on a fast descent. a fixed mileage threshold
+either buries a hike's real gaps or drowns a road trip in ordinary ones.
+
+at the default 8x, every flagged gap across the existing trips is a ferry:
+anacortes↔orcas, the seattle waterfront, edmonds–kingston,
+fauntleroy–southworth. a gap isn't automatically wrong — a ferry, a train, a
+lift, or a paused recorder all leave one legitimately. splitting the LineString
+in two at the gap is what removes the line, since each feature draws
+separately; keep `date` on both halves so the per-day stats still add up, and
+mind `dist_m`, which is measured on the full-resolution track and would double
+if it were copied to both.
+
+### exporting to /trips
+
+once a trip is over, `pnpm export:report` turns the live report into a static
+one under `content/trips`.
+
+```sh
+pnpm export:report
+```
+
+run bare it reads the report first, prints what it found, and then prompts for
+the rest — title, slug (defaulted from the title), region, whether to re-upload
+the photos, whether to keep the posting times, and a last dry-run/write/cancel.
+arrow keys or j/k to move, enter to pick, ctrl-c to bail. every flag below still
+works, and passing `--slug` is what turns the prompts off:
+
+```sh
+pnpm export:report --slug sf-nyc --title "SF to NYC" --region "California" --dry
+```
+
+it reads the report out of the blob store, merges back anything the archive
+holds that the state array has lost (same comparison `/admin/report` shows),
+reverses it into chronological order, re-uploads every photo through the same
+pipeline as `pnpm img` (1600px webp, `trips/<slug>/day-N-NN.webp`), and writes
+`content/trips/<slug>.mdx`: one `<DayMarker>` per day, an `<Img>` for a lone
+photo and a `<Gallery>` for several. every upload finishes before anything is
+written to disk, so a failure part-way can't leave the mdx pointing at photos
+that aren't there.
+
+| flag | default | |
+| --- | --- | --- |
+| `--slug <name>` | prompted for | output slug; `content/trips/<slug>.mdx`. passing it turns the prompts off |
+| `--title <text>` | the active trip name | frontmatter title |
+| `--region <text>` | — | frontmatter region |
+| `--reuse-urls` | off | keep each photo's existing URL; skip fetch/resize/upload |
+| `--no-times` | off | drop posting times instead of keeping them as invisible mdx comments |
+| `--local` | off | read `data/live-state.json` instead of the blob store |
+| `--force` | off | overwrite an existing `<slug>.mdx` |
+| `--dry` | off | process and report, but don't upload or write |
+
+days are grouped the way `/trips/live/report` groups them — by the date where
+the update was written, in the zone it was posted from — so the exported days
+match what readers already saw. `<` and `{` in an update are written as html
+entities, since mdx would otherwise read them as jsx; bullets, bare urls and
+asterisks stay as markdown. posting times ride along as `{/* 7:20 AM PDT */}`,
+which `blockJS` strips before render, so they're an editing aid and invisible
+to readers.
+
+the report lives in the private **live-state** store, not the public image
+store. `BLOB_READ_WRITE_TOKEN` alone isn't enough — the deployment is given
+`LIVE_STATE_BLOB_READ_WRITE_TOKEN` separately, and locally it has to be set too:
+
+```sh
+npx vercel env pull            # or copy it from the Vercel dashboard
+npx dotenvx set LIVE_STATE_BLOB_READ_WRITE_TOKEN "vercel_blob_rw_..."
+```
+
+without it the export stops rather than falling back to the committed
+`data/live-state.json`. that seed is months-old git data shaped exactly like a
+real trip, and the export writes files and uploads photos off what it reads, so
+a quiet fallback would spend real work on the wrong trip. `--local` exports the
+seed deliberately. the first line of every run names the store it read.
+
+### the archived report
+
+the export writes two files, and they have different jobs:
+
+| file | |
+| --- | --- |
+| `content/trips/<slug>.mdx` | the write-up. edit it into whatever the trip should read as |
+| `content/trips/<slug>.report.json` | the updates verbatim. don't edit it |
+
+the json is rendered at `/trips/<slug>/report` — every update in the order it
+was posted, with its timestamp in the zone it was posted from, through the same
+`ReportEntries` component `/trips/live/report` uses, so an archived trip reads
+exactly as it did while it was live. the write-up links to it, and only for
+trips that have one.
+
+the whole trip goes on one page, where the live feed pages at 20. they serve
+opposite readers: on the live feed someone wants the newest few updates, so page
+one is the whole visit, while here someone is reading a finished trip as a
+record and reads through — paging that costs them ctrl-F across the trip, which
+is most of why it's kept. photos stay lazy, so a reader still only pays for what
+they scroll past.
+
+it isn't any cheaper to serve for it. `app/layout.tsx` is `force-dynamic`, since
+it reads the live banner out of the blob store on every request, so every route
+on the site is server-rendered no matter what an individual page does.
+
+this exists because the live report isn't storage. it's one mutable array in
+the blob store holding one trip at a time, `/trips/live/report` redirects away
+once that array is empty, and **Clear all** empties the per-update archive too
+— so without a committed copy, last trip's updates stop existing the day the
+next trip starts.
+
+the archive carries the re-uploaded photo urls, the same ones the mdx points
+at, so the two can't drift onto different copies of a photo.
+
+it exports text and photos only. `draft: true`, blank `subtitle=""` on every
+day marker and blank `alt=""` on every photo are all left for you — and
+distance, elevation, the date range and the map still come from
+`content/trips/<slug>.geojson`, which nothing here generates. without one the
+trip renders with empty stats and no date to sort on.
+
 ### imgur migration
 
 one-shot, already run: all 17 imgur images are on blob now. kept around in case an old draft still has imgur links.
