@@ -25,8 +25,9 @@ export async function generateMetadata(props: {
  * The trip's live report exactly as it was published, kept beside the edited
  * write-up at /trips/<slug>.
  *
- * Static, read from `content/trips/<slug>.report.json` at build time — the live
- * feed's store holds one trip at a time, so nothing here can depend on it.
+ * Read from the committed `content/trips/<slug>.report.json`, never from the
+ * live feed's store — that store holds one trip at a time, so nothing here can
+ * depend on it.
  *
  * The whole trip on one page, where the live feed pages at 20. They serve
  * opposite readers: someone on the live feed wants the newest few updates, so
