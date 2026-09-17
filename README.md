@@ -285,6 +285,17 @@ was posted, with its timestamp in the zone it was posted from, through the same
 exactly as it did while it was live. the write-up links to it, and only for
 trips that have one.
 
+the whole trip goes on one page, where the live feed pages at 20. they serve
+opposite readers: on the live feed someone wants the newest few updates, so page
+one is the whole visit, while here someone is reading a finished trip as a
+record and reads through — paging that costs them ctrl-F across the trip, which
+is most of why it's kept. photos stay lazy, so a reader still only pays for what
+they scroll past.
+
+it isn't any cheaper to serve for it. `app/layout.tsx` is `force-dynamic`, since
+it reads the live banner out of the blob store on every request, so every route
+on the site is server-rendered no matter what an individual page does.
+
 this exists because the live report isn't storage. it's one mutable array in
 the blob store holding one trip at a time, `/trips/live/report` redirects away
 once that array is empty, and **Clear all** empties the per-update archive too

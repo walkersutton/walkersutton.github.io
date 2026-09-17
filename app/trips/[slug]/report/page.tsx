@@ -4,9 +4,7 @@ import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import PageContainer from "@/app/components/PageContainer";
 import Footer from "@/app/components/Footer";
-import Pager from "@/app/components/Pager";
 import ReportEntries from "@/app/components/ReportEntries";
-import { paginate } from "@/lib/paginate";
 import { getTripBySlug } from "@/lib/trips";
 import { getTripReport, getTripReportSlugs, groupByDay } from "@/lib/trip-report";
 
@@ -23,24 +21,30 @@ export async function generateMetadata(props: {
   return { title: `${trip.frontmatter.title} — original report | Walker Sutton` };
 }
 
-function pageHref(slug: string) {
-  // Page 1 is the bare URL, so the link people share keeps working.
-  return (page: number) =>
-    page <= 1 ? `/trips/${slug}/report` : `/trips/${slug}/report?page=${page}`;
-}
-
 /**
  * The trip's live report exactly as it was published, kept beside the edited
  * write-up at /trips/<slug>.
  *
  * Static, read from `content/trips/<slug>.report.json` at build time — the live
  * feed's store holds one trip at a time, so nothing here can depend on it.
+ *
+ * The whole trip on one page, where the live feed pages at 20. They serve
+ * opposite readers: someone on the live feed wants the newest few updates, so
+ * page one is the whole visit, while someone here is reading a finished trip as
+ * a record and reads through — paging that costs them ctrl-F across the trip,
+ * which is most of why it is kept. Photos stay lazy, so a reader still only
+ * pays for what they scroll past, and the whole-trip download is a determined
+ * reader's alone.
+ *
+ * Not, however, any faster to serve: the root layout is `force-dynamic` (it
+ * reads the live banner out of the Blob store on every request), so every route
+ * here is server-rendered whatever this page does. Dropping `?page=` buys the
+ * reader, not the build.
  */
 export default async function TripReportArchivePage(props: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string }>;
 }) {
-  const [{ slug }, { page }] = await Promise.all([props.params, props.searchParams]);
+  const { slug } = await props.params;
 
   const trip = getTripBySlug(slug);
   const entries = getTripReport(slug);
@@ -49,8 +53,7 @@ export default async function TripReportArchivePage(props: {
   const { isEnabled: showDrafts } = await draftMode();
   if (trip.frontmatter.draft && !showDrafts) notFound();
 
-  const { pageItems, currentPage, totalPages } = paginate(entries, page);
-  const days = groupByDay(pageItems);
+  const days = groupByDay(entries);
 
   return (
     <PageContainer>
@@ -91,13 +94,6 @@ export default async function TripReportArchivePage(props: {
         </p>
 
         <ReportEntries days={days} />
-
-        <Pager
-          currentPage={currentPage}
-          totalPages={totalPages}
-          hrefFor={pageHref(slug)}
-          label="Report pages"
-        />
 
         <div
           style={{ marginTop: 56, paddingTop: 20, borderTop: "1px solid var(--color-rule)" }}
