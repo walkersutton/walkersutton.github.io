@@ -10,7 +10,16 @@
  *
  * Reads every update out of the live-state Blob store, merges in anything the
  * per-update archive holds that the state array has lost, re-uploads each photo
- * through the same pipeline as `pnpm img`, and writes content/trips/<slug>.mdx.
+ * through the same pipeline as `pnpm img`, and writes two files:
+ *
+ *   content/trips/<slug>.mdx          the write-up, to edit into shape
+ *   content/trips/<slug>.report.json  the updates verbatim, rendered at
+ *                                     /trips/<slug>/report and not edited
+ *
+ * The mdx becomes whatever the trip is written up as; the json stays what was
+ * actually typed on the day, timestamps and zones and all, because the live
+ * feed's store holds one trip at a time and loses this one the day the next
+ * trip starts.
  *
  * Flags:
  *   --slug <name>     output slug; content/trips/<slug>.mdx. Passing it is what
@@ -342,6 +351,28 @@ function buildMdx(groups: DayGroup[], resolved: Map<string, string>, opts: Opts)
   return `${lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd()}\n`;
 }
 
+/**
+ * The report as published, for content/trips/<slug>.report.json.
+ *
+ * Carries the re-uploaded photo URLs rather than the originals, so the archive
+ * and the write-up point at the same durable copies and neither is left holding
+ * a url the other's upload replaced. Ordered oldest-first, as it is read.
+ */
+function buildArchive(
+  entries: ReportEntry[],
+  resolved: Map<string, string>,
+): ReportEntry[] {
+  return entries.map((entry) => ({
+    id: entry.id,
+    date: entry.date,
+    ...(entry.tz ? { tz: entry.tz } : {}),
+    text: entry.text,
+    images: entry.images
+      .map((url) => resolved.get(url))
+      .filter((url): url is string => Boolean(url)),
+  }));
+}
+
 // ── Photos ────────────────────────────────────────────────────────
 
 async function fetchPhoto(url: string): Promise<Buffer> {
@@ -544,6 +575,7 @@ async function main() {
   else opts.title ||= activeTripName ?? opts.slug;
 
   const outPath = join("content", "trips", `${opts.slug}.mdx`);
+  const archivePath = join("content", "trips", `${opts.slug}.report.json`);
   const uploads = !opts.reuseUrls && !opts.dry;
   const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
   if (uploads && (!blobToken || blobToken.startsWith("encrypted:"))) {
@@ -586,12 +618,16 @@ async function main() {
 
   if (opts.dry) {
     console.log(`\n${mdx}`);
-    console.log(`dry run — nothing uploaded, ${outPath} not written`);
+    console.log(`dry run — nothing uploaded, ${outPath} and ${archivePath} not written`);
     return;
   }
 
   await writeFile(outPath, mdx);
+  // The mdx gets edited into a write-up; this stays as it was published, and
+  // /trips/<slug>/report renders it.
+  await writeFile(archivePath, `${JSON.stringify(buildArchive(entries, resolved), null, 2)}\n`);
   console.log(`\nwrote ${outPath}`);
+  console.log(`wrote ${archivePath}  ${entries.length} updates, verbatim`);
   console.log("\nstill to fill in:");
   console.log(`  - <DayMarker subtitle=""> — one line per day, ${groups.length} of them`);
   console.log(`  - alt="" on ${names.size} <Img> — camera filenames carry nothing to derive it from`);

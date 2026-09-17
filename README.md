@@ -240,6 +240,30 @@ real trip, and the export writes files and uploads photos off what it reads, so
 a quiet fallback would spend real work on the wrong trip. `--local` exports the
 seed deliberately. the first line of every run names the store it read.
 
+### the archived report
+
+the export writes two files, and they have different jobs:
+
+| file | |
+| --- | --- |
+| `content/trips/<slug>.mdx` | the write-up. edit it into whatever the trip should read as |
+| `content/trips/<slug>.report.json` | the updates verbatim. don't edit it |
+
+the json is rendered at `/trips/<slug>/report` — every update in the order it
+was posted, with its timestamp in the zone it was posted from, through the same
+`ReportEntries` component `/trips/live/report` uses, so an archived trip reads
+exactly as it did while it was live. the write-up links to it, and only for
+trips that have one.
+
+this exists because the live report isn't storage. it's one mutable array in
+the blob store holding one trip at a time, `/trips/live/report` redirects away
+once that array is empty, and **Clear all** empties the per-update archive too
+— so without a committed copy, last trip's updates stop existing the day the
+next trip starts.
+
+the archive carries the re-uploaded photo urls, the same ones the mdx points
+at, so the two can't drift onto different copies of a photo.
+
 it exports text and photos only. `draft: true`, blank `subtitle=""` on every
 day marker and blank `alt=""` on every photo are all left for you — and
 distance, elevation, the date range and the map still come from

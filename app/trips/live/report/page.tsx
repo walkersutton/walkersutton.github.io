@@ -4,59 +4,14 @@ import { redirect } from "next/navigation";
 import PageContainer from "@/app/components/PageContainer";
 import Footer from "@/app/components/Footer";
 import Pager from "@/app/components/Pager";
+import ReportEntries from "@/app/components/ReportEntries";
 import { paginate } from "@/lib/paginate";
-import { entryTimeZone } from "@/lib/report-time";
+import { groupByDay } from "@/lib/trip-report";
 import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
-import type { LiveReportEntry } from "@/lib/live-state";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Live trip report | Walker Sutton" };
-
-// Times are shown in the zone the update was posted from, not the site's and
-// not the reader's: on a trip that crosses the country, "7:20 AM" is only
-// meaningful next to where Walker was standing when he wrote it.
-function dayKey(iso: string, tz: string): string {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-CA", { timeZone: tz });
-}
-
-function fmtDayHeading(iso: string, tz: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    timeZone: tz,
-  }).format(d);
-}
-
-/** e.g. "7:20 AM MDT" — the zone is the point, so it is always shown. */
-function fmtTime(iso: string, tz: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: tz,
-    timeZoneName: "short",
-  }).format(d);
-}
-
-// Group newest-first entries into day buckets, preserving order. A day is a day
-// where the update was written, so riding into a new zone at midnight splits
-// the entries the way the rider experienced it.
-function groupByDay(entries: LiveReportEntry[]): { key: string; entries: LiveReportEntry[] }[] {
-  const groups: { key: string; entries: LiveReportEntry[] }[] = [];
-  for (const entry of entries) {
-    const key = dayKey(entry.date, entryTimeZone(entry.tz));
-    const last = groups[groups.length - 1];
-    if (last && last.key === key) last.entries.push(entry);
-    else groups.push({ key, entries: [entry] });
-  }
-  return groups;
-}
 
 /** Page 1 is the bare URL; deeper pages carry ?page=N. */
 function pageHref(page: number): string {
@@ -125,67 +80,7 @@ export default async function LiveReportPage({
             No updates yet.
           </p>
         ) : (
-          <div className="flex flex-col">
-            {groups.map((group) => (
-              <section
-                key={group.key}
-                style={{
-                  borderTop: "1px solid var(--color-border-faint)",
-                  paddingTop: 28,
-                  marginTop: 28,
-                }}
-              >
-                <h2
-                  className="text-[13px] font-semibold uppercase tracking-[0.11em]"
-                  style={{ color: "var(--color-text-faint)", marginBottom: 18 }}
-                >
-                  {fmtDayHeading(group.entries[0].date, entryTimeZone(group.entries[0].tz))}
-                </h2>
-
-                {group.entries.map((entry) => (
-                  <div key={entry.id} style={{ marginBottom: 28 }}>
-                    <div
-                      className="text-[11px] font-medium tracking-[0.02em]"
-                      style={{ color: "var(--color-text-faint)", marginBottom: 8 }}
-                    >
-                      {fmtTime(entry.date, entryTimeZone(entry.tz))}
-                    </div>
-                    {entry.text && (
-                      <p
-                        className="text-[16px] leading-[1.7] mb-[16px]"
-                        style={{
-                          color: "var(--color-text)",
-                          maxWidth: "64ch",
-                          whiteSpace: "pre-wrap",
-                        }}
-                      >
-                        {entry.text}
-                      </p>
-                    )}
-                    {entry.images.length > 0 && (
-                      <div className="flex flex-col gap-[12px]">
-                        {entry.images.map((src) => (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            key={src}
-                            src={src}
-                            alt=""
-                            // A trip's report grows without bound, and every
-                            // photo on it is a Blob download. Only pay for the
-                            // ones a reader actually scrolls to.
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full"
-                            style={{ borderRadius: 6, maxWidth: "100%", height: "auto" }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </section>
-            ))}
-          </div>
+          <ReportEntries days={groups} />
         )}
 
         <Pager
