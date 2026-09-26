@@ -49,7 +49,7 @@ import { put } from "@vercel/blob";
 import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
-import { KB, processImage } from "./lib/image.mts";
+import { type Dimensions, KB, processImage } from "./lib/image.mts";
 import { isInteractive, paint, select, text } from "./lib/prompt.mts";
 import {
   buildArchive,
@@ -125,14 +125,22 @@ function blocks(text: string): string[] {
   return out;
 }
 
-function imgTag(url: string, indent = ""): string {
-  return `${indent}<Img src="${url}" alt="" />`;
+/**
+ * `w`/`h` are the size the photo came out of the pipeline at, so the browser
+ * reserves its space instead of laying out a zero-height box that grows when
+ * the bytes land. See ProseImage. `--reuse-urls` never opens the photos, so
+ * there is nothing honest to claim and the attributes are left off.
+ */
+function imgTag(url: string, sizes: Map<string, Dimensions>, indent = ""): string {
+  const size = sizes.get(url);
+  const dims = size ? ` w="${size.width}" h="${size.height}"` : "";
+  return `${indent}<Img src="${url}"${dims} alt="" />`;
 }
 
 /** One photo stands alone; several become a gallery, as `pnpm img` emits. */
-function imageBlock(urls: string[]): string {
-  if (urls.length === 1) return imgTag(urls[0]);
-  return `<Gallery>\n${urls.map((url) => imgTag(url, "  ")).join("\n")}\n</Gallery>`;
+function imageBlock(urls: string[], sizes: Map<string, Dimensions>): string {
+  if (urls.length === 1) return imgTag(urls[0], sizes);
+  return `<Gallery>\n${urls.map((url) => imgTag(url, sizes, "  ")).join("\n")}\n</Gallery>`;
 }
 
 /** Bare where yaml reads it back unchanged, quoted where it wouldn't. */
@@ -140,7 +148,12 @@ function yamlValue(value: string): string {
   return /^[A-Za-z0-9][^:#\n]*[^:#\s]$/.test(value) ? value : JSON.stringify(value);
 }
 
-function buildMdx(groups: DayGroup[], resolved: Map<string, string>, opts: Opts): string {
+function buildMdx(
+  groups: DayGroup[],
+  resolved: Map<string, string>,
+  sizes: Map<string, Dimensions>,
+  opts: Opts,
+): string {
   const lines: string[] = [
     "---",
     `title: ${yamlValue(opts.title)}`,
@@ -163,7 +176,7 @@ function buildMdx(groups: DayGroup[], resolved: Map<string, string>, opts: Opts)
       const urls = entry.images
         .map((url) => resolved.get(url))
         .filter((url): url is string => Boolean(url));
-      if (urls.length > 0) lines.push(imageBlock(urls), "");
+      if (urls.length > 0) lines.push(imageBlock(urls, sizes), "");
     }
   });
 
@@ -352,6 +365,8 @@ async function main() {
 
   // Phase 3 — fetch, re-encode and upload every photo. Nothing on disk yet.
   const resolved = new Map<string, string>();
+  // Keyed by the url the mdx ends up pointing at, which is what imgTag has.
+  const sizes = new Map<string, Dimensions>();
   if (opts.reuseUrls) {
     for (const url of names.keys()) resolved.set(url, url);
     console.log("\nkeeping the photos where they are");
@@ -360,7 +375,7 @@ async function main() {
     for (const [url, name] of names) {
       const ext = extname(new URL(url).pathname).toLowerCase();
       const input = await fetchPhoto(url);
-      const { body, ext: outExt } = await processImage(input, ext, {
+      const { body, ext: outExt, size } = await processImage(input, ext, {
         width: opts.width,
         quality: opts.quality,
       });
@@ -376,11 +391,12 @@ async function main() {
       const blob = await put(pathname, body, { access: "public", addRandomSuffix: true });
       console.log(`  ${name}  ${saved}  → ${pathname}`);
       resolved.set(url, blob.url);
+      if (size) sizes.set(blob.url, size);
     }
   }
 
   // Phase 4 — write the mdx, now that every photo resolved.
-  const mdx = buildMdx(groups, resolved, opts);
+  const mdx = buildMdx(groups, resolved, sizes, opts);
 
   if (opts.dry) {
     console.log(`\n${mdx}`);

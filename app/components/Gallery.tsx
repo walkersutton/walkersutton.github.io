@@ -51,7 +51,7 @@ export default function Gallery({
   );
 }
 
-/** Pull {src, alt, caption} off every <Img>-shaped descendant, in order. */
+/** Pull {src, alt, caption, w, h} off every <Img>-shaped descendant, in order. */
 function collect(children: ReactNode, depth = 0): GalleryImage[] {
   if (depth > 3) return [];
   return Children.toArray(children).flatMap((child) => {
@@ -60,7 +60,15 @@ function collect(children: ReactNode, depth = 0): GalleryImage[] {
       children?: ReactNode;
     };
     if (typeof props.src === "string") {
-      return [{ src: props.src, alt: props.alt, caption: props.caption }];
+      return [
+        {
+          src: props.src,
+          alt: props.alt,
+          caption: props.caption,
+          w: props.w,
+          h: props.h,
+        },
+      ];
     }
     // MDX sometimes wraps a run of inline elements in a paragraph.
     return props.children ? collect(props.children, depth + 1) : [];
