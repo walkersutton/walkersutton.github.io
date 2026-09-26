@@ -305,6 +305,34 @@ next trip starts.
 the archive carries the re-uploaded photo urls, the same ones the mdx points
 at, so the two can't drift onto different copies of a photo.
 
+#### backfilling one
+
+`pacific-atlantic` was exported the day `<slug>.report.json` was added, from a
+checkout that predated it, so it has a write-up and no archive — which is what
+`pnpm backfill:report` is for:
+
+```sh
+pnpm backfill:report --slug pacific-atlantic --dry   # look first
+pnpm backfill:report --slug pacific-atlantic
+```
+
+it reads the updates from the same store the export reads, and resolves each
+photo to the url **the mdx already carries**, by the `day-1-01` name the export
+gave it. re-running the export would not do that: it writes both files
+together, so `--reuse-urls` would archive the originals the phone uploaded to
+/admin while the mdx points at the re-uploaded copies, and without it every
+photo would be uploaded a second time. nothing is uploaded here and nothing but
+the json is written — the mdx is read, never touched.
+
+it refuses rather than guesses. the store holds one trip at a time and is still
+live, so if an update has been edited or deleted since the export, every photo
+after it re-letters and the join would file photos under the wrong updates
+without ever failing. a day count, an update count and both directions of the
+photo join all have to agree, and it names every mismatch and writes nothing.
+
+only for a trip exported before the archive existed. anything exported since
+already has one.
+
 it exports text and photos only. `draft: true`, blank `subtitle=""` on every
 day marker and blank `alt=""` on every photo are all left for you — and
 distance, elevation, the date range and the map still come from
