@@ -50,8 +50,6 @@ export default async function Home() {
   const latestPost = posts[0];
   const latestFallback = latestOverride ?? latestFallbackAuto;
 
-  // Consumed by the "the latest:" hero chip, currently commented out below.
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   const latestText =
     latestFallback?.text ?? (latestPost ? latestPost.title : null);
   const latestHref =
@@ -62,7 +60,6 @@ export default async function Home() {
   const isExternal = latestFallback
     ? !latestFallback.href.startsWith("/")
     : !!latestPost?.external_url;
-  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   return (
     <>
@@ -83,7 +80,7 @@ export default async function Home() {
             className="flex flex-wrap gap-4 text-[13px] font-medium mb-5"
             style={{ color: "var(--color-text)" }}
           >
-            {/* {latestText && latestHref && (
+            {latestText && latestHref && (
               <span>
                 the latest:&nbsp;&nbsp;
                 <a
@@ -105,7 +102,7 @@ export default async function Home() {
                   </span>{" "}
                 </a>
               </span>
-            )} */}
+            )}
           </div>
           <h1
             className="text-[clamp(26px,4vw,44px)] font-bold leading-[1.18] tracking-[-0.025em] m-0"
