@@ -14,7 +14,7 @@ type TripEntry = {
   region: string;
   date: string;
   href: string;
-  coords: [number, number][];
+  segments: [number, number][][];
 };
 
 export default function LeafletOverviewMapLoader({

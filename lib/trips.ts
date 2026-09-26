@@ -50,7 +50,12 @@ export interface TripEntry {
   href: string;
   stats: string;
   days: string;
-  coords: [number, number][];
+  /**
+   * One entry per day's track, never flattened: consecutive days can start far
+   * from where the last one ended (an off-day, a train, a dead GPS morning),
+   * and a single joined array draws that gap as a fake straight-line segment.
+   */
+  segments: [number, number][][];
 }
 
 // ── GeoJSON types ─────────────────────────────────────────────────
@@ -344,7 +349,9 @@ export function buildTripEntries(options: { includeDrafts?: boolean } = {}): Tri
         href: `/trips/${slug}`,
         stats: `${trip.stats.distance} · ${trip.stats.gained}`,
         days: `${trip.days} day${trip.days !== 1 ? "s" : ""}`,
-        coords: trip.tracks.flatMap((t) => t.coords) as [number, number][],
+        segments: trip.tracks
+          .map((t) => t.coords)
+          .filter((c) => c.length > 0) as [number, number][][],
       };
     })
     .filter((t): t is TripEntry => t !== null)
