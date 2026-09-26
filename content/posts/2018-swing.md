@@ -4,7 +4,7 @@ slug: "swing"
 title: "Swing | Stock Trading Application"
 ---
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-stock-trading-web-app-screenshot-lbGEyxMtPt3m2j0ErlYAfwkiyOFFGd.webp" alt="swing_stock_trading_web_app_screenshot" tall />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-stock-trading-web-app-screenshot-lbGEyxMtPt3m2j0ErlYAfwkiyOFFGd.webp" w="1286" h="1890" alt="swing_stock_trading_web_app_screenshot" tall />
 
 **SQL, PHP, jQuery, HTML, CSS, Javascript**
 
@@ -18,12 +18,12 @@ In trying to complete this project, I believe that we were a bit too ambitious i
 
 #### Landing Page
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-interface-screenshot-6sOKEQVH1gFnS5HfY1ox9AhBJx9RGl.webp" alt="swing_interface_screenshot" tall />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-interface-screenshot-6sOKEQVH1gFnS5HfY1ox9AhBJx9RGl.webp" w="633" h="935" alt="swing_interface_screenshot" tall />
 
 #### Early UI Designs
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-1-MgOiAiRDZE2c1Z3b3LiHHr5BAOGw5C.webp" alt="swing_mockup_interface_screenshot_1" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-1-MgOiAiRDZE2c1Z3b3LiHHr5BAOGw5C.webp" w="974" h="652" alt="swing_mockup_interface_screenshot_1" />
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-2-i0civjq2HOc8Piij1FibhgPtbCyjpX.webp" alt="swing_mockup_interface_screenshot_2" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-2-i0civjq2HOc8Piij1FibhgPtbCyjpX.webp" w="974" h="650" alt="swing_mockup_interface_screenshot_2" />
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-3-lzlMPBwNCkRiC5gW1GFATWe61KveKy.webp" alt="swing_mockup_interface_screenshot_3" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-swing/swing-mockup-interface-screenshot-3-lzlMPBwNCkRiC5gW1GFATWe61KveKy.webp" w="974" h="650" alt="swing_mockup_interface_screenshot_3" />

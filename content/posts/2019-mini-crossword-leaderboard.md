@@ -4,7 +4,7 @@ slug: "mini-crossword-leaderboard"
 title: "Mini Crossword Puzzle Leaderboard"
 ---
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2019-mini-crossword-leaderboard/nyt-mini-leaderboard-main-mtbc8MFicKuj0jxtJh9bksGtHf1YMA.webp" alt="nyt_mini_leaderboard_main" />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2019-mini-crossword-leaderboard/nyt-mini-leaderboard-main-mtbc8MFicKuj0jxtJh9bksGtHf1YMA.webp" w="522" h="522" alt="nyt_mini_leaderboard_main" />
 
 **Python, cron, GoogleCharts, GoogleSheetsAPI**
 
