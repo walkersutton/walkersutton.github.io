@@ -9,8 +9,11 @@ import {
   buildTripEntries,
   fmtMiles,
   fmtFeet,
+  dayAnchorId,
+  parseDayNumbers,
+  type TripEntry,
+  type DayStat,
 } from "@/lib/trips";
-import type { TripEntry, DayStat } from "@/lib/trips";
 import Gallery from "@/app/components/Gallery";
 import ProseImage from "@/app/components/ProseImage";
 import { hasTripReport } from "@/lib/trip-report";
@@ -58,6 +61,7 @@ export default async function TripReportPage(props: {
     stats,
     dayStats,
     stravaByLabel,
+    dayAnchors,
     dates,
     content,
   } = trip;
@@ -76,6 +80,7 @@ export default async function TripReportPage(props: {
             tracks={tracks}
             waypoints={waypoints}
             start={start}
+            dayAnchors={dayAnchors}
           />
         ) : null
       }
@@ -284,18 +289,6 @@ export default async function TripReportPage(props: {
 
 // ── MDX components ─────────────────────────────────────────────────
 
-function parseDayNumbers(label: string): number[] {
-  const single = label.match(/^Days?\s+(\d+)$/i);
-  if (single) return [parseInt(single[1])];
-  const range = label.match(/^Days?\s+(\d+)[–\-](\d+)$/i);
-  if (range) {
-    const s = parseInt(range[1]);
-    const e = parseInt(range[2]);
-    return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-  }
-  return [];
-}
-
 function makeDayMarker(
   dayStats: DayStat[],
   stravaByLabel: Record<string, string> = {},
@@ -326,7 +319,16 @@ function makeDayMarker(
     const hasStats = dayStats.length > 0 && (distKm > 0 || gainM > 0);
 
     return (
-      <div className="mt-6 first:mt-0" style={{ marginBottom: 12 }}>
+      <div
+        // What a click on this day's segment scrolls to. Nothing on this route
+        // is sticky — the header and banner both scroll away with the content —
+        // so the margin isn't clearing chrome, it's air: landing flush against
+        // the top edge reads like the page happens to start there, where a few
+        // lines of the day before make it obvious you arrived at a boundary.
+        id={days.length > 0 ? dayAnchorId(days[0]) : undefined}
+        className="mt-6 first:mt-0"
+        style={{ marginBottom: 12, scrollMarginTop: 88 }}
+      >
         <div
           className="text-[11px] font-semibold uppercase tracking-[0.13em]"
           style={{ color: "var(--color-text-variant)", marginBottom: 4 }}
