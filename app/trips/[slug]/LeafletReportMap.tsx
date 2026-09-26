@@ -4,6 +4,7 @@ import L from "leaflet";
 import { Fragment, useEffect, useMemo } from "react";
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
+import { scrollToDay } from "./day-scroll";
 
 export type ReportWaypoint = {
   lat: number;
@@ -28,22 +29,6 @@ type Props = {
   /** Day number → the `<DayMarker>` id to scroll to. See lib/trips.ts. */
   dayAnchors?: Record<number, string>;
 };
-
-/**
- * Take the reader to where this day is written up.
- *
- * `replaceState` rather than a `#` link: the position becomes shareable, but
- * clicking through a 26-day trip doesn't leave 26 entries for the back button
- * to walk out of. Smooth by default, instant for anyone who asked for less
- * motion — a page-length jump is exactly the kind they mean.
- */
-function scrollToDay(anchor: string) {
-  const target = document.getElementById(anchor);
-  if (!target) return;
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-  history.replaceState(null, "", `#${anchor}`);
-}
 
 function FitBounds({ tracks }: { tracks: ReportTrack[] }) {
   const map = useMap();

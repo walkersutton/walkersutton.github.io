@@ -18,6 +18,7 @@ import Gallery from "@/app/components/Gallery";
 import ProseImage from "@/app/components/ProseImage";
 import { hasTripReport } from "@/lib/trip-report";
 import LeafletReportMapLoader from "./LeafletReportMapLoader";
+import DayHashScroll from "./DayHashScroll";
 import TripReportLayout from "./TripReportLayout";
 
 export async function generateStaticParams() {
@@ -85,6 +86,8 @@ export default async function TripReportPage(props: {
         ) : null
       }
     >
+      <DayHashScroll />
+
       {/* ── Content below map ── */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 28px 96px" }}>
         {/* Title */}
