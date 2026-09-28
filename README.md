@@ -117,6 +117,41 @@ npx vercel blob get-store          # name, access mode, size
 
 store is **public** access — blob URLs are plain CDN links, no signing. don't put anything private in there.
 
+### reserving each photo's space
+
+every `<Img>` carries `w` and `h`:
+
+```
+<Img src="https://<store>.public.blob.vercel-storage.com/posts/photo-a3f9.webp" w="1600" h="1067" alt="camp at anderson pass" />
+```
+
+not the rendered size — `.img-wide` is `width: 100%; height: auto`, so the
+photo still fills the column. they are the *ratio*, which is what the browser
+lays out from until the bytes arrive. without them a lazy `<img>` is a
+zero-height box, so a page of photos grows as it's read: a 30-photo write-up
+measured 4,926px with the photos pending and 24,848px once they landed, moving
+the last day down by 19,257px. anything that scrolled into it — the map's
+day links, a `#day-21` someone shared, the browser's own anchor jump — lands
+nowhere near where it aimed.
+
+`pnpm img` and `pnpm export:report` both emit them, from the size sharp reports
+for the bytes they just uploaded. mdx written before that has none and renders
+exactly as it used to, reserving nothing, so it's worth backfilling:
+
+```sh
+pnpm backfill:img-size --dry     # every mdx under content/
+pnpm backfill:img-size
+pnpm backfill:img-size --file content/trips/pacific-atlantic.mdx
+```
+
+it fetches each photo once, measures it, and inserts `w`/`h` after `src`. tags
+that already have both are left alone, so re-running is safe and cheap. video is
+skipped, and a photo whose url no longer resolves is reported and exits non-zero
+— that's worth knowing on its own. nothing is uploaded and no photo is touched.
+
+mdx props can only carry strings (next-mdx-remote's `blockJS` strips
+expressions), hence `w="1600"` and not `w={1600}`.
+
 ### keeping data transfer down
 
 the free tier includes 10GB/month of blob data transfer, and every byte a
@@ -304,6 +339,34 @@ next trip starts.
 
 the archive carries the re-uploaded photo urls, the same ones the mdx points
 at, so the two can't drift onto different copies of a photo.
+
+#### backfilling one
+
+`pacific-atlantic` was exported the day `<slug>.report.json` was added, from a
+checkout that predated it, so it has a write-up and no archive — which is what
+`pnpm backfill:report` is for:
+
+```sh
+pnpm backfill:report --slug pacific-atlantic --dry   # look first
+pnpm backfill:report --slug pacific-atlantic
+```
+
+it reads the updates from the same store the export reads, and resolves each
+photo to the url **the mdx already carries**, by the `day-1-01` name the export
+gave it. re-running the export would not do that: it writes both files
+together, so `--reuse-urls` would archive the originals the phone uploaded to
+/admin while the mdx points at the re-uploaded copies, and without it every
+photo would be uploaded a second time. nothing is uploaded here and nothing but
+the json is written — the mdx is read, never touched.
+
+it refuses rather than guesses. the store holds one trip at a time and is still
+live, so if an update has been edited or deleted since the export, every photo
+after it re-letters and the join would file photos under the wrong updates
+without ever failing. a day count, an update count and both directions of the
+photo join all have to agree, and it names every mismatch and writes nothing.
+
+only for a trip exported before the archive existed. anything exported since
+already has one.
 
 it exports text and photos only. `draft: true`, blank `subtitle=""` on every
 day marker and blank `alt=""` on every photo are all left for you — and

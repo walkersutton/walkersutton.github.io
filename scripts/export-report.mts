@@ -38,26 +38,28 @@
  * Uploads all happen before anything is written to disk, so a failure part-way
  * through can't leave the mdx pointing at photos that were never uploaded.
  *
- * Deliberately self-contained rather than importing lib/live-state.ts: that
- * module's relative imports carry no file extension, which Node's ESM resolver
- * won't resolve when it runs a .mts file directly.
+ * Reading the store, grouping the days and naming the photos live in
+ * scripts/lib/report-store.mts, shared with backfill-report-archive.mts, which
+ * joins onto the names this script's exports have already written. Still not
+ * lib/live-state.ts, though it duplicates some of it: that module's relative
+ * imports carry no file extension, which Node's ESM resolver won't resolve when
+ * it runs a .mts file directly.
  */
-import { get, list, put } from "@vercel/blob";
+import { put } from "@vercel/blob";
 import { existsSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { extname, join } from "node:path";
-import { KB, processImage } from "./lib/image.mts";
+import { type Dimensions, KB, processImage } from "./lib/image.mts";
 import { isInteractive, paint, select, text } from "./lib/prompt.mts";
-
-/** Mirrors LiveReportEntry in lib/live-state.ts. */
-interface ReportEntry {
-  id: string;
-  date: string;
-  text: string;
-  images: string[];
-  /** IANA zone the update was posted from; absent on older entries. */
-  tz?: string;
-}
+import {
+  buildArchive,
+  collectEntries,
+  type DayGroup,
+  fmtTime,
+  groupByDay,
+  nameByUrl,
+  type ReportEntry,
+} from "./lib/report-store.mts";
 
 interface Opts {
   slug: string;
@@ -70,189 +72,6 @@ interface Opts {
   local: boolean;
   force: boolean;
   dry: boolean;
-}
-
-type BlobOptions = { access: "private"; token: string };
-
-const STATE_FILE = join("data", "live-state.json");
-const STATE_BLOB_PATH = "live-state.json";
-const ARCHIVE_PREFIX = "report-entries/";
-/** SITE_CONFIG.timeZone — the fallback for entries posted before `tz` existed. */
-const SITE_TZ = "America/Los_Angeles";
-
-// ── Reading the report ────────────────────────────────────────────
-
-/** Which env var supplied the token, so an empty result can say where it looked. */
-type TokenSource = "LIVE_STATE_BLOB_READ_WRITE_TOKEN" | "BLOB_READ_WRITE_TOKEN";
-
-/**
- * Same store and same token preference as lib/live-state.ts: the dedicated
- * live-state store when it is configured, Vercel's default Blob store
- * otherwise. A value that is still dotenvx ciphertext never decrypted and is
- * no more usable than a missing one.
- */
-function stateBlobOptions(): { blob: BlobOptions; via: TokenSource } | null {
-  const dedicated = process.env.LIVE_STATE_BLOB_READ_WRITE_TOKEN;
-  const via: TokenSource = dedicated ? "LIVE_STATE_BLOB_READ_WRITE_TOKEN" : "BLOB_READ_WRITE_TOKEN";
-  const token = dedicated ?? process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token || token.startsWith("encrypted:")) return null;
-  return { blob: { access: "private", token }, via };
-}
-
-async function readLocalState(): Promise<Record<string, unknown>> {
-  return JSON.parse(await readFile(STATE_FILE, "utf8"));
-}
-
-/**
- * Why a missing live-state.json is a hard stop rather than a fallback.
- *
- * lib/live-state.ts falls back to the committed data/live-state.json when the
- * store has nothing, and is right to: seeding an empty store on first boot is
- * what the seed is for. Exporting it is never what anyone wants. It is
- * months-old git data shaped exactly like a real trip, and this script writes
- * an mdx file and uploads photos off the back of what it reads, so a quiet
- * fallback spends real work producing a real-looking export of the wrong trip.
- *
- * The likeliest cause is also not an empty store. BLOB_READ_WRITE_TOKEN points
- * at the public image store, and only the deployment is given the dedicated
- * one, so falling back to it locally looks in a store the report was never
- * written to — at which point "the store is empty" is a false statement about
- * a store nobody asked about.
- */
-function unreachable(via: TokenSource | null): Error {
-  if (via === null) {
-    return new Error(
-      "no usable Blob token: neither LIVE_STATE_BLOB_READ_WRITE_TOKEN nor\n" +
-        "BLOB_READ_WRITE_TOKEN is set, or both are still dotenvx ciphertext.\n\n" +
-        "pass --local to export the committed seed instead.",
-    );
-  }
-  if (via === "BLOB_READ_WRITE_TOKEN") {
-    return new Error(
-      `no ${STATE_BLOB_PATH} in the store BLOB_READ_WRITE_TOKEN points at.\n\n` +
-        "that is the public image store — the one `pnpm img` uploads to. the report\n" +
-        "lives in the separate private live-state store, whose token the deployment\n" +
-        "injects as LIVE_STATE_BLOB_READ_WRITE_TOKEN and which is not in .env:\n\n" +
-        "  npx vercel env pull                 # or copy it from the Vercel dashboard\n" +
-        '  npx dotenvx set LIVE_STATE_BLOB_READ_WRITE_TOKEN "vercel_blob_rw_..."\n\n' +
-        "pass --local to export the committed seed instead.",
-    );
-  }
-  return new Error(
-    `no ${STATE_BLOB_PATH} in the store LIVE_STATE_BLOB_READ_WRITE_TOKEN points at.\n` +
-      "either that is the wrong store's token, or the report has genuinely never\n" +
-      "been written. pass --local to export the committed seed instead.",
-  );
-}
-
-async function readState(
-  opts: Opts,
-): Promise<{ state: Record<string, unknown>; source: string }> {
-  if (opts.local) {
-    return { state: await readLocalState(), source: `${STATE_FILE} (the committed seed)` };
-  }
-
-  const configured = stateBlobOptions();
-  if (!configured) throw unreachable(null);
-
-  const result = await get(STATE_BLOB_PATH, configured.blob);
-  if (!result?.stream) throw unreachable(configured.via);
-
-  return {
-    state: (await new Response(result.stream).json()) as Record<string, unknown>,
-    // Naming the token is what makes a surprising entry count diagnosable:
-    // the store read is otherwise invisible.
-    source: `Blob store ${STATE_BLOB_PATH} (via ${configured.via})`,
-  };
-}
-
-/**
- * Updates the archive holds that the report doesn't.
- *
- * The report is one array inside one JSON document, so every write to it is a
- * read-modify-write that a stale read can clobber wholesale (see the header of
- * lib/report-archive.ts). Exporting is the last chance to notice, so the
- * archive gets merged back in rather than trusted to match.
- */
-async function readMissingArchived(have: Set<string>): Promise<ReportEntry[]> {
-  const configured = stateBlobOptions();
-  if (!configured) return [];
-  const blob = configured.blob;
-
-  const pathnames: string[] = [];
-  let cursor: string | undefined;
-  // A long trip runs past one page, and a missed page reads as a lost update.
-  do {
-    const page = await list({ ...blob, prefix: ARCHIVE_PREFIX, cursor });
-    pathnames.push(...page.blobs.map((b) => b.pathname));
-    cursor = page.hasMore ? page.cursor : undefined;
-  } while (cursor);
-
-  const missing = pathnames
-    .map((p) => p.slice(ARCHIVE_PREFIX.length).replace(/\.json$/, ""))
-    .filter((id) => id && !have.has(id));
-
-  const entries: ReportEntry[] = [];
-  for (const id of missing) {
-    try {
-      const result = await get(`${ARCHIVE_PREFIX}${id}.json`, blob);
-      if (!result?.stream) continue;
-      const entry = (await new Response(result.stream).json()) as ReportEntry;
-      // Trust the path over the payload — the path is what was asked for.
-      if (entry?.date) entries.push({ ...entry, id });
-    } catch (error) {
-      console.error(`  could not read archived ${id}:`, error);
-    }
-  }
-  return entries;
-}
-
-// ── Days ──────────────────────────────────────────────────────────
-
-function zoneOf(entry: ReportEntry): string {
-  if (!entry.tz) return SITE_TZ;
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: entry.tz });
-    return entry.tz;
-  } catch {
-    return SITE_TZ;
-  }
-}
-
-/**
- * A day is a day where the update was written, not where the site lives — the
- * same rule /trips/live/report groups by, so the exported days line up with the
- * ones readers already saw.
- */
-function dayKey(entry: ReportEntry): string {
-  return new Date(entry.date).toLocaleDateString("en-CA", { timeZone: zoneOf(entry) });
-}
-
-/** e.g. "7:20 AM MDT" — the zone is the point, so it is always shown. */
-function fmtTime(entry: ReportEntry): string {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: zoneOf(entry),
-    timeZoneName: "short",
-  }).format(new Date(entry.date));
-}
-
-interface DayGroup {
-  key: string;
-  entries: ReportEntry[];
-}
-
-/** Entries arrive sorted, so same-day ones are already adjacent. */
-function groupByDay(entries: ReportEntry[]): DayGroup[] {
-  const groups: DayGroup[] = [];
-  for (const entry of entries) {
-    const key = dayKey(entry);
-    const last = groups[groups.length - 1];
-    if (last && last.key === key) last.entries.push(entry);
-    else groups.push({ key, entries: [entry] });
-  }
-  return groups;
 }
 
 // ── Emitting mdx ──────────────────────────────────────────────────
@@ -306,14 +125,22 @@ function blocks(text: string): string[] {
   return out;
 }
 
-function imgTag(url: string, indent = ""): string {
-  return `${indent}<Img src="${url}" alt="" />`;
+/**
+ * `w`/`h` are the size the photo came out of the pipeline at, so the browser
+ * reserves its space instead of laying out a zero-height box that grows when
+ * the bytes land. See ProseImage. `--reuse-urls` never opens the photos, so
+ * there is nothing honest to claim and the attributes are left off.
+ */
+function imgTag(url: string, sizes: Map<string, Dimensions>, indent = ""): string {
+  const size = sizes.get(url);
+  const dims = size ? ` w="${size.width}" h="${size.height}"` : "";
+  return `${indent}<Img src="${url}"${dims} alt="" />`;
 }
 
 /** One photo stands alone; several become a gallery, as `pnpm img` emits. */
-function imageBlock(urls: string[]): string {
-  if (urls.length === 1) return imgTag(urls[0]);
-  return `<Gallery>\n${urls.map((url) => imgTag(url, "  ")).join("\n")}\n</Gallery>`;
+function imageBlock(urls: string[], sizes: Map<string, Dimensions>): string {
+  if (urls.length === 1) return imgTag(urls[0], sizes);
+  return `<Gallery>\n${urls.map((url) => imgTag(url, sizes, "  ")).join("\n")}\n</Gallery>`;
 }
 
 /** Bare where yaml reads it back unchanged, quoted where it wouldn't. */
@@ -321,7 +148,12 @@ function yamlValue(value: string): string {
   return /^[A-Za-z0-9][^:#\n]*[^:#\s]$/.test(value) ? value : JSON.stringify(value);
 }
 
-function buildMdx(groups: DayGroup[], resolved: Map<string, string>, opts: Opts): string {
+function buildMdx(
+  groups: DayGroup[],
+  resolved: Map<string, string>,
+  sizes: Map<string, Dimensions>,
+  opts: Opts,
+): string {
   const lines: string[] = [
     "---",
     `title: ${yamlValue(opts.title)}`,
@@ -344,33 +176,11 @@ function buildMdx(groups: DayGroup[], resolved: Map<string, string>, opts: Opts)
       const urls = entry.images
         .map((url) => resolved.get(url))
         .filter((url): url is string => Boolean(url));
-      if (urls.length > 0) lines.push(imageBlock(urls), "");
+      if (urls.length > 0) lines.push(imageBlock(urls, sizes), "");
     }
   });
 
   return `${lines.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd()}\n`;
-}
-
-/**
- * The report as published, for content/trips/<slug>.report.json.
- *
- * Carries the re-uploaded photo URLs rather than the originals, so the archive
- * and the write-up point at the same durable copies and neither is left holding
- * a url the other's upload replaced. Ordered oldest-first, as it is read.
- */
-function buildArchive(
-  entries: ReportEntry[],
-  resolved: Map<string, string>,
-): ReportEntry[] {
-  return entries.map((entry) => ({
-    id: entry.id,
-    date: entry.date,
-    ...(entry.tz ? { tz: entry.tz } : {}),
-    text: entry.text,
-    images: entry.images
-      .map((url) => resolved.get(url))
-      .filter((url): url is string => Boolean(url)),
-  }));
 }
 
 // ── Photos ────────────────────────────────────────────────────────
@@ -379,27 +189,6 @@ async function fetchPhoto(url: string): Promise<Buffer> {
   const res = await fetch(url, { redirect: "follow" });
   if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
   return Buffer.from(await res.arrayBuffer());
-}
-
-/**
- * Names every photo by the day it was posted on and its position in that day,
- * deduplicated by url so the same photo posted twice uploads once. Ordered
- * names beat carrying the phone's original filename over: the source names are
- * all `IMG_0194`, which sorts by nothing anyone cares about.
- */
-function nameByUrl(groups: DayGroup[]): Map<string, string> {
-  const names = new Map<string, string>();
-  groups.forEach((group, dayIndex) => {
-    let position = 0;
-    for (const entry of group.entries) {
-      for (const url of entry.images) {
-        if (names.has(url)) continue;
-        position += 1;
-        names.set(url, `day-${dayIndex + 1}-${String(position).padStart(2, "0")}`);
-      }
-    }
-  });
-  return names;
 }
 
 // ── CLI ───────────────────────────────────────────────────────────
@@ -540,22 +329,12 @@ async function main() {
   }
 
   // Phase 1 — collect every update, from both copies of the report.
-  const { state, source } = await readState(opts);
+  const { entries, state, source, recovered } = await collectEntries(opts);
   console.log(`reading ${source}`);
-
-  const stateEntries = (state.liveReportEntries as ReportEntry[] | undefined) ?? [];
-  const archived = opts.local
-    ? []
-    : await readMissingArchived(new Set(stateEntries.map((e) => e.id)));
-  if (archived.length > 0) {
-    console.log(`  recovered ${archived.length} update(s) the report had lost but the archive kept`);
+  if (recovered > 0) {
+    console.log(`  recovered ${recovered} update(s) the report had lost but the archive kept`);
   }
 
-  // The report is stored and rendered newest-first; a trip report reads the
-  // other way round.
-  const entries = [...stateEntries, ...archived].sort(
-    (a, b) => Date.parse(a.date) - Date.parse(b.date),
-  );
   if (entries.length === 0) {
     console.error("no updates in the report — nothing to export");
     process.exitCode = 1;
@@ -586,6 +365,8 @@ async function main() {
 
   // Phase 3 — fetch, re-encode and upload every photo. Nothing on disk yet.
   const resolved = new Map<string, string>();
+  // Keyed by the url the mdx ends up pointing at, which is what imgTag has.
+  const sizes = new Map<string, Dimensions>();
   if (opts.reuseUrls) {
     for (const url of names.keys()) resolved.set(url, url);
     console.log("\nkeeping the photos where they are");
@@ -594,7 +375,7 @@ async function main() {
     for (const [url, name] of names) {
       const ext = extname(new URL(url).pathname).toLowerCase();
       const input = await fetchPhoto(url);
-      const { body, ext: outExt } = await processImage(input, ext, {
+      const { body, ext: outExt, size } = await processImage(input, ext, {
         width: opts.width,
         quality: opts.quality,
       });
@@ -610,11 +391,12 @@ async function main() {
       const blob = await put(pathname, body, { access: "public", addRandomSuffix: true });
       console.log(`  ${name}  ${saved}  → ${pathname}`);
       resolved.set(url, blob.url);
+      if (size) sizes.set(blob.url, size);
     }
   }
 
   // Phase 4 — write the mdx, now that every photo resolved.
-  const mdx = buildMdx(groups, resolved, opts);
+  const mdx = buildMdx(groups, resolved, sizes, opts);
 
   if (opts.dry) {
     console.log(`\n${mdx}`);

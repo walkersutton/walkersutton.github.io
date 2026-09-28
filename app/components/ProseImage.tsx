@@ -8,6 +8,16 @@ interface ProseImageProps {
   /** Constrain to viewport height instead of column width (portrait shots). */
   tall?: boolean;
   caption?: string;
+  /**
+   * The photo's pixel size, so the browser can reserve its space before it
+   * loads. Strings because mdx props can only carry strings — next-mdx-remote
+   * strips JS expressions (`blockJS`), so `w={1600}` would never arrive.
+   *
+   * `pnpm img` and `pnpm export:report` both emit these; older mdx has none and
+   * renders as it always did, reserving nothing.
+   */
+  w?: string;
+  h?: string;
 }
 
 /**
@@ -21,8 +31,13 @@ export default function ProseImage({
   still,
   tall,
   caption,
+  w,
+  h,
 }: ProseImageProps) {
   const isAnimated = /\.(gif|mp4|webm)$/i.test(src);
+  // Only a pair is any use: the browser derives the ratio from both, and one
+  // alone would have it reserve a square.
+  const size = w && h ? { width: Number(w), height: Number(h) } : null;
 
   // ProjectImage sizes itself to the column, so `tall` has to be applied by a
   // wrapper that re-constrains its internal sizer image. The wrapper also
@@ -50,6 +65,11 @@ export default function ProseImage({
       className={tall ? "img-tall" : "img-wide"}
       loading="lazy"
       decoding="async"
+      // `.img-wide` is width:100%/height:auto, so these are never the rendered
+      // size — they are the aspect ratio the browser lays out from until the
+      // bytes arrive, which is what keeps the page from growing as it is read.
+      width={size?.width}
+      height={size?.height}
     />
   );
 

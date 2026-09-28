@@ -35,6 +35,7 @@ export interface Trip {
   stats: TripStats;
   dayStats: DayStat[];  // one entry per unique date, ordered day 1…N
   stravaByLabel: Record<string, string>; // DayMarker label → activity URL
+  dayAnchors: Record<number, string>;    // day number → <DayMarker> id to scroll to
   days: number;
   date: string;      // ISO "YYYY-MM-DD" for sorting
   dateStart: string; // display "May 15"
@@ -219,6 +220,9 @@ function parseGeoJSON(slug: string): ParsedGeoJSON | null {
   const tracks: ReportTrack[] = rawTracks.map((t) => ({
     id: t.id,
     coords: t.coords,
+    // The number is what the map scrolls by; the label is only what it shows.
+    // Handing over both beats parsing "Day 5 · Aug 8" back apart in the browser.
+    day: t.date ? dateToDay.get(t.date) : undefined,
     label: t.date && dateToDay.has(t.date) ? `Day ${dateToDay.get(t.date)} · ${fmtDateShort(t.date)}` : undefined,
   }));
 
@@ -267,6 +271,57 @@ function parseGeoJSON(slug: string): ParsedGeoJSON | null {
     dateEnd: dateEnd ? fmtDateShort(dateEnd) : "",
     dates: dateStart ? fmtDateRange(dateStart, dateEnd) : "",
   };
+}
+
+// ── DayMarker ↔ day number pairing ────────────────────────────────
+
+/** `label="Day 5"` → [5]; `label="Days 3–4"` → [3, 4]; anything else → []. */
+export function parseDayNumbers(label: string): number[] {
+  const single = label.match(/^Days?\s+(\d+)$/i);
+  if (single) return [parseInt(single[1])];
+  const range = label.match(/^Days?\s+(\d+)[–\-](\d+)$/i);
+  if (range) {
+    const s = parseInt(range[1]);
+    const e = parseInt(range[2]);
+    return Array.from({ length: e - s + 1 }, (_, i) => s + i);
+  }
+  return [];
+}
+
+/**
+ * The id a `<DayMarker>` for this day carries, and the one the map scrolls to.
+ * One function so the two can't disagree — an anchor nothing links to and a
+ * link to nothing both look like a marker that simply didn't scroll.
+ */
+export function dayAnchorId(day: number): string {
+  return `day-${day}`;
+}
+
+/**
+ * Day number → the id of the marker a reader should land on when they click
+ * that day's segment on the map.
+ *
+ * Rarely the identity mapping. A marker can cover several days (`Days 3–4`),
+ * and a day can have no marker at all — a rest day written up under the one
+ * above it, or a ride the author folded into the previous entry. Either way the
+ * day is *somewhere*, and it is under the last marker that starts on or before
+ * it, so that is where its segment goes. Days before the first marker have
+ * nowhere to land and are left out; their segment stays unclickable rather than
+ * scrolling somewhere arbitrary.
+ */
+function buildDayAnchors(content: string, dayCount: number): Record<number, string> {
+  const markers = [...content.matchAll(/<DayMarker\b[^>]*?\blabel="([^"]*)"/g)]
+    .map((m) => parseDayNumbers(m[1])[0])
+    .filter((day): day is number => day != null);
+
+  const anchors: Record<number, string> = {};
+  for (let day = 1; day <= dayCount; day += 1) {
+    // Body order decides, not numeric order: the marker a day is written under
+    // is the last one above it on the page.
+    const owner = markers.filter((start) => start <= day).pop();
+    if (owner != null) anchors[day] = dayAnchorId(owner);
+  }
+  return anchors;
 }
 
 // ── DayMarker ↔ Strava pairing ────────────────────────────────────
@@ -328,6 +383,7 @@ export function getTripBySlug(slug: string): Trip | null {
     stats: geo?.stats ?? { distance: "", gained: "", lost: "" },
     dayStats: geo?.dayStats ?? [],
     stravaByLabel: pairStravaLinks(content, frontmatter.strava),
+    dayAnchors: buildDayAnchors(content, geo?.dayStats.length ?? 0),
     days: geo?.days ?? 0,
     date: geo?.date ?? "",
     dateStart: geo?.dateStart ?? "",

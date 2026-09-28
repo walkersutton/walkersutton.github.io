@@ -14,6 +14,7 @@ type Props = {
   tracks: ReportTrack[];
   waypoints: ReportWaypoint[];
   start: { lat: number; lng: number; name: string };
+  dayAnchors?: Record<number, string>;
 };
 
 export default function LeafletReportMapLoader(props: Props) {

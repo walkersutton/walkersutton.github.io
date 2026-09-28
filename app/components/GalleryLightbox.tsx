@@ -6,6 +6,9 @@ export interface GalleryImage {
   src: string;
   alt?: string;
   caption?: string;
+  /** Pixel size, when the mdx carries it — see ProseImage's w/h. */
+  w?: string;
+  h?: string;
 }
 
 interface GalleryLightboxProps {
@@ -90,6 +93,11 @@ export default function GalleryLightbox({
                 alt={img.alt ?? ""}
                 loading="lazy"
                 decoding="async"
+                // Only needed for an "auto" grid, where each thumb keeps its
+                // own height and so has none until it loads. A ratio crop
+                // already reserves its space on the button above.
+                width={auto && img.w && img.h ? Number(img.w) : undefined}
+                height={auto && img.w && img.h ? Number(img.h) : undefined}
                 style={
                   auto
                     ? { width: "100%", height: "auto", display: "block" }

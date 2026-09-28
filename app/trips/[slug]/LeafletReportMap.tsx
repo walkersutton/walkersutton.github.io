@@ -4,6 +4,7 @@ import L from "leaflet";
 import { Fragment, useEffect, useMemo } from "react";
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
+import { scrollToDay } from "./day-scroll";
 
 export type ReportWaypoint = {
   lat: number;
@@ -16,6 +17,8 @@ export type ReportWaypoint = {
 export type ReportTrack = {
   id: string;
   coords: [number, number][];
+  /** 1-based day this segment was ridden on, when the geojson dated it. */
+  day?: number;
   label?: string;
 };
 
@@ -23,6 +26,8 @@ type Props = {
   tracks: ReportTrack[];
   waypoints: ReportWaypoint[];
   start: { lat: number; lng: number; name: string };
+  /** Day number → the `<DayMarker>` id to scroll to. See lib/trips.ts. */
+  dayAnchors?: Record<number, string>;
 };
 
 function FitBounds({ tracks }: { tracks: ReportTrack[] }) {
@@ -92,7 +97,7 @@ function WheelZoomFix() {
   return null;
 }
 
-export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
+export default function LeafletReportMap({ tracks, waypoints, start, dayAnchors = {} }: Props) {
   const startIcon = useStartIcon();
   const wptIcon = useWaypointIcon();
 
@@ -117,24 +122,41 @@ export default function LeafletReportMap({ tracks, waypoints, start }: Props) {
       <WheelZoomFix />
       <FitBounds tracks={tracks} />
 
-      {tracks.map((track, i) => (
-        <Fragment key={track.id}>
-          <Polyline
-            positions={track.coords as LatLngExpression[]}
-            pathOptions={{ color: "rgba(255,255,255,0.88)", weight: 11, lineCap: "round" }}
-          />
-          <Polyline
-            positions={track.coords as LatLngExpression[]}
-            pathOptions={{ color: "#000", weight: 5, lineCap: "round", opacity: i % 2 === 0 ? 1 : 0.8 }}
-          >
-            {track.label && (
-              <Tooltip sticky className="ws-tip">
-                <strong>{track.label}</strong>
-              </Tooltip>
-            )}
-          </Polyline>
-        </Fragment>
-      ))}
+      {tracks.map((track, i) => {
+        const anchor = track.day != null ? dayAnchors[track.day] : undefined;
+        // Both lines take the click. The 5px black one is what a reader aims
+        // at, but it is nearly untappable on a phone; the 11px halo under it is
+        // the hit area that makes this work with a thumb.
+        const handlers = anchor ? { click: () => scrollToDay(anchor) } : undefined;
+        return (
+          <Fragment key={track.id}>
+            <Polyline
+              positions={track.coords as LatLngExpression[]}
+              pathOptions={{ color: "rgba(255,255,255,0.88)", weight: 11, lineCap: "round" }}
+              eventHandlers={handlers}
+            />
+            <Polyline
+              positions={track.coords as LatLngExpression[]}
+              pathOptions={{ color: "#000", weight: 5, lineCap: "round", opacity: i % 2 === 0 ? 1 : 0.8 }}
+              eventHandlers={handlers}
+            >
+              {track.label && (
+                <Tooltip sticky className="ws-tip">
+                  <strong>{track.label}</strong>
+                  {anchor && (
+                    <>
+                      <br />
+                      <span style={{ color: "var(--color-text-faint)" }}>
+                        Click to jump to this day
+                      </span>
+                    </>
+                  )}
+                </Tooltip>
+              )}
+            </Polyline>
+          </Fragment>
+        );
+      })}
 
       <Marker position={[start.lat, start.lng]} icon={startIcon} zIndexOffset={800}>
         <Tooltip direction="top" offset={[0, -10]} className="ws-tip">

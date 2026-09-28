@@ -37,7 +37,7 @@ import { put } from "@vercel/blob";
 import { execFileSync } from "node:child_process";
 import { readdirSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
-import { KB, processPath, slugify } from "./lib/image.mts";
+import { type Dimensions, KB, processPath, slugify } from "./lib/image.mts";
 
 interface Opts {
   /** One entry per --alt flag; applied positionally, or to all if only one. */
@@ -147,8 +147,17 @@ function resolveAlts(files: string[], opts: Opts): string[] {
 
 const esc = (s: string) => s.replace(/"/g, "&quot;");
 
-function imgSnippet(url: string, alt: string, opts: Opts, i: number): string {
+function imgSnippet(
+  url: string,
+  alt: string,
+  opts: Opts,
+  i: number,
+  size?: Dimensions,
+): string {
   const attrs = [`src="${url}"`, `alt="${esc(alt)}"`];
+  // The size the browser lays out from until the photo arrives; see ProseImage.
+  // Absent for passed-through video, which processImage reports no size for.
+  if (size) attrs.push(`w="${size.width}"`, `h="${size.height}"`);
   if (opts.still) attrs.push(`still="${opts.still}"`);
   if (opts.tall) attrs.push("tall");
   const caption = pick(opts.captions, i);
@@ -156,11 +165,16 @@ function imgSnippet(url: string, alt: string, opts: Opts, i: number): string {
   return `<Img ${attrs.join(" ")} />`;
 }
 
-function gallerySnippet(urls: string[], alts: string[], opts: Opts): string {
+function gallerySnippet(
+  urls: string[],
+  alts: string[],
+  opts: Opts,
+  sizes: (Dimensions | undefined)[],
+): string {
   const attrs = [];
   if (opts.cols) attrs.push(` cols="${opts.cols}"`);
   if (opts.ratio) attrs.push(` ratio="${opts.ratio}"`);
-  const items = urls.map((url, i) => `  ${imgSnippet(url, alts[i], opts, i)}`);
+  const items = urls.map((url, i) => `  ${imgSnippet(url, alts[i], opts, i, sizes[i])}`);
   return `<Gallery${attrs.join("")}>\n${items.join("\n")}\n</Gallery>`;
 }
 
@@ -198,9 +212,11 @@ async function main() {
   const alts = resolveAlts(files, opts);
 
   const urls: string[] = [];
+  const sizes: (Dimensions | undefined)[] = [];
 
   for (const file of files) {
-    const { body, ext, original } = await processPath(file, opts);
+    const { body, ext, original, size } = await processPath(file, opts);
+    sizes.push(size);
     const pathname = `${opts.dir}/${slugify(basename(file))}${ext}`;
     const saved = `${KB(original)} → ${KB(body.byteLength)}`;
 
@@ -219,8 +235,8 @@ async function main() {
   }
 
   const out = gallery
-    ? gallerySnippet(urls, alts, opts)
-    : urls.map((url, i) => imgSnippet(url, alts[i], opts, i)).join("\n\n");
+    ? gallerySnippet(urls, alts, opts, sizes)
+    : urls.map((url, i) => imgSnippet(url, alts[i], opts, i, sizes[i])).join("\n\n");
   console.log(`\n${out}\n`);
 
   const unnamed = files.filter((_, i) => !alts[i]).map((f) => basename(f));

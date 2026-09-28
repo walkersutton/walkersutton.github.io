@@ -8,6 +8,8 @@
     "img": "dotenvx run --quiet --overload -- node scripts/img.mts",
     "gaps": "node scripts/geojson-gaps.mts",
     "export:report": "dotenvx run --quiet --overload -- node scripts/export-report.mts",
+    "backfill:report": "dotenvx run --quiet --overload -- node scripts/backfill-report-archive.mts",
+    "backfill:img-size": "node scripts/backfill-img-size.mts",
     "migrate:imgur": "dotenvx run --quiet --overload -- node scripts/migrate-imgur.mts",
     "build": "dotenvx run --quiet --overload -- next build",
     "start": "npx serve out",

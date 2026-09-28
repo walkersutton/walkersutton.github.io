@@ -4,7 +4,7 @@ slug: "sparkjuke"
 title: "SparkJuke | Raspberry Pi Jukebox"
 ---
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-sparkjuke/sparkjuke-Wj3rOGsxi5F1uWEh0x8mdMgfN7kGGa.webp" alt="sparkjuke" /><span className="right"></span>
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2017-sparkjuke/sparkjuke-Wj3rOGsxi5F1uWEh0x8mdMgfN7kGGa.webp" w="1600" h="895" alt="sparkjuke" /><span className="right"></span>
 
 **C++, Raspberry Pi**
 

@@ -1,5 +1,4 @@
 import type React from "react";
-import Link from "next/link";
 import { draftMode } from "next/headers";
 import { getAllProjects } from "@/lib/projects";
 import { getAllPosts, getPostBySlug, generateExcerpt } from "@/lib/posts";
@@ -77,7 +76,7 @@ export default async function Home() {
         {/* Hero */}
         <section className="pt-6 pb-4 max-w-[820px]">
           <div
-            className="flex flex-wrap gap-4 text-[13px] font-medium mb-5"
+            className="flex flex-wrap gap-4 text-[13px] font-medium"
             style={{ color: "var(--color-text)" }}
           >
             {latestText && latestHref && (
@@ -104,33 +103,10 @@ export default async function Home() {
               </span>
             )}
           </div>
-          <h1
-            className="text-[clamp(26px,4vw,44px)] font-bold leading-[1.18] tracking-[-0.025em] m-0"
-            style={
-              {
-                color: "var(--color-text)",
-                textWrap: "balance",
-              } as React.CSSProperties
-            }
-          >
-            The{" "}
-            <Link
-              href="/trips/live/report"
-              style={{ color: "var(--color-text)", textDecoration: "none" }}
-            >
-              <span className="underline-border underline-border-thick">
-                <span className="b b-bottom" />
-                <span className="b b-right" />
-                <span className="b b-top" />
-                <span className="b b-left" />
-                TRIP REPORT
-              </span>
-            </Link>
-          </h1>
         </section>
 
         <SectionBar title="Projects" href="/projects" spacing="lg" />
-        <ProjectHomeGrid projects={visible} maxProjects={4} />
+        <ProjectHomeGrid projects={visible} maxProjects={5} />
 
         <SectionBar title="Posts" href="/posts" spacing="lg" />
         <div className="flex flex-col">

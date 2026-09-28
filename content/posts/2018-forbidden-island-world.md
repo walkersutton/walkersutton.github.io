@@ -4,7 +4,7 @@ slug: "forbidden-island-world"
 title: "Forbidden Island World"
 ---
 
-<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-forbidden-island-world/forbidden-island-world-game-gif-YkYwDe3Qth9ciJ2Az3uRblvXaTCprr.gif" alt="forbidden_island_world_game_gif" tall />
+<Img src="https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/posts/2018-forbidden-island-world/forbidden-island-world-game-gif-YkYwDe3Qth9ciJ2Az3uRblvXaTCprr.gif" w="622" h="648" alt="forbidden_island_world_game_gif" tall />
 
 **Java**
 

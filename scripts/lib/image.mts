@@ -41,14 +41,33 @@ async function decodeHeic(buf: Buffer): Promise<Buffer> {
 }
 
 /**
- * Returns the bytes to upload and the extension they should carry.
- * `ext` is the source extension, lowercased, including the dot.
+ * The rendered size of what came out, for the `<Img w h>` that will point at
+ * it. Absent for passed-through video, which has no single frame size worth
+ * claiming here.
+ *
+ * Reserving a photo's space is the whole reason these are carried around: an
+ * `<img>` with no dimensions is a zero-height box until it loads, so a page of
+ * lazy photos grows as it is read, and anything that scrolled into it lands
+ * somewhere else. The browser only needs the ratio, which it takes from the
+ * width and height attributes.
+ */
+export interface Dimensions {
+  width: number;
+  height: number;
+}
+
+export type Processed = { body: Buffer; ext: string; size?: Dimensions };
+
+/**
+ * Returns the bytes to upload, the extension they should carry, and the size
+ * they came out at. `ext` is the source extension, lowercased, including the
+ * dot.
  */
 export async function processImage(
   input: Buffer,
   ext: string,
   opts: ProcessOpts,
-): Promise<{ body: Buffer; ext: string }> {
+): Promise<Processed> {
   // Video is passed through — transcoding is out of scope.
   if (opts.raw || ext === ".mp4" || ext === ".webm") {
     return { body: input, ext };
@@ -59,28 +78,34 @@ export async function processImage(
 
   if (ext === ".gif") {
     // Keep it animated; only downscale. cgif ships with sharp's binaries.
-    const body = await sharp(buf, { animated: true })
+    const { data, info } = await sharp(buf, { animated: true })
       .resize({ width: opts.width, withoutEnlargement: true })
       .gif()
-      .toBuffer();
-    return { body, ext: ".gif" };
+      .toBuffer({ resolveWithObject: true });
+    // An animated gif's `height` is every frame stacked; one frame is what a
+    // reader sees, and pageHeight is that.
+    return {
+      body: data,
+      ext: ".gif",
+      size: { width: info.width, height: info.pageHeight ?? info.height },
+    };
   }
 
-  const body = await sharp(buf)
+  const { data, info } = await sharp(buf)
     .rotate() // honor EXIF orientation before metadata is stripped
     .resize({ width: opts.width, withoutEnlargement: true })
     .webp({ quality: opts.quality })
-    .toBuffer();
-  return { body, ext: ".webp" };
+    .toBuffer({ resolveWithObject: true });
+  return { body: data, ext: ".webp", size: { width: info.width, height: info.height } };
 }
 
 /** Convenience wrapper for a path on disk. */
 export async function processPath(
   file: string,
   opts: ProcessOpts,
-): Promise<{ body: Buffer; ext: string; original: number }> {
+): Promise<Processed & { original: number }> {
   const input = await readFile(file);
   const ext = (basename(file).match(/\.[^.]+$/)?.[0] ?? "").toLowerCase();
-  const { body, ext: outExt } = await processImage(input, ext, opts);
-  return { body, ext: outExt, original: input.byteLength };
+  const processed = await processImage(input, ext, opts);
+  return { ...processed, original: input.byteLength };
 }
