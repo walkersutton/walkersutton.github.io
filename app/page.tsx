@@ -106,7 +106,7 @@ export default async function Home() {
         </section>
 
         <SectionBar title="Projects" href="/projects" spacing="lg" />
-        <ProjectHomeGrid projects={visible} maxProjects={4} />
+        <ProjectHomeGrid projects={visible} maxProjects={5} />
 
         <SectionBar title="Posts" href="/posts" spacing="lg" />
         <div className="flex flex-col">
