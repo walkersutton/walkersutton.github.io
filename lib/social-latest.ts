@@ -6,7 +6,28 @@ export type SocialPost = {
   text: string;
   href: string;
   publishedAt: string;
+  // What the post actually is, for the admin preview. Optional because posts
+  // cached before these were recorded don't have them until the next refresh.
+  title?: string;
+  description?: string;
+  thumbnail?: string;
 };
+
+/** First line of a caption, trimmed to something that fits on one row. */
+function firstLine(text: string | undefined, max = 120): string | undefined {
+  const line = text?.split("\n").map((l) => l.trim()).find(Boolean);
+  if (!line) return undefined;
+  return line.length > max ? `${line.slice(0, max - 1).trimEnd()}…` : line;
+}
+
+function decodeEntities(text: string): string {
+  return text
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
 
 export type InstagramAccount = { userId: string; accessToken: string; username?: string };
 
@@ -73,12 +94,15 @@ async function fetchLatestYouTube(channelId: string | null, templates: LatestTem
     text: renderLatestTemplate(isShort ? templates.youtubeShort : templates.youtubeVideo),
     href: `https://www.youtube.com/watch?v=${videoId}`,
     publishedAt: published,
+    title: decodeEntities(readTag(entry, "title") ?? "") || undefined,
+    description: firstLine(decodeEntities(readTag(entry, "media:description") ?? "")),
+    thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
   };
 }
 
 async function fetchLatestInstagram(account: InstagramAccount, templates: LatestTemplates): Promise<SocialPost | null> {
   const res = await fetch(
-    `https://graph.instagram.com/v21.0/${account.userId}/media?fields=permalink,media_product_type,timestamp&limit=1&access_token=${account.accessToken}`,
+    `https://graph.instagram.com/v21.0/${account.userId}/media?fields=permalink,media_product_type,media_type,media_url,thumbnail_url,caption,timestamp&limit=1&access_token=${account.accessToken}`,
     { next: { revalidate: 0 } },
   );
   if (!res.ok) return null;
@@ -93,7 +117,25 @@ async function fetchLatestInstagram(account: InstagramAccount, templates: Latest
     text: renderLatestTemplate(post.media_product_type === "REELS" ? templates.instagramReel : templates.instagramPost),
     href: post.permalink,
     publishedAt: post.timestamp,
+    // A video's media_url is the video itself; its still is thumbnail_url.
+    // Both are signed CDN links that expire, which is fine for something
+    // refreshed daily.
+    title: firstLine(post.caption),
+    thumbnail: post.media_type === "VIDEO" ? post.thumbnail_url : post.media_url,
   };
+}
+
+type BlueskyEmbed = {
+  images?: { thumb?: string }[];
+  external?: { thumb?: string };
+  thumbnail?: string;
+  media?: BlueskyEmbed;
+};
+
+// Images, a link card, a video, or any of those quoted alongside a record.
+function blueskyThumbnail(embed: BlueskyEmbed | undefined): string | undefined {
+  if (!embed) return undefined;
+  return embed.images?.[0]?.thumb ?? embed.external?.thumb ?? embed.thumbnail ?? blueskyThumbnail(embed.media);
 }
 
 async function fetchLatestBluesky(handle: string | null, templates: LatestTemplates): Promise<SocialPost | null> {
@@ -107,7 +149,7 @@ async function fetchLatestBluesky(handle: string | null, templates: LatestTempla
 
   const json = await res.json();
   const items: {
-    post: { uri: string; record?: { createdAt?: string }; indexedAt: string };
+    post: { uri: string; record?: { createdAt?: string; text?: string }; indexedAt: string; embed?: BlueskyEmbed };
     reason?: unknown;
   }[] = json?.feed ?? [];
 
@@ -125,6 +167,8 @@ async function fetchLatestBluesky(handle: string | null, templates: LatestTempla
     text: renderLatestTemplate(templates.blueskyPost),
     href: `https://bsky.app/profile/${handle}/post/${rkey}`,
     publishedAt,
+    title: firstLine(original.post.record?.text),
+    thumbnail: blueskyThumbnail(original.post.embed),
   };
 }
 

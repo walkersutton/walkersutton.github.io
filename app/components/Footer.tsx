@@ -87,7 +87,7 @@ function SocialLink({
 
 export default function Footer() {
   return (
-    <footer className="w-full max-w-[1080px] mx-auto flex flex-col gap-5 pt-12 pb-8">
+    <footer className="w-full max-w-[880px] mx-auto flex flex-col gap-5 pt-12 pb-8">
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <NewsletterForm />
         <div className="flex gap-5 sm:gap-4">

@@ -75,7 +75,7 @@ export default function ReportEditor() {
         <button
           type="submit"
           disabled={busy}
-          style={{ ...BTN(false), opacity: busy ? 0.5 : 1, width: "100%", maxWidth: 260 }}
+          style={{ ...BTN(true), opacity: busy ? 0.5 : 1, width: "100%", maxWidth: 260 }}
         >
           {busy ? "Publishing…" : "Publish update"}
         </button>

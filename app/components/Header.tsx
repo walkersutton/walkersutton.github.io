@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import SkullLogo from "./SkullLogo";
 
 export const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
@@ -30,10 +31,6 @@ export default function Header({
   const active =
     navLinks.find((l) => pathname?.startsWith(l.href))?.href ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
-  const [bonesPhase, setBonesPhase] = useState<
-    "spin-cw" | "spin-ccw" | "retract" | null
-  >(null);
-  const hoveringLogoRef = useRef(false);
 
   const navRef = useRef<HTMLElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
@@ -124,79 +121,15 @@ export default function Header({
   const isSticky = sticky;
 
   const logo = (
-    <Link
+    <SkullLogo
       href="/"
-      className="logo-link flex items-center gap-[9px] no-underline shrink-0"
+      className="flex items-center gap-[9px] no-underline shrink-0"
       style={{ color: "var(--color-text)" }}
-      onClick={() =>
-        setBonesPhase(Math.random() < 0.5 ? "spin-cw" : "spin-ccw")
-      }
-      onMouseEnter={() => {
-        hoveringLogoRef.current = true;
-      }}
-      onMouseLeave={() => {
-        hoveringLogoRef.current = false;
-      }}
     >
-      <svg
-        viewBox="0 0 100 115"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{
-          display: "block",
-          width: 19,
-          height: 22,
-          flexShrink: 0,
-          overflow: "visible",
-        }}
-        aria-hidden="true"
-      >
-        <g
-          className={`crossbones${bonesPhase === "spin-cw" ? " spin-cw" : bonesPhase === "spin-ccw" ? " spin-ccw" : ""}${bonesPhase === "retract" ? " retract" : ""}`}
-          onAnimationEnd={() =>
-            setBonesPhase((prev) =>
-              // After the spin: if the cursor left, hand off to the retract
-              // animation; otherwise the :hover rule holds the bones out.
-              (prev === "spin-cw" || prev === "spin-ccw") &&
-              !hoveringLogoRef.current
-                ? "retract"
-                : null,
-            )
-          }
-        >
-          <line
-            x1="-15"
-            y1="15"
-            x2="115"
-            y2="105"
-            stroke="currentColor"
-            strokeWidth="17"
-            strokeLinecap="round"
-          />
-          <circle cx="-15" cy="15" r="13" fill="currentColor" />
-          <circle cx="115" cy="105" r="13" fill="currentColor" />
-          <line
-            x1="115"
-            y1="15"
-            x2="-15"
-            y2="105"
-            stroke="currentColor"
-            strokeWidth="17"
-            strokeLinecap="round"
-          />
-          <circle cx="115" cy="15" r="13" fill="currentColor" />
-          <circle cx="-15" cy="105" r="13" fill="currentColor" />
-        </g>
-        <path
-          d="M50 6 C25 6 5 26 5 51 C5 68 14 82 27 89.5 L27 111 L35 111 L65 111 L73 111 L73 89.5 C86 82 95 68 95 51 C95 26 75 6 50 6Z"
-          fill="currentColor"
-        />
-        <ellipse cx="33" cy="53" rx="10" ry="10" fill="var(--color-bg)" />
-        <ellipse cx="67" cy="53" rx="10" ry="10" fill="var(--color-bg)" />
-      </svg>
       <span className="text-[21px] font-[680] tracking-[-0.02em]">
         Walker Sutton
       </span>
-    </Link>
+    </SkullLogo>
   );
 
   const desktopNav = (
@@ -331,7 +264,7 @@ export default function Header({
         }
       >
         <div className={isGlass ? "px-4 md:px-8" : undefined}>
-          <div className="w-full max-w-[1080px] mx-auto">
+          <div className="w-full max-w-[880px] mx-auto">
             <div className="flex items-center gap-6 h-[70px]">
               {logo}
               {desktopNav}

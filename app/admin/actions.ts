@@ -1,10 +1,47 @@
 "use server";
 
-import { cookies, draftMode } from "next/headers";
+import { cookies, draftMode, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { SESSION_COOKIE_OPTIONS, signToken, verifyPassword, verifyToken } from "@/lib/admin-auth";
 import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+  type AuthenticationResponseJSON,
+  type PublicKeyCredentialCreationOptionsJSON,
+  type PublicKeyCredentialRequestOptionsJSON,
+  type RegistrationResponseJSON,
+} from "@simplewebauthn/server";
+import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
+import {
+  CHALLENGE_COOKIE,
+  CHALLENGE_COOKIE_OPTIONS,
+  SESSION_COOKIE,
+  SESSION_COOKIE_OPTIONS,
+  getSession,
+  readChallenge,
+  signChallenge,
+  signToken,
+  verifyPassword,
+  type Session,
+} from "@/lib/admin-auth";
+import {
+  FRESH_SESSION_MS,
+  deviceName,
+  passkeysFor,
+  passwordSignInAllowed,
+  providerName,
+  relyingParty,
+  siteRpID,
+} from "@/lib/passkeys";
+import { SITE_CONFIG } from "@/lib/config";
+import {
+  addPasskey,
+  bumpSessionEpoch,
+  getAuthState,
+  recordPasskeyUse,
+  removePasskey,
   setLiveEnabled,
   setBannerEnabled,
   setBannerText,
@@ -40,25 +77,205 @@ import type { InstagramAccount } from "@/lib/social-latest";
 import { DEFAULT_LATEST_TEMPLATES, type LatestTemplateKey, type LatestTemplates } from "@/lib/latest-templates";
 import type { SaveResult } from "./types";
 
+async function requireSession(): Promise<Session> {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+  return session;
+}
+
+// Every other action only needs to know the caller is signed in.
 async function assertAuth() {
+  await requireSession();
+}
+
+async function startSession(epoch: number) {
+  (await cookies()).set(SESSION_COOKIE, signToken(epoch), SESSION_COOKIE_OPTIONS);
+}
+
+async function currentRelyingParty() {
+  return relyingParty((await headers()).get("host"));
+}
+
+/** Reads and spends the pending challenge: each one is good for one try. */
+async function takeChallenge(purpose: "auth" | "reg"): Promise<string | null> {
   const store = await cookies();
-  const token = store.get("admin_session")?.value;
-  if (!token) throw new Error("Unauthorized");
-  try {
-    if (!verifyToken(token)) throw new Error("Unauthorized");
-  } catch {
-    throw new Error("Unauthorized");
-  }
+  const challenge = readChallenge(store.get(CHALLENGE_COOKIE)?.value, purpose);
+  store.delete({ name: CHALLENGE_COOKIE, path: CHALLENGE_COOKIE_OPTIONS.path });
+  return challenge;
 }
 
 export async function login(_prev: { error?: string }, formData: FormData) {
+  const { passkeys, sessionEpoch, degraded } = await getAuthState();
+  // Checked before the password itself, so with passkeys set up a guess
+  // learns nothing — not even whether it was right.
+  if (!passwordSignInAllowed(passkeysFor(passkeys, siteRpID()).length, degraded)) {
+    return { error: "Password sign-in is off. Use your passkey." };
+  }
   const password = (formData.get("password") as string | null) ?? "";
   if (!verifyPassword(password)) {
     return { error: "Wrong password." };
   }
-  const store = await cookies();
-  store.set("admin_session", signToken(), SESSION_COOKIE_OPTIONS);
+  await startSession(sessionEpoch);
   redirect("/admin");
+}
+
+type Failure = { ok: false; error: string };
+
+export async function startPasskeySignIn(): Promise<
+  { ok: true; options: PublicKeyCredentialRequestOptionsJSON } | Failure
+> {
+  const rp = await currentRelyingParty();
+  if (!rp) return { ok: false, error: "Passkeys don't work on this address." };
+  // No allowCredentials: passkeys are discoverable, so the browser offers
+  // whichever ones it holds for this domain without us listing them.
+  const options = await generateAuthenticationOptions({ rpID: rp.rpID, userVerification: "required" });
+  (await cookies()).set(CHALLENGE_COOKIE, signChallenge("auth", options.challenge), CHALLENGE_COOKIE_OPTIONS);
+  return { ok: true, options };
+}
+
+export async function finishPasskeySignIn(
+  response: AuthenticationResponseJSON,
+): Promise<{ ok: true } | Failure> {
+  const challenge = await takeChallenge("auth");
+  if (!challenge) return { ok: false, error: "That took too long. Try again." };
+  const rp = await currentRelyingParty();
+  if (!rp) return { ok: false, error: "Passkeys don't work on this address." };
+
+  const { passkeys, sessionEpoch } = await getAuthState();
+  const passkey = passkeysFor(passkeys, rp.rpID).find((p) => p.id === response.id);
+  if (!passkey) return { ok: false, error: "That passkey isn't registered here." };
+
+  let verified = false;
+  let newCounter = passkey.counter;
+  try {
+    const result = await verifyAuthenticationResponse({
+      response,
+      expectedChallenge: challenge,
+      expectedOrigin: rp.origins,
+      expectedRPID: rp.rpID,
+      credential: {
+        id: passkey.id,
+        publicKey: isoBase64URL.toBuffer(passkey.publicKey),
+        counter: passkey.counter,
+        transports: passkey.transports,
+      },
+      requireUserVerification: true,
+    });
+    verified = result.verified;
+    newCounter = result.authenticationInfo.newCounter;
+  } catch (error) {
+    console.error("finishPasskeySignIn: verification failed", error);
+  }
+  if (!verified) return { ok: false, error: "Couldn't verify that passkey." };
+
+  try {
+    await recordPasskeyUse(passkey.id, newCounter);
+  } catch (error) {
+    // Not worth refusing a valid sign-in over.
+    console.error("finishPasskeySignIn: could not record use", error);
+  }
+  await startSession(sessionEpoch);
+  return { ok: true };
+}
+
+export async function startPasskeyRegistration(): Promise<
+  { ok: true; options: PublicKeyCredentialCreationOptionsJSON } | Failure
+> {
+  const session = await requireSession();
+  const rp = await currentRelyingParty();
+  if (!rp) return { ok: false, error: `Passkeys can only be added on ${siteRpID()}.` };
+
+  const { passkeys } = await getAuthState();
+  const existing = passkeysFor(passkeys, rp.rpID);
+  if (existing.length > 0 && Date.now() - session.issuedAt > FRESH_SESSION_MS) {
+    return { ok: false, error: "For safety, sign out and back in before adding another passkey." };
+  }
+
+  const options = await generateRegistrationOptions({
+    rpName: siteRpID(),
+    rpID: rp.rpID,
+    userName: "admin",
+    userDisplayName: `${SITE_CONFIG.title} (admin)`,
+    // One stable user, so every passkey belongs to the same account.
+    userID: isoUint8Array.fromUTF8String("admin"),
+    attestationType: "none",
+    excludeCredentials: existing.map((p) => ({ id: p.id, transports: p.transports })),
+    authenticatorSelection: { residentKey: "required", userVerification: "required" },
+  });
+  (await cookies()).set(CHALLENGE_COOKIE, signChallenge("reg", options.challenge), CHALLENGE_COOKIE_OPTIONS);
+  return { ok: true, options };
+}
+
+export async function finishPasskeyRegistration(
+  response: RegistrationResponseJSON,
+): Promise<{ ok: true } | Failure> {
+  await requireSession();
+  const challenge = await takeChallenge("reg");
+  if (!challenge) return { ok: false, error: "That took too long. Try again." };
+  const rp = await currentRelyingParty();
+  if (!rp) return { ok: false, error: `Passkeys can only be added on ${siteRpID()}.` };
+
+  try {
+    const result = await verifyRegistrationResponse({
+      response,
+      expectedChallenge: challenge,
+      expectedOrigin: rp.origins,
+      expectedRPID: rp.rpID,
+      requireUserVerification: true,
+    });
+    if (!result.verified) return { ok: false, error: "Couldn't verify the new passkey." };
+
+    const { credential, aaguid, credentialBackedUp } = result.registrationInfo;
+    await addPasskey({
+      id: credential.id,
+      publicKey: isoBase64URL.fromBuffer(credential.publicKey),
+      counter: credential.counter,
+      transports: credential.transports ?? response.response.transports,
+      rpID: rp.rpID,
+      provider: providerName(aaguid),
+      device: deviceName((await headers()).get("user-agent")),
+      backedUp: credentialBackedUp,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("finishPasskeyRegistration: failed", error);
+    return { ok: false, error: "Couldn't save the new passkey." };
+  }
+
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/** Bumps the session epoch, then re-signs this browser so it stays in. */
+async function revokeOtherSessions() {
+  const epoch = await bumpSessionEpoch();
+  await startSession(epoch);
+}
+
+export async function deletePasskey(id: string): Promise<{ ok: true } | Failure> {
+  await requireSession();
+  try {
+    await removePasskey(id);
+    // Whatever signed in with it shouldn't outlive it.
+    await revokeOtherSessions();
+  } catch (error) {
+    console.error("deletePasskey: failed", error);
+    return { ok: false, error: "Couldn't remove that passkey." };
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+export async function signOutOtherSessions(): Promise<{ ok: true } | Failure> {
+  await requireSession();
+  try {
+    await revokeOtherSessions();
+  } catch (error) {
+    console.error("signOutOtherSessions: failed", error);
+    return { ok: false, error: "Couldn't sign out other sessions." };
+  }
+  revalidatePath("/admin/security");
+  return { ok: true };
 }
 
 export async function logout() {
@@ -68,7 +285,7 @@ export async function logout() {
   // path "/" and leaves the real /admin cookie untouched. Only one expiry can
   // be queued per cookie name here — the response cookie store is keyed by
   // name — so it has to be the one that matches SESSION_COOKIE_OPTIONS.
-  store.delete({ name: "admin_session", path: SESSION_COOKIE_OPTIONS.path });
+  store.delete({ name: SESSION_COOKIE, path: SESSION_COOKIE_OPTIONS.path });
   redirect("/admin");
 }
 

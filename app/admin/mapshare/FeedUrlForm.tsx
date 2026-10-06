@@ -16,7 +16,7 @@ export default function FeedUrlForm({
   const [state, action, pending] = useActionState(saveMapShareSettings, initial);
 
   return (
-    <form action={action} style={{ marginBottom: 28 }}>
+    <form action={action}>
       <label
         htmlFor="feedUrl"
         style={{ display: "block", fontSize: 13, marginBottom: 6, color: "var(--color-text-variant)" }}
@@ -68,13 +68,13 @@ export default function FeedUrlForm({
         </p>
       )}
       {state.saved !== undefined && !state.error && (
-        <p style={{ fontSize: 12, marginTop: 10, color: "var(--accent-green, #1a7f4b)" }}>
+        <p style={{ fontSize: 12, marginTop: 10, color: "var(--adm-green)" }}>
           Saved. {state.saved}
         </p>
       )}
 
       <div style={{ marginTop: 14 }}>
-        <button type="submit" disabled={pending} style={{ ...BTN(false), opacity: pending ? 0.5 : 1 }}>
+        <button type="submit" disabled={pending} style={{ ...BTN(true), opacity: pending ? 0.5 : 1 }}>
           {pending ? "Saving…" : "Save"}
         </button>
       </div>

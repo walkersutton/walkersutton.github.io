@@ -15,179 +15,315 @@ import {
   refreshSocialLatestNow,
 } from "../actions";
 import {
+  getLatestFallback,
   getLatestPostCandidate,
   getLatestProjectCandidate,
   getLatestTripCandidate,
+  type LatestFallback,
 } from "@/lib/latest";
-import { LATEST_TEMPLATE_LABELS, type LatestTemplateKey } from "@/lib/latest-templates";
+import {
+  LATEST_TEMPLATE_LABELS,
+  type LatestTemplateKey,
+} from "@/lib/latest-templates";
 import InstagramAccountsEditor from "../InstagramAccountsEditor";
-import { ROW, LABEL, INPUT, BTN, FIELD_GRID } from "../styles";
+import Thumb from "./Thumb";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminLatestPage() {
-  const latestOverride = await getLatestOverride();
-  const socialLatestPosts = await getSocialLatestPosts();
-  const youtubeChannelId = await getYouTubeChannelId();
-  const blueskyHandle = await getBlueskyHandle();
-  const instagramAccounts = await getInstagramAccounts();
-  const latestTemplates = await getLatestTemplates();
-  const latestProject = getLatestProjectCandidate(latestTemplates);
-  const latestTrip = getLatestTripCandidate(latestTemplates);
-  const latestPost = getLatestPostCandidate(latestTemplates);
+type FeedItem = LatestFallback & {
+  key: string;
+  source: string;
+  account?: string;
+  external: boolean;
+};
 
-  const instagramUsernameByUserId = new Map(
+// Posts cached before thumbnails were recorded can still show one: a YouTube
+// still is derivable from the video id alone.
+function youTubeThumbnail(href: string): string | undefined {
+  const id = href.match(/youtube\.com\/watch\?v=([\w-]+)/)?.[1];
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : undefined;
+}
+
+function formatDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+export default async function AdminLatestPage() {
+  const [
+    latestOverride,
+    socialLatestPosts,
+    youtubeChannelId,
+    blueskyHandle,
+    instagramAccounts,
+    latestTemplates,
+    homeAuto,
+  ] = await Promise.all([
+    getLatestOverride(),
+    getSocialLatestPosts(),
+    getYouTubeChannelId(),
+    getBlueskyHandle(),
+    getInstagramAccounts(),
+    getLatestTemplates(),
+    getLatestFallback(),
+  ]);
+
+  const usernameByUserId = new Map(
     instagramAccounts.map((account) => [account.userId, account.username ?? account.userId]),
   );
 
-  const autoFetchedItems = [
+  const siteItems: [string, LatestFallback | null][] = [
+    ["Project", getLatestProjectCandidate(latestTemplates)],
+    ["Trip report", getLatestTripCandidate(latestTemplates)],
+    ["Post", getLatestPostCandidate(latestTemplates)],
+  ];
+
+  const items: FeedItem[] = [
     ...socialLatestPosts.map((post) => ({
+      ...post,
+      thumbnail: post.thumbnail ?? youTubeThumbnail(post.href),
       key: `${post.platform}-${post.account}`,
-      label: post.platform,
-      detail: instagramUsernameByUserId.get(post.account) ?? post.account,
-      text: post.text,
-      href: post.href,
-      publishedAt: post.publishedAt,
+      source: post.platform,
+      account: usernameByUserId.get(post.account) ?? post.account,
       external: true,
     })),
-    ...(
-      [
-        latestProject && { label: "Project", ...latestProject },
-        latestTrip && { label: "Trip report", ...latestTrip },
-        latestPost && { label: "Post", ...latestPost },
-      ].filter((c): c is { label: string; text: string; href: string; publishedAt: string } => !!c)
-    ).map((item) => ({ key: item.label, detail: null, external: false, ...item })),
+    ...siteItems.flatMap(([source, item]) =>
+      item ? [{ ...item, key: source, source, external: false }] : [],
+    ),
   ].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+
+  // Mirrors the home page: the override wins outright, otherwise the newest of
+  // the automatic candidates.
+  const homeHref = latestOverride ? null : homeAuto?.href;
+
+  const sourceCount =
+    (youtubeChannelId ? 1 : 0) + (blueskyHandle ? 1 : 0) + instagramAccounts.length;
+  const sourceSummary = [
+    youtubeChannelId && "YouTube",
+    blueskyHandle && "Bluesky",
+    instagramAccounts.length &&
+      `${instagramAccounts.length} Instagram account${instagramAccounts.length === 1 ? "" : "s"}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div>
-      <div style={{ ...ROW, alignItems: "flex-start", flexDirection: "column", gap: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-          <span style={LABEL}>Auto-fetched</span>
+      <h1 className="adm-page-title">Latest</h1>
+      <p className="adm-page-sub">
+        The &ldquo;latest&rdquo; line on the home page and where it pulls from.
+      </p>
+
+      <section className="adm-section">
+        <div className="adm-section-head">
+          <h2 className="adm-section-title">Newest from each source</h2>
           <form action={refreshSocialLatestNow}>
-            <button type="submit" style={BTN(false)}>Force refresh</button>
+            <button type="submit" className="adm-btn" data-variant="quiet">
+              Refresh now
+            </button>
           </form>
         </div>
-        {autoFetchedItems.length ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
-            {autoFetchedItems.map((item) => (
-              <div
-                key={item.key}
-                style={{
-                  fontSize: 12,
-                  color: "var(--color-text-faint)",
-                  // Post URLs have no spaces to break at and would otherwise
-                  // push the whole column past the edge of the screen.
-                  overflowWrap: "anywhere",
-                }}
-              >
-                <span style={{ color: "var(--color-text)", fontWeight: 600 }}>{item.label}</span>
-                {item.detail ? ` (${item.detail})` : ""}
-                {" "}
-                — {item.text} →{" "}
+        <div className="adm-card">
+          {items.length ? (
+            items.map((item) => (
+              <div key={item.key} className="adm-media">
                 <a
                   href={item.href}
                   target={item.external ? "_blank" : undefined}
                   rel={item.external ? "noreferrer" : undefined}
-                  style={{ color: "inherit" }}
+                  className="adm-media-thumb"
+                  tabIndex={-1}
+                  aria-hidden
                 >
-                  {item.href}
+                  <Thumb src={item.thumbnail} label={item.source} />
                 </a>
-                {item.publishedAt ? ` (${new Date(item.publishedAt).toLocaleString()})` : ""}
+                <div className="adm-media-body">
+                  <div className="adm-media-meta">
+                    <span className="adm-media-source">{item.source}</span>
+                    {item.account && <span>{item.account}</span>}
+                    <span>{formatDate(item.publishedAt)}</span>
+                    {item.href === homeHref && (
+                      <span className="adm-pill" data-tone="ok">
+                        On home page
+                      </span>
+                    )}
+                  </div>
+                  <a
+                    href={item.href}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noreferrer" : undefined}
+                    className="adm-media-title"
+                  >
+                    {item.title || item.href}
+                  </a>
+                  {item.description && <p className="adm-media-desc">{item.description}</p>}
+                  <p className="adm-media-line">
+                    Shows as <q>{item.text}</q>
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
-            nothing cached yet — runs daily via /api/cron/refresh-latest, or use Force refresh
-          </span>
-        )}
-      </div>
-
-      <form action={saveLatestOverride} style={{ padding: "14px 0", borderBottom: "1px solid var(--color-border-faint)", display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={LABEL}>Latest override</span>
-        <input
-          name="latestText"
-          placeholder="Text (leave blank to use auto-fetched)"
-          defaultValue={latestOverride?.text ?? ""}
-          style={INPUT}
-        />
-        <div style={{ display: "flex", gap: 10 }}>
-          <input
-            name="latestHref"
-            placeholder="Link URL (leave blank to use auto-fetched)"
-            defaultValue={latestOverride?.href ?? ""}
-            style={{ ...INPUT, flex: 1 }}
-          />
-          <button type="submit" style={BTN(false)}>Save</button>
+            ))
+          ) : (
+            <p className="adm-empty">
+              Nothing cached yet — runs daily via /api/cron/refresh-latest, or use Refresh now.
+            </p>
+          )}
         </div>
-      </form>
+      </section>
 
-      <form action={saveYouTubeChannelId} style={ROW}>
-        <span style={LABEL}>YouTube channel</span>
-        <input
-          name="youtubeChannelId"
-          placeholder="Channel ID (UC...)"
-          defaultValue={youtubeChannelId ?? ""}
-          style={{ ...INPUT, flex: 1 }}
-        />
-        <button type="submit" style={BTN(false)}>Save</button>
-      </form>
-
-      <form action={saveBlueskyHandle} style={ROW}>
-        <span style={LABEL}>Bluesky handle</span>
-        <input
-          name="blueskyHandle"
-          placeholder="handle.bsky.social"
-          defaultValue={blueskyHandle ?? ""}
-          style={{ ...INPUT, flex: 1 }}
-        />
-        <button type="submit" style={BTN(false)}>Save</button>
-      </form>
-
-      <div style={{ padding: "14px 0", display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={LABEL}>Instagram accounts</span>
-        <InstagramAccountsEditor action={saveInstagramAccounts} accounts={instagramAccounts} />
-      </div>
-
-      <form action={saveLatestTemplates} style={{ padding: "14px 0", display: "flex", flexDirection: "column", gap: 10 }}>
-        <span style={LABEL}>Text templates</span>
-        <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
-          prefix + content + suffix, per platform/channel — use {"{title}"} in content where the item&apos;s own name should be inserted
-        </span>
-        {/* Label above the fields rather than beside them: a label plus three
-            inputs on one line has nowhere to go on a phone. */}
-        {(Object.keys(LATEST_TEMPLATE_LABELS) as LatestTemplateKey[]).map((key) => (
-          <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ ...LABEL, minWidth: 0, fontSize: 12 }}>
-              {LATEST_TEMPLATE_LABELS[key]}
-            </span>
-            <div style={FIELD_GRID}>
-              <input
-                name={`${key}.prefix`}
-                placeholder="Prefix"
-                defaultValue={latestTemplates[key].prefix}
-                style={INPUT}
-              />
-              <input
-                name={`${key}.content`}
-                placeholder="Content"
-                defaultValue={latestTemplates[key].content}
-                style={INPUT}
-              />
-              <input
-                name={`${key}.suffix`}
-                placeholder="Suffix"
-                defaultValue={latestTemplates[key].suffix}
-                style={INPUT}
-              />
+      <section className="adm-section">
+        <h2 className="adm-section-title">Override</h2>
+        <form action={saveLatestOverride} className="adm-card">
+          <div className="adm-row">
+            <div className="adm-row-text" style={{ flexBasis: "100%" }}>
+              <span className="adm-row-hint">
+                {latestOverride
+                  ? "Overriding the home page right now. Clear both fields to go back to automatic."
+                  : "Pin a specific line to the home page. Leave blank to use the newest item above."}
+              </span>
             </div>
+            <input
+              name="latestText"
+              placeholder="Text"
+              aria-label="Override text"
+              defaultValue={latestOverride?.text ?? ""}
+              className="adm-input"
+              style={{ flex: "1 1 220px", width: "auto" }}
+            />
+            <input
+              name="latestHref"
+              placeholder="Link URL"
+              aria-label="Override link"
+              defaultValue={latestOverride?.href ?? ""}
+              className="adm-input"
+              style={{ flex: "1 1 220px", width: "auto" }}
+            />
+            <button type="submit" className="adm-btn">
+              Save
+            </button>
           </div>
-        ))}
-        <div>
-          <button type="submit" style={BTN(false)}>Save</button>
+        </form>
+      </section>
+
+      <section className="adm-section">
+        <h2 className="adm-section-title">Settings</h2>
+        <div className="adm-card">
+          <details className="adm-disclosure">
+            <summary>
+              <span className="adm-row-text">
+                <span className="adm-row-label">Sources</span>
+                <span className="adm-row-hint">
+                  {sourceCount ? sourceSummary : "None connected"}
+                </span>
+              </span>
+            </summary>
+            <div className="adm-disclosure-body">
+              <form action={saveYouTubeChannelId} className="adm-row">
+                <span className="adm-row-label" style={{ minWidth: 80 }}>
+                  YouTube
+                </span>
+                <input
+                  name="youtubeChannelId"
+                  placeholder="Channel ID (UC…)"
+                  aria-label="YouTube channel ID"
+                  defaultValue={youtubeChannelId ?? ""}
+                  className="adm-input"
+                  style={{ flex: 1, width: "auto" }}
+                />
+                <button type="submit" className="adm-btn">
+                  Save
+                </button>
+              </form>
+              <form action={saveBlueskyHandle} className="adm-row">
+                <span className="adm-row-label" style={{ minWidth: 80 }}>
+                  Bluesky
+                </span>
+                <input
+                  name="blueskyHandle"
+                  placeholder="handle.bsky.social"
+                  aria-label="Bluesky handle"
+                  defaultValue={blueskyHandle ?? ""}
+                  className="adm-input"
+                  style={{ flex: 1, width: "auto" }}
+                />
+                <button type="submit" className="adm-btn">
+                  Save
+                </button>
+              </form>
+              <div className="adm-row" style={{ paddingBottom: 0 }}>
+                <span className="adm-row-label">Instagram</span>
+              </div>
+              <InstagramAccountsEditor action={saveInstagramAccounts} accounts={instagramAccounts} />
+            </div>
+          </details>
+
+          <details className="adm-disclosure">
+            <summary>
+              <span className="adm-row-text">
+                <span className="adm-row-label">Text templates</span>
+                <span className="adm-row-hint">
+                  How each kind of item is worded on the home page
+                </span>
+              </span>
+            </summary>
+            <form action={saveLatestTemplates} className="adm-disclosure-body">
+              <p className="adm-row-hint" style={{ padding: "12px 16px 0", margin: 0 }}>
+                prefix + content + suffix — use {"{title}"} in content where the item&apos;s own
+                name should go.
+              </p>
+              <table className="adm-table">
+                <thead>
+                  <tr>
+                    <th>Channel</th>
+                    <th>Prefix</th>
+                    <th>Content</th>
+                    <th>Suffix</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(Object.keys(LATEST_TEMPLATE_LABELS) as LatestTemplateKey[]).map((key) => (
+                    <tr key={key}>
+                      <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>
+                        {LATEST_TEMPLATE_LABELS[key]}
+                      </td>
+                      <td data-label="Prefix">
+                        <input
+                          name={`${key}.prefix`}
+                          aria-label={`${LATEST_TEMPLATE_LABELS[key]} prefix`}
+                          defaultValue={latestTemplates[key].prefix}
+                          className="adm-input"
+                        />
+                      </td>
+                      <td data-label="Content">
+                        <input
+                          name={`${key}.content`}
+                          aria-label={`${LATEST_TEMPLATE_LABELS[key]} content`}
+                          defaultValue={latestTemplates[key].content}
+                          className="adm-input"
+                        />
+                      </td>
+                      <td data-label="Suffix">
+                        <input
+                          name={`${key}.suffix`}
+                          aria-label={`${LATEST_TEMPLATE_LABELS[key]} suffix`}
+                          defaultValue={latestTemplates[key].suffix}
+                          className="adm-input"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="adm-card-foot" style={{ justifyContent: "flex-end" }}>
+                <button type="submit" className="adm-btn" data-variant="primary">
+                  Save templates
+                </button>
+              </div>
+            </form>
+          </details>
         </div>
-      </form>
+      </section>
     </div>
   );
 }

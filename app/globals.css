@@ -52,8 +52,9 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0 24px;
-  /* No dividers — vertical padding alone separates rows. */
-  padding: 20px 10px;
+  /* No dividers — vertical padding alone separates rows. No horizontal
+     padding, so titles and blurbs line up with the section headings. */
+  padding: 20px 0;
   align-items: center;
 }
 
@@ -617,12 +618,14 @@
   transition: transform 0.07s ease, box-shadow 0.07s ease;
 }
 .project-card:has(.project-card-trigger:active) .card-image-box,
+.latest-card:has(.latest-card-trigger:active) .card-image-box,
 .shop-card:has(.goods-card-trigger:active) .card-image-box {
   box-shadow: none;
   transform: translate(5px, 5px);
   transition: transform 0.07s ease, box-shadow 0.07s ease;
 }
-.project-card:has(.project-card-trigger:hover) .card-image-box {
+.project-card:has(.project-card-trigger:hover) .card-image-box,
+.latest-card:has(.latest-card-trigger:hover) .card-image-box {
   box-shadow: 3px 3px 0 0 var(--color-text);
   transform: translate(2px, 2px);
 }
@@ -634,6 +637,9 @@
   opacity: 1;
 }
 .project-card:has(.project-card-trigger:hover) .project-card-title {
+  text-decoration: underline;
+}
+.latest-card:has(.latest-card-trigger:hover) .latest-card-title {
   text-decoration: underline;
 }
 

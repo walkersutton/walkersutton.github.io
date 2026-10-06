@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { describeToken, SESSION_COOKIE_OPTIONS } from "@/lib/admin-auth";
+import { getAuthState } from "@/lib/live-state";
 
 // Deliberately a route handler, not a page: pages under /admin are wrapped by
 // the layout's auth gate, which would replace this with the login form exactly
@@ -30,7 +31,7 @@ function formatAge(issuedAt: Date): string {
 export async function GET() {
   const [store, head] = await Promise.all([cookies(), headers()]);
   const token = store.get("admin_session")?.value;
-  const diagnosis = describeToken(token);
+  const diagnosis = describeToken(token, (await getAuthState()).sessionEpoch);
 
   const host = head.get("x-forwarded-host") ?? head.get("host") ?? "(unknown)";
   const proto = head.get("x-forwarded-proto") ?? "(unknown)";

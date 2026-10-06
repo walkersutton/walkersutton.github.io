@@ -45,7 +45,8 @@ export const dynamic = "force-dynamic";
 
 // Routes that render as a standalone page rather than part of the site: no
 // header, no footer, nothing but what the page itself puts on screen.
-const BARE_ROUTES = ["/links"];
+// /admin is a tool, not a page a visitor reads, so it brings its own top bar.
+const BARE_ROUTES = ["/links", "/admin"];
 
 export default async function RootLayout({
   children,
@@ -75,9 +76,11 @@ export default async function RootLayout({
       >
         <CartProvider>
           {bannerEnabled && (
-            <div className="-mx-4 md:-mx-8" style={{ position: "relative", zIndex: 60 }}>
-              <Banner text={bannerText} href={bannerLink} />
-            </div>
+            <HideOnPaths paths={["/admin"]}>
+              <div className="-mx-4 md:-mx-8" style={{ position: "relative", zIndex: 60 }}>
+                <Banner text={bannerText} href={bannerLink} />
+              </div>
+            </HideOnPaths>
           )}
           <HideOnPaths paths={BARE_ROUTES}>
             <Header homeGlass={isLive} showTrips={hasTrips} />

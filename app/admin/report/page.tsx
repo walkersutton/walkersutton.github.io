@@ -2,6 +2,7 @@ import Pager from "@/app/components/Pager";
 import { getLiveReportEntries } from "@/lib/live-state";
 import { findMissingEntryIds } from "@/lib/report-archive";
 import { paginate } from "@/lib/paginate";
+import { dayKey, fmtDayHeading, groupByDay } from "@/lib/trip-report";
 import ClearAllButton from "./ClearAllButton";
 import ReportEditor from "./ReportEditor";
 import ReportEntryItem from "./ReportEntryItem";
@@ -23,11 +24,23 @@ export default async function AdminReportPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  const [{ page }, entries] = await Promise.all([searchParams, getLiveReportEntries()]);
+  const [{ page }, entries] = await Promise.all([
+    searchParams,
+    getLiveReportEntries(),
+  ]);
   // Same paging as the public report: the thumbnails here are the full-size
   // uploads scaled down by the browser, and this is the page that gets reloaded
   // after every post.
   const { pageItems, currentPage, totalPages } = paginate(entries, page);
+  // Same day buckets as the public report: a day is the day where the update
+  // was written. Counted across every page, so a day split by the pager still
+  // says how many updates it has in total.
+  const days = groupByDay(pageItems);
+  const perDay = new Map<string, number>();
+  for (const entry of entries) {
+    const key = dayKey(entry);
+    perDay.set(key, (perDay.get(key) ?? 0) + 1);
+  }
 
   // One list() against the archive, no downloads. Anything it holds that the
   // report doesn't is an update that went missing rather than one that was
@@ -41,6 +54,9 @@ export default async function AdminReportPage({
 
   return (
     <div>
+      <h1 className="adm-page-title">Report</h1>
+      <p className="adm-page-sub">Post an update to the live trip report.</p>
+
       <ReportEditor />
 
       {missing.length > 0 && <ReportRecovery missing={missing.length} />}
@@ -57,11 +73,9 @@ export default async function AdminReportPage({
       >
         <span
           style={{
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
-            letterSpacing: "0.11em",
-            textTransform: "uppercase",
-            color: "var(--color-text-faint)",
+            color: "var(--color-text-variant)",
           }}
         >
           {entries.length} update{entries.length !== 1 ? "s" : ""}
@@ -71,12 +85,31 @@ export default async function AdminReportPage({
       </div>
 
       {entries.length === 0 ? (
-        <p style={{ fontSize: 13, color: "var(--color-text-faint)" }}>No updates yet.</p>
+        <p style={{ fontSize: 13, color: "var(--color-text-faint)" }}>
+          No updates yet.
+        </p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          {pageItems.map((entry) => (
-            <ReportEntryItem key={entry.id} entry={entry} />
-          ))}
+        <div className="adm-days">
+          {days.map((day) => {
+            const count = perDay.get(day.key) ?? day.entries.length;
+            return (
+              <section key={day.key} className="adm-day">
+                <header className="adm-day-head">
+                  <h2 className="adm-day-title">
+                    {fmtDayHeading(day.entries[0])}
+                  </h2>
+                  <span className="adm-day-count">
+                    {count} update{count === 1 ? "" : "s"}
+                  </span>
+                </header>
+                <div className="adm-card">
+                  {day.entries.map((entry) => (
+                    <ReportEntryItem key={entry.id} entry={entry} />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
 

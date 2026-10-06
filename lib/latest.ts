@@ -4,7 +4,15 @@ import { buildTripEntries } from "./trips";
 import { getSocialLatest, getLatestTemplates } from "./live-state";
 import { renderLatestTemplate, type LatestTemplates } from "./latest-templates";
 
-export type LatestFallback = { text: string; href: string; publishedAt: string };
+export type LatestFallback = {
+  text: string;
+  href: string;
+  publishedAt: string;
+  // Only the admin preview reads these.
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+};
 
 export function getLatestPostCandidate(templates: LatestTemplates): LatestFallback | null {
   const latest = getAllPosts()[0];
@@ -14,6 +22,7 @@ export function getLatestPostCandidate(templates: LatestTemplates): LatestFallba
     text: renderLatestTemplate(templates.post, latest.title),
     href: latest.external_url ?? `/posts/${latest.slug}`,
     publishedAt: latest.date,
+    title: latest.title,
   };
 }
 
@@ -26,6 +35,9 @@ export function getLatestProjectCandidate(templates: LatestTemplates): LatestFal
     text: renderLatestTemplate(templates.project, latest.name),
     href: getProjectLink(latest).href,
     publishedAt: latest.date!,
+    title: latest.name,
+    description: latest.blurb,
+    thumbnail: latest.still ?? latest.image,
   };
 }
 
@@ -37,6 +49,8 @@ export function getLatestTripCandidate(templates: LatestTemplates): LatestFallba
     text: renderLatestTemplate(templates.tripReport, latest.name),
     href: latest.href,
     publishedAt: latest.date,
+    title: latest.name,
+    description: [latest.region, latest.stats, latest.days].filter(Boolean).join(" · "),
   };
 }
 
