@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { ROW, LABEL, INPUT, BTN } from "./styles";
 import type { SaveResult } from "./types";
 
 type Props = {
@@ -10,7 +9,7 @@ type Props = {
   value: string;
   action: (prev: SaveResult, formData: FormData) => Promise<SaveResult>;
   placeholder?: string;
-  last?: boolean;
+  hint?: string;
 };
 
 /**
@@ -29,9 +28,10 @@ export default function TextSettingRow({
   value: initialValue,
   action,
   placeholder,
-  last,
+  hint,
 }: Props) {
   const [value, setValue] = useState(initialValue);
+  const [savedValue, setSavedValue] = useState(initialValue);
   const [result, formAction, pending] = useActionState<SaveResult, FormData>(action, {});
   const [flash, setFlash] = useState(false);
 
@@ -39,35 +39,44 @@ export default function TextSettingRow({
     if (!result.saved) return;
     // Trust the stored value over the typed one — it's been trimmed.
     setValue(result.saved);
+    setSavedValue(result.saved);
     setFlash(true);
-    const timer = setTimeout(() => setFlash(false), 4000);
+    const timer = setTimeout(() => setFlash(false), 2500);
     return () => clearTimeout(timer);
   }, [result]);
 
-  const dirty = value !== initialValue;
+  const dirty = value !== savedValue;
 
   return (
-    <form action={formAction} style={last ? { ...ROW, borderBottom: "none" } : ROW}>
-      <span style={LABEL}>{label}</span>
-      <input
-        name={name}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder={placeholder}
-        style={{ ...INPUT, flex: 1 }}
-      />
-      <button type="submit" disabled={pending} style={{ ...BTN(false), opacity: pending ? 0.5 : 1 }}>
-        {pending ? "Saving…" : "Save"}
-      </button>
-      <span style={{ fontSize: 12, color: "var(--color-text-faint)" }}>
-        {result.error ? (
-          <span style={{ color: "var(--accent-red, #c0392b)" }}>{result.error}</span>
-        ) : flash ? (
-          "Saved"
-        ) : dirty ? (
-          "Unsaved"
-        ) : null}
-      </span>
+    <form action={formAction} className="adm-row" style={{ alignItems: "flex-start" }}>
+      <label className="adm-row-text" style={{ flexBasis: "100%" }}>
+        <span className="adm-row-label">{label}</span>
+        {hint && <span className="adm-row-hint">{hint}</span>}
+      </label>
+      <div style={{ display: "flex", gap: 8, width: "100%" }}>
+        <input
+          name={name}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          aria-label={label}
+          className="adm-input"
+          style={{ flex: 1 }}
+        />
+        <button
+          type="submit"
+          disabled={pending || !dirty}
+          className="adm-btn"
+          data-variant={dirty ? "primary" : undefined}
+        >
+          {pending ? "Saving…" : flash ? "Saved" : "Save"}
+        </button>
+      </div>
+      {result.error && (
+        <span className="adm-status" data-tone="error">
+          {result.error}
+        </span>
+      )}
     </form>
   );
 }

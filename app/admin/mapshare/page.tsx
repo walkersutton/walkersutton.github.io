@@ -24,30 +24,30 @@ const LABEL: React.CSSProperties = {
   letterSpacing: "0.08em",
 };
 
-function Row({ label, value, bad }: { label: string; value: string; bad?: boolean }) {
+function Row({
+  label,
+  value,
+  bad,
+}: {
+  label: string;
+  value: string;
+  bad?: boolean;
+}) {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 16,
-        padding: "9px 0",
-        borderBottom: "1px solid var(--color-border-faint)",
-      }}
-    >
-      <span style={{ fontSize: 13, color: "var(--color-text-variant)" }}>{label}</span>
-      <span
+    <tr>
+      <td className="adm-muted" style={{ whiteSpace: "nowrap" }}>
+        {label}
+      </td>
+      <td
+        className="adm-wrap"
         style={{
-          fontSize: 13,
           fontWeight: 600,
-          textAlign: "right",
-          overflowWrap: "anywhere",
-          color: bad ? "var(--accent-red, #c0392b)" : "var(--color-text)",
+          color: bad ? "var(--adm-red)" : "var(--color-text)",
         }}
       >
         {value}
-      </span>
-    </div>
+      </td>
+    </tr>
   );
 }
 
@@ -71,108 +71,174 @@ export default async function MapShareDebugPage() {
     getMapShareStartDate(),
   ]);
 
-  const newestAgeMins = d.newest ? (Date.now() - Date.parse(d.newest)) / 60000 : undefined;
+  const newestAgeMins = d.newest
+    ? (Date.now() - Date.parse(d.newest)) / 60000
+    : undefined;
   // Garmin trackers commonly send every 10 minutes; anything beyond an hour is
   // worth flagging as "the feed is not keeping up", not just "no recent moves".
   const stale = newestAgeMins !== undefined && newestAgeMins > 60;
 
   return (
     <div style={{ marginBottom: 40 }}>
-      <p style={{ ...LABEL, marginBottom: 12 }}>MapShare feed</p>
+      <h1 className="adm-page-title">MapShare</h1>
+      <p className="adm-page-sub">
+        Where the live map gets its positions, and what the feed is returning
+        right now.
+      </p>
 
-      <FeedUrlForm current={storedUrl} currentStartDate={storedStartDate} />
+      <div
+        className="adm-grid"
+        style={{
+          gridTemplateColumns:
+            "repeat(auto-fill, minmax(min(100%, 440px), 1fr))",
+        }}
+      >
+        <section className="adm-section">
+          <h2 className="adm-section-title">Settings</h2>
+          <div className="adm-card" style={{ padding: 16 }}>
+            <FeedUrlForm
+              current={storedUrl}
+              currentStartDate={storedStartDate}
+            />
+          </div>
+        </section>
 
-      {!d.configured && (
-        <p style={{ fontSize: 13, color: "var(--accent-red, #c0392b)" }}>
-          No feed URL is set here or in the deployment environment.
-        </p>
-      )}
-
-      {d.configured && (
-        <>
-          <Row label="Reading feed from" value={SOURCE_LABEL[d.source] ?? d.source} />
-          <Row label="Feed host" value={d.feedHost || "—"} />
-          <Row label="HTTP status" value={d.status ? String(d.status) : "—"} bad={!!d.error} />
-          {d.error && <Row label="Error" value={d.error} bad />}
-          <Row
-            label="Window start (d1)"
-            value={
-              d.windowStart
-                ? `${d.windowStart} — ${WINDOW_ORIGIN_LABEL[d.windowOrigin ?? "rolling-default"]}`
-                : "—"
-            }
-          />
-          <Row
-            label="End bound (d2) in config"
-            value={d.hasD2 ? "set — stripped before fetching" : "not set"}
-          />
-          <Row label="Response size" value={d.bytes !== undefined ? `${d.bytes} bytes` : "—"} />
-          <Row label="Placemarks in KML" value={d.placemarks !== undefined ? String(d.placemarks) : "—"} />
-          <Row
-            label="Parsed"
-            value={
-              d.totalPoints !== undefined
-                ? `${d.totalPoints} points (${d.tracks} tracks, ${d.points} pins)`
-                : "—"
-            }
-            bad={d.totalPoints === 0}
-          />
-          <Row label="Oldest point" value={d.oldest ? `${d.oldest} (${ago(d.oldest)})` : "—"} />
-          <Row
-            label="Newest point"
-            value={d.newest ? `${d.newest} (${ago(d.newest)})` : "—"}
-            bad={stale}
-          />
-
-          <p style={{ fontSize: 12, marginTop: 16, color: "var(--color-text-variant)", lineHeight: 1.6 }}>
-            {!d.newest
-              ? "No timestamped points came back at all, so there is nothing for the map to draw. Check the HTTP status and error above — a feed that is unreachable or returning an empty document fails this way."
-              : stale
-                ? "The newest point Garmin is returning is over an hour old. If MapShare's own site shows something newer, the feed URL is returning a narrower window than the site does."
-                : "Newest point is recent — the feed is delivering current data, so anything stale on the map is in rendering, not the feed."}
-          </p>
-
-          {d.rawLastPlacemark && (
-            <>
-              <p style={{ ...LABEL, marginTop: 28, marginBottom: 8 }}>Last placemark (raw)</p>
-              <pre
-                style={{
-                  fontSize: 11,
-                  lineHeight: 1.5,
-                  overflowX: "auto",
-                  padding: 12,
-                  background: "var(--color-bg-subtle, rgba(127,127,127,0.08))",
-                  border: "1px solid var(--color-border-faint)",
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
-                }}
-              >
-                {d.rawLastPlacemark}
-              </pre>
-            </>
+        <section className="adm-section">
+          <h2 className="adm-section-title">What the feed returns</h2>
+          {!d.configured && (
+            <div className="adm-card">
+              <p className="adm-empty" style={{ color: "var(--adm-red)" }}>
+                No feed URL is set here or in the deployment environment.
+              </p>
+            </div>
           )}
 
-          {d.rawHead && (
+          {d.configured && (
             <>
-              <p style={{ ...LABEL, marginTop: 24, marginBottom: 8 }}>Feed head (raw)</p>
-              <pre
+              <div className="adm-card">
+                <table className="adm-table">
+                  <tbody>
+                    <Row
+                      label="Reading feed from"
+                      value={SOURCE_LABEL[d.source] ?? d.source}
+                    />
+                    <Row label="Feed host" value={d.feedHost || "—"} />
+                    <Row
+                      label="HTTP status"
+                      value={d.status ? String(d.status) : "—"}
+                      bad={!!d.error}
+                    />
+                    {d.error && <Row label="Error" value={d.error} bad />}
+                    <Row
+                      label="Window start (d1)"
+                      value={
+                        d.windowStart
+                          ? `${d.windowStart} — ${WINDOW_ORIGIN_LABEL[d.windowOrigin ?? "rolling-default"]}`
+                          : "—"
+                      }
+                    />
+                    <Row
+                      label="End bound (d2) in config"
+                      value={
+                        d.hasD2 ? "set — stripped before fetching" : "not set"
+                      }
+                    />
+                    <Row
+                      label="Response size"
+                      value={d.bytes !== undefined ? `${d.bytes} bytes` : "—"}
+                    />
+                    <Row
+                      label="Placemarks in KML"
+                      value={
+                        d.placemarks !== undefined ? String(d.placemarks) : "—"
+                      }
+                    />
+                    <Row
+                      label="Parsed"
+                      value={
+                        d.totalPoints !== undefined
+                          ? `${d.totalPoints} points (${d.tracks} tracks, ${d.points} pins)`
+                          : "—"
+                      }
+                      bad={d.totalPoints === 0}
+                    />
+                    <Row
+                      label="Oldest point"
+                      value={d.oldest ? `${d.oldest} (${ago(d.oldest)})` : "—"}
+                    />
+                    <Row
+                      label="Newest point"
+                      value={d.newest ? `${d.newest} (${ago(d.newest)})` : "—"}
+                      bad={stale}
+                    />
+                  </tbody>
+                </table>
+              </div>
+
+              <p
                 style={{
-                  fontSize: 11,
-                  lineHeight: 1.5,
-                  overflowX: "auto",
-                  padding: 12,
-                  background: "var(--color-bg-subtle, rgba(127,127,127,0.08))",
-                  border: "1px solid var(--color-border-faint)",
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
+                  fontSize: 12,
+                  marginTop: 16,
+                  color: "var(--color-text-variant)",
+                  lineHeight: 1.6,
                 }}
               >
-                {d.rawHead}
-              </pre>
+                {!d.newest
+                  ? "No timestamped points came back at all, so there is nothing for the map to draw. Check the HTTP status and error above — a feed that is unreachable or returning an empty document fails this way."
+                  : stale
+                    ? "The newest point Garmin is returning is over an hour old. If MapShare's own site shows something newer, the feed URL is returning a narrower window than the site does."
+                    : "Newest point is recent — the feed is delivering current data, so anything stale on the map is in rendering, not the feed."}
+              </p>
+
+              {d.rawLastPlacemark && (
+                <>
+                  <p style={{ ...LABEL, marginTop: 28, marginBottom: 8 }}>
+                    Last placemark (raw)
+                  </p>
+                  <pre
+                    style={{
+                      fontSize: 11,
+                      lineHeight: 1.5,
+                      overflowX: "auto",
+                      padding: 12,
+                      background: "var(--adm-surface)",
+                      borderRadius: 10,
+                      border: "1px solid var(--color-border-faint)",
+                      whiteSpace: "pre-wrap",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {d.rawLastPlacemark}
+                  </pre>
+                </>
+              )}
+
+              {d.rawHead && (
+                <>
+                  <p style={{ ...LABEL, marginTop: 24, marginBottom: 8 }}>
+                    Feed head (raw)
+                  </p>
+                  <pre
+                    style={{
+                      fontSize: 11,
+                      lineHeight: 1.5,
+                      overflowX: "auto",
+                      padding: 12,
+                      background: "var(--adm-surface)",
+                      borderRadius: 10,
+                      border: "1px solid var(--color-border-faint)",
+                      whiteSpace: "pre-wrap",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {d.rawHead}
+                  </pre>
+                </>
+              )}
             </>
           )}
-        </>
-      )}
+        </section>
+      </div>
     </div>
   );
 }

@@ -23,10 +23,10 @@ function ProjectCardItem({ project }: { project: ProjectRowData }) {
     Boolean(project.image) &&
     project.still !== project.image;
   // No write-up → skip the /projects/<slug> page and kick straight to the
-  // best external link (GitHub first).
+  // best external link (live site first, then GitHub).
   const kickHref = !project.hasContent
-    ? (project.githubUrl ??
-        (project.href && project.href !== "#" ? project.href : undefined) ??
+    ? ((project.href && project.href !== "#" ? project.href : undefined) ??
+        project.githubUrl ??
         project.tiktokUrl) ?? null
     : null;
   const internalHref = !kickHref && project.slug ? `/projects/${project.slug}` : null;

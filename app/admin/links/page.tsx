@@ -10,11 +10,12 @@ export default async function AdminLinksPage() {
 
   return (
     <div>
-      <p style={{ fontSize: 13, color: "var(--color-text-faint)", marginBottom: 16 }}>
+      <h1 className="adm-page-title">Links</h1>
+      <p className="adm-page-sub">
         The rows on{" "}
         <Link
           href="/links"
-          style={{ color: "var(--color-text-faint)", textUnderlineOffset: 3 }}
+          style={{ color: "inherit", textUnderlineOffset: 3 }}
         >
           /links
         </Link>

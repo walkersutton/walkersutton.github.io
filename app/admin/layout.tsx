@@ -1,81 +1,38 @@
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/admin-auth";
-import { logout } from "./actions";
+import { headers } from "next/headers";
+import { getSession } from "@/lib/admin-auth";
+import { getAuthState } from "@/lib/live-state";
+import { passkeysFor, passwordSignInAllowed, relyingParty, siteRpID } from "@/lib/passkeys";
 import LoginForm from "./LoginForm";
-import AdminTabs from "./AdminTabs";
-import PageContainer from "../components/PageContainer";
+import AdminSidebar from "./AdminSidebar";
+import "./admin.css";
 
 export const dynamic = "force-dynamic";
-
-async function isAuthenticated(): Promise<boolean> {
-  const store = await cookies();
-  const token = store.get("admin_session")?.value;
-  if (!token) return false;
-  try {
-    return verifyToken(token);
-  } catch {
-    return false;
-  }
-}
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const authed = await isAuthenticated();
+  const session = await getSession().catch(() => null);
 
-  if (!authed) {
+  if (!session) {
+    const [{ passkeys, degraded }, head] = await Promise.all([getAuthState(), headers()]);
+    const rp = relyingParty(head.get("host"));
     return (
-      <PageContainer>
-        <div className="max-w-[420px] pt-16 pb-24">
-          <p
-            className="text-[13.5px] font-medium mb-6"
-            style={{ color: "var(--color-text-variant)" }}
-          >
-            Admin
-          </p>
-          <LoginForm />
-        </div>
-      </PageContainer>
+      <div className="adm adm-login">
+        <LoginForm
+          passkey={!!rp && passkeysFor(passkeys, rp.rpID).length > 0}
+          password={passwordSignInAllowed(passkeysFor(passkeys, siteRpID()).length, degraded)}
+          siteHost={siteRpID()}
+        />
+      </div>
     );
   }
 
   return (
-    <PageContainer>
-      <div className="max-w-[640px] pt-14 pb-24">
-        <p
-          className="text-[13.5px] font-medium mb-6"
-          style={{ color: "var(--color-text-variant)" }}
-        >
-          Admin
-        </p>
-
-        <AdminTabs />
-
-        {children}
-
-        <div style={{ marginTop: 48 }}>
-          <form action={logout}>
-            <button
-              type="submit"
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                fontSize: 12,
-                color: "var(--color-text-faint)",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                textDecoration: "underline",
-                textUnderlineOffset: 3,
-              }}
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </div>
-    </PageContainer>
+    <div className="adm adm-shell">
+      <AdminSidebar />
+      <main className="adm-main">{children}</main>
+    </div>
   );
 }

@@ -24,14 +24,12 @@ const TEXT_LINK: React.CSSProperties = {
 };
 
 /** Shown in the zone the update was posted from, same as the public page, so
- *  this is where a wrong zone would be caught. */
-function fmtEntryDate(iso: string, tz: string): string {
+ *  this is where a wrong zone would be caught. Time only: the day heading the
+ *  entry sits under already says which day. */
+function fmtEntryTime(iso: string, tz: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
     hour: "numeric",
     minute: "2-digit",
     timeZone: tz,
@@ -107,7 +105,7 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
   }
 
   return (
-    <div style={{ borderBottom: "1px solid var(--color-border-faint)", paddingBottom: 20 }}>
+    <div className="adm-entry">
       <div
         style={{
           display: "flex",
@@ -118,7 +116,7 @@ export default function ReportEntryItem({ entry }: { entry: LiveReportEntry }) {
         }}
       >
         <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text)" }}>
-          {fmtEntryDate(entry.date, entryTimeZone(entry.tz))}
+          {fmtEntryTime(entry.date, entryTimeZone(entry.tz))}
         </span>
         {!editing && (
           <span style={{ display: "flex", gap: 20 }}>

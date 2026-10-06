@@ -7,6 +7,7 @@ import { ProjectHomeGrid, type ProjectRowData } from "./components/ProjectRow";
 import PostItem from "./components/PostItem";
 import PageContainer from "./components/PageContainer";
 import SectionBar from "./components/SectionBar";
+import LatestCard from "./components/LatestCard";
 import HomeTripsHero from "./components/HomeTripsHero";
 import HomeTripSection from "./components/HomeTripSection";
 import {
@@ -59,6 +60,12 @@ export default async function Home() {
   const isExternal = latestFallback
     ? !latestFallback.href.startsWith("/")
     : !!latestPost?.external_url;
+  // A manual override is just text + link; only an auto-picked item carries
+  // the title and image the richer card needs.
+  const latestCard =
+    !latestOverride && latestFallbackAuto?.title && latestFallbackAuto.thumbnail
+      ? latestFallbackAuto
+      : null;
 
   return (
     <>
@@ -75,34 +82,46 @@ export default async function Home() {
       <PageContainer>
         {/* Hero */}
         <section className="pt-6 pb-4 max-w-[820px]">
-          <div
-            className="flex flex-wrap gap-4 text-[13px] font-medium"
-            style={{ color: "var(--color-text)" }}
-          >
-            {latestText && latestHref && (
-              <span>
-                the latest:&nbsp;&nbsp;
-                <a
-                  href={latestHref}
-                  target={isExternal ? "_blank" : undefined}
-                  rel={isExternal ? "noopener noreferrer" : undefined}
-                  style={{
-                    color: "var(--color-text)",
-                    textDecoration: "none",
-                    fontWeight: 500,
-                  }}
-                >
-                  <span className="underline-border">
-                    <span className="b b-bottom" />
-                    <span className="b b-right" />
-                    <span className="b b-top" />
-                    <span className="b b-left" />
-                    {latestText} ↗
-                  </span>{" "}
-                </a>
-              </span>
-            )}
-          </div>
+          {latestCard ? (
+            <LatestCard
+              label={latestCard.text}
+              href={latestCard.href}
+              isExternal={isExternal}
+              title={latestCard.title!}
+              description={latestCard.description}
+              thumbnail={latestCard.thumbnail!}
+              publishedAt={latestCard.publishedAt}
+            />
+          ) : (
+            <div
+              className="flex flex-wrap gap-4 text-[13px] font-medium"
+              style={{ color: "var(--color-text)" }}
+            >
+              {latestText && latestHref && (
+                <span>
+                  the latest:&nbsp;&nbsp;
+                  <a
+                    href={latestHref}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    style={{
+                      color: "var(--color-text)",
+                      textDecoration: "none",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <span className="underline-border">
+                      <span className="b b-bottom" />
+                      <span className="b b-right" />
+                      <span className="b b-top" />
+                      <span className="b b-left" />
+                      {latestText} ↗
+                    </span>{" "}
+                  </a>
+                </span>
+              )}
+            </div>
+          )}
         </section>
 
         <SectionBar title="Projects" href="/projects" spacing="lg" />

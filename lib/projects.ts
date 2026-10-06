@@ -20,12 +20,12 @@ export interface ProjectMetadata {
 }
 
 // Projects without a write-up don't get sent to /projects/<slug> — kick to the
-// best external link instead (GitHub first).
+// best external link instead (live site first, then GitHub).
 export function getProjectLink(p: ProjectMetadata): { href: string; external: boolean } {
   if (!p.hasContent) {
     const external =
-      p.githubUrl ??
       (p.href && p.href !== "#" ? p.href : undefined) ??
+      p.githubUrl ??
       p.tiktokUrl;
     if (external) return { href: external, external: true };
   }

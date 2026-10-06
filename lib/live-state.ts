@@ -24,7 +24,31 @@ export type LiveReportEntry = {
   tz?: string;
 };
 
-type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string; mapShareStartDate?: string; links?: SiteLink[]; linksOwnTripRows?: boolean };
+/**
+ * A passkey that can sign in to /admin. The public key isn't secret: it's
+ * what the authenticator's signature is checked against.
+ */
+export type StoredPasskey = {
+  /** Credential ID, base64url. */
+  id: string;
+  /** COSE public key, base64url. */
+  publicKey: string;
+  counter: number;
+  transports?: string[];
+  /** The domain it was made for. A passkey only works there, and local
+   *  development shares this store with production. */
+  rpID: string;
+  /** e.g. "iCloud Keychain", from the authenticator's AAGUID when known. */
+  provider?: string;
+  /** e.g. "Mac", from the browser it was added in. */
+  device?: string;
+  /** Synced across devices by its provider. */
+  backedUp?: boolean;
+  createdAt: string;
+  lastUsedAt?: string;
+};
+
+type LiveState = { enabled: boolean; bannerEnabled?: boolean; bannerText?: string; bannerLink?: string; latestText?: string; latestHref?: string; activeTripName?: string; socialLatestPosts?: SocialPost[]; youtubeChannelId?: string; blueskyHandle?: string; instagramAccounts?: InstagramAccount[]; latestTemplates?: Partial<LatestTemplates>; liveReportEntries?: LiveReportEntry[]; mapShareFeedUrl?: string; mapShareStartDate?: string; links?: SiteLink[]; linksOwnTripRows?: boolean; passkeys?: StoredPasskey[]; sessionEpoch?: number };
 
 // State lives in the private "live-state" Blob store (the deployment
 // filesystem is ephemeral, so admin writes must go somewhere durable). The
@@ -238,12 +262,22 @@ export async function setSocialLatestPosts(socialLatestPosts: SocialPost[]): Pro
   await writeState({ socialLatestPosts });
 }
 
-export async function getSocialLatest(): Promise<{ text: string; href: string; publishedAt: string } | null> {
+export async function getSocialLatest(): Promise<Pick<
+  SocialPost,
+  "text" | "href" | "publishedAt" | "title" | "description" | "thumbnail"
+> | null> {
   const posts = await getSocialLatestPosts();
   if (!posts.length) return null;
 
   const top = [...posts].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))[0];
-  return { text: top.text, href: top.href, publishedAt: top.publishedAt };
+  return {
+    text: top.text,
+    href: top.href,
+    publishedAt: top.publishedAt,
+    title: top.title,
+    description: top.description,
+    thumbnail: top.thumbnail,
+  };
 }
 
 function sortedEntries(entries: LiveReportEntry[]): LiveReportEntry[] {
@@ -422,4 +456,54 @@ export async function getSiteLinks(): Promise<SiteLink[]> {
 
 export async function setSiteLinks(links: SiteLink[]): Promise<void> {
   await writeState({ links, linksOwnTripRows: true });
+}
+
+// ── Sign-in ───────────────────────────────────────────────────────
+
+/**
+ * What sign-in needs, with whether it came from the real store. `degraded`
+ * means the store couldn't be read and this is the committed seed, which has
+ * no passkeys: callers deciding whether the password may be used must treat
+ * that as "unknown", not "none".
+ */
+export async function getAuthState(): Promise<{
+  passkeys: StoredPasskey[];
+  sessionEpoch: number;
+  degraded: boolean;
+}> {
+  const { state, degraded } = await readStateResult();
+  return { passkeys: state.passkeys ?? [], sessionEpoch: state.sessionEpoch ?? 0, degraded };
+}
+
+export async function addPasskey(passkey: StoredPasskey): Promise<void> {
+  await writeState((current) => ({
+    passkeys: [...(current.passkeys ?? []).filter((p) => p.id !== passkey.id), passkey],
+  }));
+}
+
+export async function recordPasskeyUse(id: string, counter: number): Promise<void> {
+  await writeState((current) => {
+    const passkeys = current.passkeys ?? [];
+    if (!passkeys.some((p) => p.id === id)) return null;
+    const lastUsedAt = new Date().toISOString();
+    return { passkeys: passkeys.map((p) => (p.id === id ? { ...p, counter, lastUsedAt } : p)) };
+  });
+}
+
+export async function removePasskey(id: string): Promise<void> {
+  await writeState((current) => {
+    const passkeys = current.passkeys ?? [];
+    if (!passkeys.some((p) => p.id === id)) return null;
+    return { passkeys: passkeys.filter((p) => p.id !== id) };
+  });
+}
+
+/** Invalidates every session signed before now. Returns the new epoch. */
+export async function bumpSessionEpoch(): Promise<number> {
+  let next = 0;
+  await writeState((current) => {
+    next = (current.sessionEpoch ?? 0) + 1;
+    return { sessionEpoch: next };
+  });
+  return next;
 }

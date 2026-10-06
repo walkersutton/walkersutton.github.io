@@ -2,36 +2,8 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { VISIBILITY_OPTIONS, type SiteLink } from "@/lib/links";
-import { BTN, INPUT } from "../styles";
+import { SMALL_BTN } from "../styles";
 import type { SaveResult } from "../types";
-
-const SMALL_BTN: React.CSSProperties = {
-  background: "transparent",
-  color: "var(--color-text-faint)",
-  border: "1.5px solid var(--color-border-faint)",
-  // 40px square-ish: these sit next to each other on a phone.
-  minHeight: 40,
-  minWidth: 44,
-  padding: "0 12px",
-  fontSize: 11,
-  fontWeight: 600,
-  fontFamily: "inherit",
-  cursor: "pointer",
-  letterSpacing: "0.05em",
-  textTransform: "uppercase",
-  whiteSpace: "nowrap",
-};
-
-// A native select rather than a segmented control: it's three choices on a
-// phone, and the OS picker is a better target than anything drawn here.
-const SELECT: React.CSSProperties = {
-  ...INPUT,
-  width: "100%",
-  // Matches the arrow buttons below it as a thumb target. The native dropdown
-  // arrow is left alone: stripping it makes this look like another text field,
-  // and there is no affordance left to say it isn't.
-  minHeight: 40,
-};
 
 /**
  * Edits every row on /links: label, where it points, when it shows, and what
@@ -51,7 +23,10 @@ export default function LinksEditor({
   action: (prev: SaveResult, formData: FormData) => Promise<SaveResult>;
 }) {
   const [rows, setRows] = useState<SiteLink[]>(links);
-  const [result, formAction, pending] = useActionState<SaveResult, FormData>(action, {});
+  const [result, formAction, pending] = useActionState<SaveResult, FormData>(
+    action,
+    {},
+  );
   const [flash, setFlash] = useState(false);
 
   useEffect(() => {
@@ -62,7 +37,9 @@ export default function LinksEditor({
   }, [result]);
 
   function updateRow(i: number, patch: Partial<SiteLink>) {
-    setRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, ...patch } : row)));
+    setRows((prev) =>
+      prev.map((row, idx) => (idx === i ? { ...row, ...patch } : row)),
+    );
   }
 
   function removeRow(i: number) {
@@ -82,107 +59,136 @@ export default function LinksEditor({
   }
 
   return (
-    <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {rows.map((row, i) => (
-        <div
-          key={i}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            padding: 12,
-            border: "1px solid var(--color-border-faint)",
-          }}
-        >
-          <input
-            name="label"
-            placeholder="Label, e.g. Strava"
-            value={row.label}
-            onChange={(e) => updateRow(i, { label: e.target.value })}
-            style={INPUT}
-          />
-          <input
-            name="href"
-            placeholder="https://… or /trips"
-            inputMode="url"
-            autoCapitalize="off"
-            autoCorrect="off"
-            value={row.href}
-            onChange={(e) => updateRow(i, { href: e.target.value })}
-            style={INPUT}
-          />
-          {/* Always submits a value, so it stays aligned with the label and
-              href arrays the save reads the rows out of. */}
-          <select
-            name="visibleWhen"
-            value={row.visibleWhen ?? "always"}
-            onChange={(e) =>
-              updateRow(i, { visibleWhen: e.target.value as SiteLink["visibleWhen"] })
-            }
-            aria-label={`When to show ${row.label || "this link"}`}
-            style={SELECT}
-          >
-            {VISIBILITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
+    <form action={formAction}>
+      <div className="adm-card">
+        <table className="adm-table">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Link</th>
+              <th>Shows</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={i}>
+                <td data-label="Label" className="adm-col-label">
+                  <input
+                    name="label"
+                    placeholder="Label, e.g. Strava"
+                    value={row.label}
+                    onChange={(e) => updateRow(i, { label: e.target.value })}
+                    className="adm-input"
+                  />
+                </td>
+                <td data-label="Link">
+                  <input
+                    name="href"
+                    placeholder="https://… or /trips"
+                    inputMode="url"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    value={row.href}
+                    onChange={(e) => updateRow(i, { href: e.target.value })}
+                    className="adm-input"
+                  />
+                </td>
+                <td data-label="Shows" className="adm-col-shows">
+                  {/* Always submits a value, so it stays aligned with the label
+                      and href arrays the save reads the rows out of. A native
+                      select: the OS picker is a better phone target than
+                      anything drawn here. */}
+                  <select
+                    name="visibleWhen"
+                    value={row.visibleWhen ?? "always"}
+                    onChange={(e) =>
+                      updateRow(i, {
+                        visibleWhen: e.target.value as SiteLink["visibleWhen"],
+                      })
+                    }
+                    aria-label={`When to show ${row.label || "this link"}`}
+                    className="adm-input"
+                  >
+                    {VISIBILITY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="adm-actions">
+                  <div style={{ display: "inline-flex", gap: 4 }}>
+                    <button
+                      type="button"
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0}
+                      aria-label={`Move ${row.label || "link"} up`}
+                      style={{ ...SMALL_BTN, opacity: i === 0 ? 0.35 : 1 }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(i, 1)}
+                      disabled={i === rows.length - 1}
+                      aria-label={`Move ${row.label || "link"} down`}
+                      style={{
+                        ...SMALL_BTN,
+                        opacity: i === rows.length - 1 ? 0.35 : 1,
+                      }}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeRow(i)}
+                      style={SMALL_BTN}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </td>
+              </tr>
             ))}
-          </select>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => move(i, -1)}
-              disabled={i === 0}
-              aria-label={`Move ${row.label || "link"} up`}
-              style={{ ...SMALL_BTN, opacity: i === 0 ? 0.35 : 1 }}
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              onClick={() => move(i, 1)}
-              disabled={i === rows.length - 1}
-              aria-label={`Move ${row.label || "link"} down`}
-              style={{ ...SMALL_BTN, opacity: i === rows.length - 1 ? 0.35 : 1 }}
-            >
-              ↓
-            </button>
-            <button type="button" onClick={() => removeRow(i)} style={SMALL_BTN}>
-              Remove
-            </button>
-          </div>
+          </tbody>
+        </table>
+
+        {rows.length === 0 && (
+          <p className="adm-empty">
+            No links. The page will show its heading and nothing else.
+          </p>
+        )}
+
+        <div className="adm-card-foot">
+          <button
+            type="button"
+            onClick={() =>
+              setRows((prev) => [...prev, { label: "", href: "" }])
+            }
+            style={SMALL_BTN}
+          >
+            + Add link
+          </button>
+          <span style={{ flex: 1 }} />
+          {result.error && (
+            <span className="adm-status" data-tone="error">
+              {result.error}
+            </span>
+          )}
+          {flash && result.saved && (
+            <span className="adm-status">Saved {result.saved}.</span>
+          )}
+          <button
+            type="submit"
+            disabled={pending}
+            className="adm-btn"
+            data-variant="primary"
+          >
+            {pending ? "Saving…" : "Save"}
+          </button>
         </div>
-      ))}
-
-      {rows.length === 0 && (
-        <p style={{ fontSize: 13, color: "var(--color-text-faint)" }}>
-          No links. The page will show its heading and nothing else.
-        </p>
-      )}
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-        <button
-          type="button"
-          onClick={() => setRows((prev) => [...prev, { label: "", href: "" }])}
-          style={SMALL_BTN}
-        >
-          + Add link
-        </button>
-        <button
-          type="submit"
-          disabled={pending}
-          style={{ ...BTN(true), opacity: pending ? 0.5 : 1 }}
-        >
-          {pending ? "Saving…" : "Save"}
-        </button>
       </div>
-
-      {result.error && (
-        <div style={{ fontSize: 13, color: "var(--accent-red, #c0392b)" }}>{result.error}</div>
-      )}
-      {flash && result.saved && (
-        <div style={{ fontSize: 13, color: "var(--color-text-faint)" }}>Saved {result.saved}.</div>
-      )}
     </form>
   );
 }
