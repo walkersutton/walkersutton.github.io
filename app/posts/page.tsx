@@ -2,11 +2,12 @@ import { draftMode } from "next/headers";
 import { getAllPosts, getPostBySlug, generateExcerpt } from "@/lib/posts";
 import PostItem from "../components/PostItem";
 import PageContainer from "../components/PageContainer";
-import { SITE_CONFIG } from "@/lib/config";
+import { SITE_CONFIG, pageAlternates } from "@/lib/config";
 
 export const metadata = {
   title: `Posts | ${SITE_CONFIG.title}`,
   description: "A collection of written posts.",
+  alternates: pageAlternates("/posts"),
 };
 
 export default async function PostsPage() {

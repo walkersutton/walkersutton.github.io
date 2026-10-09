@@ -8,8 +8,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_CONFIG.siteUrl),
   title: SITE_CONFIG.title,
   description: SITE_CONFIG.description,
+  // Canonicals are per-page (pageAlternates); one here would be inherited by
+  // every page and point them all at the homepage.
   alternates: {
-    canonical: "/",
     types: {
       "application/rss+xml": "/rss.xml",
     },

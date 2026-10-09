@@ -20,6 +20,7 @@ import { hasTripReport } from "@/lib/trip-report";
 import LeafletReportMapLoader from "./LeafletReportMapLoader";
 import DayHashScroll from "./DayHashScroll";
 import TripReportLayout from "./TripReportLayout";
+import { pageAlternates } from "@/lib/config";
 
 export async function generateStaticParams() {
   return getAllTripSlugs().map((slug) => ({ slug }));
@@ -31,7 +32,10 @@ export async function generateMetadata(props: {
   const { slug } = await props.params;
   const trip = getTripBySlug(slug);
   if (!trip) return {};
-  return { title: `${trip.frontmatter.title} | Walker Sutton` };
+  return {
+    title: `${trip.frontmatter.title} | Walker Sutton`,
+    alternates: pageAlternates(`/trips/${slug}`),
+  };
 }
 
 function fmtNavMeta(entry: TripEntry): string {

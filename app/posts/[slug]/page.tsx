@@ -3,6 +3,7 @@ import { draftMode } from "next/headers";
 import { notFound } from "next/navigation";
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import ContentPageLayout from "@/app/components/ContentPageLayout";
+import { pageAlternates } from "@/lib/config";
 
 export async function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -14,7 +15,10 @@ export async function generateMetadata(props: {
   const { slug } = await props.params;
   const post = await getPostBySlug(slug);
   if (!post) return {};
-  return { title: `${post.metadata.title} | Walker Sutton` };
+  return {
+    title: `${post.metadata.title} | Walker Sutton`,
+    alternates: pageAlternates(`/posts/${slug}`),
+  };
 }
 
 export default async function PostPage(props: {

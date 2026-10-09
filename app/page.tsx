@@ -17,6 +17,9 @@ import {
 } from "@/lib/live-state";
 import { getLatestFallback } from "@/lib/latest";
 import { getMapShareData } from "@/lib/mapshare-server";
+import { pageAlternates } from "@/lib/config";
+
+export const metadata = { alternates: pageAlternates("/") };
 
 export default async function Home() {
   const { isEnabled: includeDrafts } = await draftMode();

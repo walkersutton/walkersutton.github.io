@@ -8,10 +8,14 @@ import ReportEntries from "@/app/components/ReportEntries";
 import { paginate } from "@/lib/paginate";
 import { groupByDay } from "@/lib/trip-report";
 import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
+import { pageAlternates } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Live trip report | Walker Sutton" };
+export const metadata: Metadata = {
+  title: "Live trip report | Walker Sutton",
+  alternates: pageAlternates("/trips/live/report"),
+};
 
 /** Page 1 is the bare URL; deeper pages carry ?page=N. */
 function pageHref(page: number): string {

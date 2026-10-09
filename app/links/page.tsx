@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SkullMark from "@/app/components/SkullMark";
-import { SITE_CONFIG } from "@/lib/config";
+import { SITE_CONFIG, pageAlternates } from "@/lib/config";
 import { isLinkVisible, type SiteLink } from "@/lib/links";
 import {
   getLiveEnabled,
@@ -16,6 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Links | Walker Sutton",
   description: "Walker Sutton's links.",
+  alternates: pageAlternates("/links"),
 };
 
 // Strava's chevron. Both halves are one subpath continued with a relative

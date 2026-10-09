@@ -4,9 +4,12 @@ import { getAuthState } from "@/lib/live-state";
 import { passkeysFor, passwordSignInAllowed, relyingParty, siteRpID } from "@/lib/passkeys";
 import LoginForm from "./LoginForm";
 import AdminSidebar from "./AdminSidebar";
+import type { Metadata } from "next";
 import "./admin.css";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function AdminLayout({
   children,

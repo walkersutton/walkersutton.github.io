@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getAllProjects, getProjectBySlug } from "@/lib/projects";
 import ContentPageLayout from "@/app/components/ContentPageLayout";
 import ProjectImage from "@/app/components/ProjectImage";
+import { pageAlternates } from "@/lib/config";
 
 function MetaLink({ href, label }: { href: string; label: string }) {
   return (
@@ -34,7 +35,10 @@ export async function generateMetadata(props: {
   const { slug } = await props.params;
   const project = await getProjectBySlug(slug);
   if (!project) return {};
-  return { title: `${project.metadata.name} | Walker Sutton` };
+  return {
+    title: `${project.metadata.name} | Walker Sutton`,
+    alternates: pageAlternates(`/projects/${slug}`),
+  };
 }
 
 export default async function ProjectPage(props: {

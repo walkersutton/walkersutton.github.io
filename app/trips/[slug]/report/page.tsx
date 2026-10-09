@@ -7,6 +7,7 @@ import Footer from "@/app/components/Footer";
 import ReportEntries from "@/app/components/ReportEntries";
 import { getTripBySlug } from "@/lib/trips";
 import { getTripReport, getTripReportSlugs, groupByDay } from "@/lib/trip-report";
+import { pageAlternates } from "@/lib/config";
 
 export async function generateStaticParams() {
   return getTripReportSlugs().map((slug) => ({ slug }));
@@ -18,7 +19,10 @@ export async function generateMetadata(props: {
   const { slug } = await props.params;
   const trip = getTripBySlug(slug);
   if (!trip) return {};
-  return { title: `${trip.frontmatter.title} — original report | Walker Sutton` };
+  return {
+    title: `${trip.frontmatter.title} — original report | Walker Sutton`,
+    alternates: pageAlternates(`/trips/${slug}/report`),
+  };
 }
 
 /**
