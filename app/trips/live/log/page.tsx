@@ -9,17 +9,18 @@ import { paginate } from "@/lib/paginate";
 import { groupByDay } from "@/lib/trip-report";
 import { getLiveEnabled, getActiveTripName, getLiveReportEntries } from "@/lib/live-state";
 import { pageAlternates } from "@/lib/config";
+import TitleTag from "@/app/components/TitleTag";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Live trip report | Walker Sutton",
-  alternates: pageAlternates("/trips/live/report"),
+  title: "Live trip log | Walker Sutton",
+  alternates: pageAlternates("/trips/live/log"),
 };
 
 /** Page 1 is the bare URL; deeper pages carry ?page=N. */
 function pageHref(page: number): string {
-  return page <= 1 ? "/trips/live/report" : `/trips/live/report?page=${page}`;
+  return page <= 1 ? "/trips/live/log" : `/trips/live/log?page=${page}`;
 }
 
 export default async function LiveReportPage({
@@ -52,12 +53,7 @@ export default async function LiveReportPage({
           </div>
         )}
 
-        <div
-          className="text-[11px] font-semibold uppercase tracking-[0.13em]"
-          style={{ color: "var(--color-text-faint)", marginBottom: 10 }}
-        >
-          Trip report
-        </div>
+        <TitleTag className="mb-[16px]">Trip log</TitleTag>
         <h1
           className="font-semibold leading-[1.08] tracking-[-0.025em]"
           style={
@@ -91,7 +87,7 @@ export default async function LiveReportPage({
           currentPage={currentPage}
           totalPages={totalPages}
           hrefFor={pageHref}
-          label="Trip report pages"
+          label="Trip log pages"
         />
 
         <div

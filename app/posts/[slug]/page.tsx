@@ -40,8 +40,9 @@ export default async function PostPage(props: {
   });
 
   const meta = (
+    // Same treatment as the dates under trip titles.
     <div
-      className="text-[12px] font-semibold uppercase tracking-[0.11em]"
+      className="text-[14px] tabular-nums"
       style={{ color: "var(--color-text-variant)" }}
     >
       <time dateTime={post.metadata.date}>{formattedDate}</time>

@@ -507,7 +507,7 @@ export async function publishReportEntry(
     return { ok: false, error: (error as Error).message || "Could not save the update." };
   }
 
-  revalidatePath("/trips/live/report");
+  revalidatePath("/trips/live/log");
   revalidatePath("/admin/report");
   return { ok: true };
 }
@@ -535,7 +535,7 @@ export async function updateReportEntry(formData: FormData) {
   } catch (error) {
     console.error("updateReportEntry: could not archive entry", error);
   }
-  revalidatePath("/trips/live/report");
+  revalidatePath("/trips/live/log");
   revalidatePath("/admin/report");
 }
 
@@ -549,7 +549,7 @@ export async function deleteReportEntry(id: string) {
   } catch (error) {
     console.error("deleteReportEntry: could not drop archived entry", error);
   }
-  revalidatePath("/trips/live/report");
+  revalidatePath("/trips/live/log");
   revalidatePath("/admin/report");
 }
 
@@ -561,7 +561,7 @@ export async function clearReportEntries() {
   } catch (error) {
     console.error("clearReportEntries: could not empty the archive", error);
   }
-  revalidatePath("/trips/live/report");
+  revalidatePath("/trips/live/log");
   revalidatePath("/admin/report");
 }
 
@@ -579,7 +579,7 @@ export async function restoreMissingReportEntries(): Promise<
 
     const entries = await readArchivedEntries(missingIds);
     const restored = await restoreLiveReportEntries(entries);
-    revalidatePath("/trips/live/report");
+    revalidatePath("/trips/live/log");
     revalidatePath("/admin/report");
     return { ok: true, restored };
   } catch (error) {
@@ -658,7 +658,7 @@ export async function replaceReportPhotoUrl(
   try {
     const { replaceReportPhoto } = await import("@/lib/report-photos");
     await replaceReportPhoto(oldUrl, newUrl);
-    revalidatePath("/trips/live/report");
+    revalidatePath("/trips/live/log");
     revalidatePath("/admin/report");
     return { ok: true };
   } catch (error) {

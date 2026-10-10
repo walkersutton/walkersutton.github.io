@@ -6,6 +6,13 @@ import ContentPageLayout from "@/app/components/ContentPageLayout";
 import ProjectImage from "@/app/components/ProjectImage";
 import { pageAlternates } from "@/lib/config";
 
+function fmtMonthYear(iso: string) {
+  return new Date(iso + "T12:00:00").toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+  });
+}
+
 function MetaLink({ href, label }: { href: string; label: string }) {
   return (
     <a
@@ -53,8 +60,27 @@ export default async function ProjectPage(props: {
 
   const { metadata, content } = project;
 
+  const links = [
+    metadata.href && metadata.href !== "#" && { href: metadata.href, label: "Live site" },
+    metadata.githubUrl && { href: metadata.githubUrl, label: "GitHub" },
+    metadata.tiktokUrl && { href: metadata.tiktokUrl, label: "TikTok" },
+  ].filter((link): link is { href: string; label: string } => !!link);
+
   const header = (
     <>
+      {/* Directly under the title, like posts and trips. */}
+      {metadata.date && (
+        <div
+          className="text-[14px] tabular-nums"
+          style={{
+            color: "var(--color-text-variant)",
+            marginBottom: metadata.blurb ? 16 : 0,
+          }}
+        >
+          <time dateTime={metadata.date}>{fmtMonthYear(metadata.date)}</time>
+        </div>
+      )}
+
       {metadata.blurb && (
         <p
           style={{
@@ -68,31 +94,19 @@ export default async function ProjectPage(props: {
         </p>
       )}
 
-      <div
-        className="flex flex-wrap gap-x-6 gap-y-2 mt-8 pt-6 text-[13px]"
-        style={{
-          borderTop: "1px solid var(--color-rule)",
-          color: "var(--color-text-faint)",
-        }}
-      >
-        {metadata.date && (
-          <span>
-            <span className="font-semibold uppercase tracking-[0.1em] text-[10px] mr-2">
-              Year
-            </span>
-            {metadata.date.slice(0, 4)}
-          </span>
-        )}
-        {metadata.href && metadata.href !== "#" && (
-          <MetaLink href={metadata.href} label="Live site" />
-        )}
-        {metadata.githubUrl && (
-          <MetaLink href={metadata.githubUrl} label="GitHub" />
-        )}
-        {metadata.tiktokUrl && (
-          <MetaLink href={metadata.tiktokUrl} label="TikTok" />
-        )}
-      </div>
+      {links.length > 0 && (
+        <div
+          className="flex flex-wrap gap-x-6 gap-y-2 mt-8 pt-6 text-[13px]"
+          style={{
+            borderTop: "1px solid var(--color-rule)",
+            color: "var(--color-text-faint)",
+          }}
+        >
+          {links.map((link) => (
+            <MetaLink key={link.label} href={link.href} label={link.label} />
+          ))}
+        </div>
+      )}
 
       {metadata.image && (
         <div style={{ marginTop: 36 }}>

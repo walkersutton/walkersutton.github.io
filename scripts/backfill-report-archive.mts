@@ -273,7 +273,7 @@ async function main() {
 
   await writeFile(outPath, `${JSON.stringify(archive, null, 2)}\n`);
   console.log(`\nwrote ${outPath}  ${archive.length} updates, verbatim`);
-  console.log(`/trips/${opts.slug}/report renders it once it is committed`);
+  console.log(`/trips/${opts.slug}/log renders it once it is committed`);
 }
 
 main().catch((err) => {

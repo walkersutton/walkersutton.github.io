@@ -201,7 +201,7 @@ function zoneOf(entry: ReportEntry): string {
 
 /**
  * A day is a day where the update was written, not where the site lives — the
- * same rule /trips/live/report groups by, so the exported days line up with the
+ * same rule /trips/live/log groups by, so the exported days line up with the
  * ones readers already saw.
  */
 function dayKey(entry: ReportEntry): string {

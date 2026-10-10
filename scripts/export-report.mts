@@ -14,7 +14,7 @@
  *
  *   content/trips/<slug>.mdx          the write-up, to edit into shape
  *   content/trips/<slug>.report.json  the updates verbatim, rendered at
- *                                     /trips/<slug>/report and not edited
+ *                                     /trips/<slug>/log and not edited
  *
  * The mdx becomes whatever the trip is written up as; the json stays what was
  * actually typed on the day, timestamps and zones and all, because the live
@@ -406,7 +406,7 @@ async function main() {
 
   await writeFile(outPath, mdx);
   // The mdx gets edited into a write-up; this stays as it was published, and
-  // /trips/<slug>/report renders it.
+  // /trips/<slug>/log renders it.
   await writeFile(archivePath, `${JSON.stringify(buildArchive(entries, resolved), null, 2)}\n`);
   console.log(`\nwrote ${outPath}`);
   console.log(`wrote ${archivePath}  ${entries.length} updates, verbatim`);

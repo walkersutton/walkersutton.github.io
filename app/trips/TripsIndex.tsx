@@ -69,7 +69,7 @@ export default function TripsIndex({ trips }: { trips: TripEntry[] }) {
                 title={trip.name}
                 href={trip.href}
                 date={trip.date}
-                excerpt={`${trip.region} · ${trip.stats}`}
+                excerpt={[trip.region, trip.stats].filter(Boolean).join(" · ")}
               />
             </div>
           ))}

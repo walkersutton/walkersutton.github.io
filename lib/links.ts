@@ -16,7 +16,7 @@ export type SiteLink = { label: string; href: string; visibleWhen?: LinkVisibili
 export const VISIBILITY_OPTIONS: { value: LinkVisibility; label: string }[] = [
   { value: "always", label: "Show always" },
   { value: "trip", label: "Show only during a trip" },
-  { value: "report", label: "Show while the report has updates" },
+  { value: "report", label: "Show while the log has updates" },
 ];
 
 export function isLinkVisibility(value: string): value is LinkVisibility {
@@ -34,7 +34,7 @@ const stravaHref = (chronicallyOnline as { name: string; href: string }[]).find(
  */
 export const TRIP_LINKS: SiteLink[] = [
   { label: "Live tracker", href: "/trips/live", visibleWhen: "trip" },
-  { label: "Trip report", href: "/trips/live/report", visibleWhen: "report" },
+  { label: "Trip log", href: "/trips/live/log", visibleWhen: "report" },
 ];
 
 /**

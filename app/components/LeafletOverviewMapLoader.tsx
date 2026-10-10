@@ -11,7 +11,7 @@ const LeafletOverviewMap = dynamic(() => import("./LeafletOverviewMap"), {
 
 type TripEntry = {
   name: string;
-  region: string;
+  region?: string;
   date: string;
   href: string;
   segments: [number, number][][];

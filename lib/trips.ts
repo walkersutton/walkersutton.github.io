@@ -7,7 +7,7 @@ const tripsDirectory = path.join(process.cwd(), "content/trips");
 
 export interface TripFrontmatter {
   title: string;
-  region: string;
+  region?: string;
   draft?: boolean;
   // Activity URLs in DayMarker order — first entry belongs to the first
   // <DayMarker> in the body, and so on. Use null to skip a marker.
@@ -46,7 +46,7 @@ export interface Trip {
 
 export interface TripEntry {
   name: string;
-  region: string;
+  region?: string;
   date: string;
   href: string;
   stats: string;

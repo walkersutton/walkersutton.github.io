@@ -100,7 +100,7 @@ const GROUPS: { title: string; items: { href: string; label: string; icon: keyof
   {
     title: "Trip",
     items: [
-      { href: "/admin/report", label: "Report", icon: "report" },
+      { href: "/admin/report", label: "Log", icon: "report" },
       { href: "/admin/mapshare", label: "MapShare", icon: "mapshare" },
     ],
   },

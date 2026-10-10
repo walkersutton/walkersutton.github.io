@@ -1,4 +1,5 @@
 import type React from "react";
+import { Fragment } from "react";
 import { draftMode } from "next/headers";
 import { getAllProjects } from "@/lib/projects";
 import { getAllPosts, getPostBySlug, generateExcerpt } from "@/lib/posts";
@@ -20,6 +21,11 @@ import { getMapShareData } from "@/lib/mapshare-server";
 import { pageAlternates } from "@/lib/config";
 
 export const metadata = { alternates: pageAlternates("/") };
+
+function timeOf(date: string | undefined): number {
+  const t = date ? new Date(date).getTime() : NaN;
+  return Number.isNaN(t) ? 0 : t;
+}
 
 export default async function Home() {
   const { isEnabled: includeDrafts } = await draftMode();
@@ -69,6 +75,59 @@ export default async function Home() {
     !latestOverride && latestFallbackAuto?.title && latestFallbackAuto.thumbnail
       ? latestFallbackAuto
       : null;
+
+  // Sections lead with whichever had something new most recently. Ties keep
+  // this listed order (sort is stable).
+  const sections = [
+    {
+      key: "projects",
+      date: visible[0]?.date,
+      node: (
+        <>
+          <SectionBar title="Projects" href="/projects" spacing="lg" />
+          <ProjectHomeGrid projects={visible} maxProjects={5} />
+        </>
+      ),
+    },
+    {
+      key: "posts",
+      date: posts[0]?.date,
+      node: (
+        <>
+          <SectionBar title="Posts" href="/posts" spacing="lg" />
+          <div className="flex flex-col">
+            {posts.map((post) => (
+              <PostItem
+                key={post.slug}
+                date={post.date}
+                title={post.title}
+                href={post.external_url ?? `/posts/${post.slug}`}
+                excerpt={post.excerpt}
+                isExternal={!!post.external_url}
+              />
+            ))}
+          </div>
+        </>
+      ),
+    },
+    // While live, the hero map above already shows the live position — skip
+    // the static past-trips map so it isn't shown alongside it. Hidden
+    // entirely when there are no published trips.
+    ...(!isLive && allTrips.length > 0
+      ? [
+          {
+            key: "trips",
+            date: allTrips[0]?.date,
+            node: (
+              <>
+                <SectionBar title="Trip Reports" href="/trips" spacing="lg" />
+                <HomeTripSection trips={recentTrips} />
+              </>
+            ),
+          },
+        ]
+      : []),
+  ].sort((a, b) => timeOf(b.date) - timeOf(a.date));
 
   return (
     <>
@@ -127,32 +186,9 @@ export default async function Home() {
           )}
         </section>
 
-        <SectionBar title="Projects" href="/projects" spacing="lg" />
-        <ProjectHomeGrid projects={visible} maxProjects={5} />
-
-        <SectionBar title="Posts" href="/posts" spacing="lg" />
-        <div className="flex flex-col">
-          {posts.map((post) => (
-            <PostItem
-              key={post.slug}
-              date={post.date}
-              title={post.title}
-              href={post.external_url ?? `/posts/${post.slug}`}
-              excerpt={post.excerpt}
-              isExternal={!!post.external_url}
-            />
-          ))}
-        </div>
-
-        {/* While live, the hero map above already shows the live position —
-            skip the static past-trips map so it isn't shown alongside it.
-            Hidden entirely when there are no published trips. */}
-        {!isLive && allTrips.length > 0 && (
-          <>
-            <SectionBar title="Trip Reports" href="/trips" spacing="lg" />
-            <HomeTripSection trips={recentTrips} />
-          </>
-        )}
+        {sections.map((section) => (
+          <Fragment key={section.key}>{section.node}</Fragment>
+        ))}
       </PageContainer>
     </>
   );

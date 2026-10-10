@@ -6,7 +6,7 @@ import LeafletOverviewMapLoader from "./LeafletOverviewMapLoader";
 
 type TripEntry = {
   name: string;
-  region: string;
+  region?: string;
   date: string;
   href: string;
   stats: string;
@@ -44,7 +44,8 @@ export default function HomeTripSection({ trips }: { trips: TripEntry[] }) {
               title={trip.name}
               href={trip.href}
               date={trip.date}
-              excerpt={`${trip.region} · ${trip.stats} · ${trip.days}`}
+              // Day count hidden for now: [trip.region, trip.stats, trip.days]
+              excerpt={[trip.region, trip.stats].filter(Boolean).join(" · ")}
             />
           </div>
         ))}

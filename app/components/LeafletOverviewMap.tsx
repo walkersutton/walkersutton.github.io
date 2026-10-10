@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 
 type TripEntry = {
   name: string;
-  region: string;
+  region?: string;
   date: string;
   href: string;
   segments: [number, number][][];
@@ -176,7 +176,7 @@ export default function LeafletOverviewMap({
                 <strong>{trip.name}</strong>
                 <br />
                 <span style={{ color: "var(--color-text-variant)" }}>
-                  {trip.region} · {trip.date}
+                  {[trip.region, trip.date].filter(Boolean).join(" · ")}
                 </span>
               </Tooltip>
             </Polyline>

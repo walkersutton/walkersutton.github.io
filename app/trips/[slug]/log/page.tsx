@@ -6,8 +6,13 @@ import PageContainer from "@/app/components/PageContainer";
 import Footer from "@/app/components/Footer";
 import ReportEntries from "@/app/components/ReportEntries";
 import { getTripBySlug } from "@/lib/trips";
-import { getTripReport, getTripReportSlugs, groupByDay } from "@/lib/trip-report";
+import {
+  getTripReport,
+  getTripReportSlugs,
+  groupByDay,
+} from "@/lib/trip-report";
 import { pageAlternates } from "@/lib/config";
+import TitleTag from "@/app/components/TitleTag";
 
 export async function generateStaticParams() {
   return getTripReportSlugs().map((slug) => ({ slug }));
@@ -20,8 +25,8 @@ export async function generateMetadata(props: {
   const trip = getTripBySlug(slug);
   if (!trip) return {};
   return {
-    title: `${trip.frontmatter.title} — original report | Walker Sutton`,
-    alternates: pageAlternates(`/trips/${slug}/report`),
+    title: `${trip.frontmatter.title} — trip log | Walker Sutton`,
+    alternates: pageAlternates(`/trips/${slug}/log`),
   };
 }
 
@@ -62,13 +67,10 @@ export default async function TripReportArchivePage(props: {
 
   return (
     <PageContainer>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "40px 4px 96px" }}>
-        <div
-          className="text-[11px] font-semibold uppercase tracking-[0.13em]"
-          style={{ color: "var(--color-text-faint)", marginBottom: 10 }}
-        >
-          Original report
-        </div>
+      <div
+        style={{ maxWidth: 720, margin: "0 auto", padding: "40px 4px 96px" }}
+      >
+        <TitleTag className="mb-[16px]">Trip log</TitleTag>
         <h1
           className="font-semibold leading-[1.08] tracking-[-0.025em]"
           style={
@@ -85,15 +87,24 @@ export default async function TripReportArchivePage(props: {
 
         <p
           className="text-[15px] leading-[1.6]"
-          style={{ color: "var(--color-text-variant)", maxWidth: "58ch", marginBottom: 4 }}
+          style={{
+            color: "var(--color-text-variant)",
+            maxWidth: "58ch",
+            marginBottom: 4,
+          }}
         >
-          Posted from the road as it happened, unedited. The written-up version is
-          over at{" "}
+          The unabridged archive of updates, posted in real-time. Trip narrative
+          can be found{" "}
           <Link
             href={`/trips/${slug}`}
-            style={{ color: "var(--color-text)", textDecoration: "underline", textUnderlineOffset: "2px" }}
+            style={{
+              color: "var(--color-text)",
+              textDecoration: "underline",
+              textUnderlineOffset: "2px",
+            }}
           >
-            {trip.frontmatter.title}
+            here
+            {/* {trip.frontmatter.title} */}
           </Link>
           .
         </p>
@@ -101,7 +112,11 @@ export default async function TripReportArchivePage(props: {
         <ReportEntries days={days} />
 
         <div
-          style={{ marginTop: 56, paddingTop: 20, borderTop: "1px solid var(--color-rule)" }}
+          style={{
+            marginTop: 56,
+            paddingTop: 20,
+            borderTop: "1px solid var(--color-rule)",
+          }}
         >
           <Link
             href={`/trips/${slug}`}

@@ -160,7 +160,7 @@ function StatsPanel({
         </div>
       </div>
 
-      {/* Latest from the trip report */}
+      {/* Latest from the trip log */}
       <div style={{ ...sectionStyle, borderBottom: "none" }}>
         <Lbl>Latest</Lbl>
         {recentPosts.length > 0 ? (
@@ -169,7 +169,7 @@ function StatsPanel({
               {recentPosts.map((post, index) => (
                 <Link
                   key={post.id}
-                  href="/trips/live/report"
+                  href="/trips/live/log"
                   className="block no-underline"
                   style={{
                     padding: "8px 11px",
@@ -193,7 +193,7 @@ function StatsPanel({
               ))}
             </div>
             <Link
-              href="/trips/live/report"
+              href="/trips/live/log"
               className="inline-flex items-center gap-[5px] text-[12px] font-medium mt-[11px]"
               style={{
                 color: "var(--color-text-faint)",
@@ -201,7 +201,7 @@ function StatsPanel({
                 textUnderlineOffset: "2px",
               }}
             >
-              Read the full report
+              Read the full log
               <span aria-hidden>→</span>
             </Link>
           </>

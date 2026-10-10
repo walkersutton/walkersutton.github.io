@@ -54,8 +54,8 @@ export default async function AdminReportPage({
 
   return (
     <div>
-      <h1 className="adm-page-title">Report</h1>
-      <p className="adm-page-sub">Post an update to the live trip report.</p>
+      <h1 className="adm-page-title">Log</h1>
+      <p className="adm-page-sub">Post an update to the live trip log.</p>
 
       <ReportEditor />
 

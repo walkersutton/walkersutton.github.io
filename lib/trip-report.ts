@@ -7,7 +7,7 @@ import { entryTimeZone } from "./report-time";
  * A finished trip's report, frozen into the repo.
  *
  * The live report lives in one mutable array in the Blob store, holds one trip
- * at a time, and `/trips/live/report` redirects away once that array is empty.
+ * at a time, and `/trips/live/log` redirects away once that array is empty.
  * So the day the next trip starts — or the moment **Clear all** is used — the
  * last trip's updates stop existing anywhere a reader can reach. That is fine
  * for a feed and wrong for a record: the write-up under /trips is the edited
@@ -61,7 +61,7 @@ export function getTripReport(slug: string): TripReportEntry[] | null {
 
 // ── Day grouping and formatting ───────────────────────────────────
 //
-// Shared with /trips/live/report so an archived trip reads exactly as it did
+// Shared with /trips/live/log so an archived trip reads exactly as it did
 // while it was live. Times are shown in the zone the update was posted from,
 // not the site's and not the reader's: on a trip that crosses the country,
 // "7:20 AM" is only meaningful next to where Walker was standing when he

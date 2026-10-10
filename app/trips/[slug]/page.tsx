@@ -21,6 +21,7 @@ import LeafletReportMapLoader from "./LeafletReportMapLoader";
 import DayHashScroll from "./DayHashScroll";
 import TripReportLayout from "./TripReportLayout";
 import { pageAlternates } from "@/lib/config";
+import TitleTag from "@/app/components/TitleTag";
 
 export async function generateStaticParams() {
   return getAllTripSlugs().map((slug) => ({ slug }));
@@ -95,16 +96,9 @@ export default async function TripReportPage(props: {
       {/* ── Content below map ── */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 28px 96px" }}>
         {/* Title */}
-        <div
-          className="text-[11px] font-semibold uppercase tracking-[0.13em]"
-          style={{
-            color: "var(--color-text-variant)",
-            marginTop: 32,
-            marginBottom: 10,
-          }}
-        >
+        <TitleTag style={{ marginTop: 32, marginBottom: 16 }}>
           Trip report
-        </div>
+        </TitleTag>
         <h1
           className="font-semibold leading-[1.08] tracking-[-0.025em]"
           style={
@@ -123,11 +117,15 @@ export default async function TripReportPage(props: {
           style={{ color: "var(--color-text-variant)" }}
         >
           <span>{dates}</span>
-          <span
-            className="w-[3px] h-[3px] rounded-full shrink-0"
-            style={{ background: "var(--color-text-variant)" }}
-          />
-          <span>{fm.region}</span>
+          {fm.region && (
+            <>
+              <span
+                className="w-[3px] h-[3px] rounded-full shrink-0"
+                style={{ background: "var(--color-text-variant)" }}
+              />
+              <span>{fm.region}</span>
+            </>
+          )}
         </div>
 
         {/* Stats strip */}
@@ -158,7 +156,7 @@ export default async function TripReportPage(props: {
         {hasTripReport(slug) && (
           <div style={{ marginTop: 28 }}>
             <Link
-              href={`/trips/${slug}/report`}
+              href={`/trips/${slug}/log`}
               className="text-[13px] font-medium"
               style={{
                 color: "var(--color-text-variant)",
@@ -166,16 +164,13 @@ export default async function TripReportPage(props: {
                 textUnderlineOffset: "2px",
               }}
             >
-              Read the original day-by-day report →
+              Read the archived trip log →
             </Link>
           </div>
         )}
 
         {/* Prose */}
-        <div
-          className="flex flex-col"
-          style={{ marginTop: 52 }}
-        >
+        <div className="flex flex-col" style={{ marginTop: 52 }}>
           <MDXRemote
             source={content}
             components={{
@@ -336,12 +331,7 @@ function makeDayMarker(
         className="mt-6 first:mt-0"
         style={{ marginBottom: 12, scrollMarginTop: 88 }}
       >
-        <div
-          className="text-[11px] font-semibold uppercase tracking-[0.13em]"
-          style={{ color: "var(--color-text-variant)", marginBottom: 4 }}
-        >
-          {label}
-        </div>
+        <TitleTag style={{ marginBottom: 10 }}>{label}</TitleTag>
         <h3
           className="text-[17px] font-semibold tracking-[-0.015em] leading-[1.25]"
           style={{ color: "var(--color-text)", margin: 0 }}

@@ -2,7 +2,7 @@ import { fmtDayHeading, fmtTime, type ReportDay } from "@/lib/trip-report";
 
 /**
  * The day-by-day body of a trip report, shared by the live feed at
- * /trips/live/report and the archived copy at /trips/<slug>/report.
+ * /trips/live/log and the archived copy at /trips/<slug>/log.
  *
  * One component rather than two so an archived trip reads exactly as it did on
  * the day — the whole point of keeping it is that it is the same thing readers
@@ -16,14 +16,16 @@ export default function ReportEntries({ days }: { days: ReportDay[] }) {
         <section
           key={day.key}
           style={{
-            borderTop: "1px solid var(--color-border-faint)",
-            paddingTop: 28,
-            marginTop: 28,
+            borderTop: "1px solid var(--color-border)",
+            paddingTop: 36,
+            marginTop: 36,
           }}
         >
+          {/* Sized like the site's post titles so a new day reads as a new
+              section, clearly above the per-entry times. */}
           <h2
-            className="text-[13px] font-semibold uppercase tracking-[0.11em]"
-            style={{ color: "var(--color-text-faint)", marginBottom: 18 }}
+            className="text-[22px] font-bold leading-[1.2] tracking-[-0.02em]"
+            style={{ color: "var(--color-text)", marginBottom: 20 }}
           >
             {fmtDayHeading(day.entries[0])}
           </h2>
@@ -31,8 +33,8 @@ export default function ReportEntries({ days }: { days: ReportDay[] }) {
           {day.entries.map((entry) => (
             <div key={entry.id} style={{ marginBottom: 28 }}>
               <div
-                className="text-[11px] font-medium tracking-[0.02em]"
-                style={{ color: "var(--color-text-faint)", marginBottom: 8 }}
+                className="text-[13px] font-medium tabular-nums"
+                style={{ color: "var(--color-text-variant)", marginBottom: 8 }}
               >
                 {fmtTime(entry)}
               </div>
