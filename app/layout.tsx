@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import GoatCounter from "./components/GoatCounter";
+import Analytics from "./components/Analytics";
 import { sfProDisplay, sfProText } from "./fonts";
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/config";
@@ -71,7 +71,7 @@ export default async function RootLayout({
     >
       {/* Loads count.js and reports next/link navigations, which count.js
           cannot see on its own. Skips /admin entirely. */}
-      <GoatCounter />
+      <Analytics />
       <body
         className={`bg-[var(--color-bg)] text-[var(--color-text)] antialiased overflow-x-hidden px-4 md:px-8 md:overflow-x-visible min-h-screen flex flex-col`}
       >
