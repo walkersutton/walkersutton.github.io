@@ -14,7 +14,8 @@ function isTracked(pathname: string): boolean {
 }
 
 /**
- * Pageviews go to the self-hosted stats at stats.walkersutton.com. stats.js
+ * Pageviews go to the self-hosted stats at stats.walkersutton.com, by way of
+ * this domain (/api/s.js and /api/e) so ad blockers let them through. stats.js
  * counts the page it loads on and then every client-side navigation itself (it
  * wraps history.pushState), so all this component decides is when to load it.
  *
@@ -38,8 +39,9 @@ export default function Analytics() {
 
   return (
     <Script
-      src="https://stats.walkersutton.com/stats.js"
+      src="/api/s.js"
       data-site-id="walkersutton.com"
+      data-api="/api/e"
       strategy="afterInteractive"
     />
   );
