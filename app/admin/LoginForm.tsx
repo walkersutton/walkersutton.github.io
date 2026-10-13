@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
 import SkullLogo from "../components/SkullLogo";
 import { finishPasskeySignIn, login, startPasskeySignIn } from "./actions";
@@ -39,6 +39,9 @@ export default function LoginForm({
   siteHost: string;
 }) {
   const router = useRouter();
+  // Set when another subdomain (stats) sent us here to sign in. The server
+  // checks it before redirecting anywhere.
+  const next = useSearchParams().get("next");
   const [state, action, pending] = useActionState(login, initial);
   const [password, setPassword] = useState("");
   const [showError, setShowError] = useState(false);
@@ -75,8 +78,10 @@ export default function LoginForm({
       const response = await startAuthentication({ optionsJSON: start.options });
       const done = await finishPasskeySignIn(response);
       if (!done.ok) throw new Error(done.error);
-      // The session cookie is set; re-render the layout, which now lets us in.
-      router.refresh();
+      // The session cookie is set. Load /admin again: the page sends us back
+      // to `next` if there is one, and otherwise the layout now lets us in.
+      if (next) window.location.assign(window.location.href);
+      else router.refresh();
     } catch (error) {
       const { name, message } = error as Error;
       // Closing the Face ID / Touch ID sheet is a change of mind, not a failure.
@@ -142,6 +147,7 @@ export default function LoginForm({
         <form action={action} className="adm-login-field adm-rise" style={passkey ? { marginTop: 0 } : undefined}>
           {/* Password managers file a login under a username; without one they
               save it badly or not at all. Never shown, and the server ignores it. */}
+          {next && <input type="hidden" name="next" value={next} />}
           <input
             type="text"
             name="username"

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { draftMode } from "next/headers";
+import { redirect } from "next/navigation";
+import { getSession, safeReturnTo } from "@/lib/admin-auth";
 import {
   getLiveEnabled,
   getBannerEnabled,
@@ -22,7 +24,18 @@ import ToggleRow from "./ToggleRow";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminGeneralPage() {
+export default async function AdminGeneralPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  // Signed in and another subdomain (stats) asked to be sent back. Checked
+  // here as well as in the layout: Next renders the two in parallel, so the
+  // layout's gate doesn't stop this from running.
+  const { next } = await searchParams;
+  const returnTo = safeReturnTo(typeof next === "string" ? next : null);
+  if (returnTo && (await getSession())) redirect(returnTo);
+
   const [
     isLive,
     isBannerEnabled,

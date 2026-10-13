@@ -18,8 +18,9 @@ import {
   CHALLENGE_COOKIE,
   CHALLENGE_COOKIE_OPTIONS,
   SESSION_COOKIE,
-  SESSION_COOKIE_OPTIONS,
   getSession,
+  safeReturnTo,
+  sessionCookieOptions,
   readChallenge,
   signChallenge,
   signToken,
@@ -89,7 +90,8 @@ async function assertAuth() {
 }
 
 async function startSession(epoch: number) {
-  (await cookies()).set(SESSION_COOKIE, signToken(epoch), SESSION_COOKIE_OPTIONS);
+  const host = (await headers()).get("host");
+  (await cookies()).set(SESSION_COOKIE, signToken(epoch), sessionCookieOptions(host));
 }
 
 async function currentRelyingParty() {
@@ -116,7 +118,8 @@ export async function login(_prev: { error?: string }, formData: FormData) {
     return { error: "Wrong password." };
   }
   await startSession(sessionEpoch);
-  redirect("/admin");
+  // Back to the subdomain that sent us here to sign in, if it did.
+  redirect(safeReturnTo(formData.get("next") as string | null) ?? "/admin");
 }
 
 type Failure = { ok: false; error: string };
@@ -280,12 +283,13 @@ export async function signOutOtherSessions(): Promise<{ ok: true } | Failure> {
 
 export async function logout() {
   const store = await cookies();
-  // Delete with the same path the cookie was written at: the browser keys
-  // cookies by (name, domain, path), so a bare delete() emits an expiry for
-  // path "/" and leaves the real /admin cookie untouched. Only one expiry can
-  // be queued per cookie name here — the response cookie store is keyed by
-  // name — so it has to be the one that matches SESSION_COOKIE_OPTIONS.
-  store.delete({ name: SESSION_COOKIE, path: SESSION_COOKIE_OPTIONS.path });
+  // Delete with the same path and domain the cookie was written at: the
+  // browser keys cookies by (name, domain, path), so an expiry for any other
+  // pair leaves the real cookie untouched. Only one expiry can be queued per
+  // cookie name here — the response cookie store is keyed by name — so it has
+  // to be the one that matches sessionCookieOptions.
+  const { path, ...rest } = sessionCookieOptions((await headers()).get("host"));
+  store.delete({ name: SESSION_COOKIE, path, ...("domain" in rest ? { domain: rest.domain } : {}) });
   redirect("/admin");
 }
 

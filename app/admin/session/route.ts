@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { describeToken, SESSION_COOKIE_OPTIONS } from "@/lib/admin-auth";
+import { describeToken, SESSION_COOKIE, sessionCookieOptions } from "@/lib/admin-auth";
 import { getAuthState } from "@/lib/live-state";
 
 // Deliberately a route handler, not a page: pages under /admin are wrapped by
@@ -30,7 +30,7 @@ function formatAge(issuedAt: Date): string {
 
 export async function GET() {
   const [store, head] = await Promise.all([cookies(), headers()]);
-  const token = store.get("admin_session")?.value;
+  const token = store.get(SESSION_COOKIE)?.value;
   const diagnosis = describeToken(token, (await getAuthState()).sessionEpoch);
 
   const host = head.get("x-forwarded-host") ?? head.get("host") ?? "(unknown)";
@@ -43,21 +43,23 @@ export async function GET() {
   // Localhost is exempt: browsers treat it as a trusted origin and will store a
   // secure cookie there over http, so flagging it would be a false alarm.
   const isLocalhost = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host);
-  const secureMismatch = SESSION_COOKIE_OPTIONS.secure && proto === "http" && !isLocalhost;
+  const options = sessionCookieOptions(host);
+  const secureMismatch = options.secure && proto === "http" && !isLocalhost;
 
   const rows = [
     row("Verdict", diagnosis.verdict, !diagnosis.ok),
     row("Session cookie received", token ? "yes" : "no", !token),
     row("Host seen by server", host),
     row("Protocol seen by server", proto, secureMismatch),
-    row("Cookie path in use", SESSION_COOKIE_OPTIONS.path),
+    row("Cookie path in use", options.path),
+    row("Cookie domain in use", "domain" in options ? options.domain : "(this host only)"),
     row("Cookies received (names only)", names.length ? names.join(", ") : "(none)"),
     row(
       "Duplicate session cookies",
-      names.filter((n) => n === "admin_session").length > 1
+      names.filter((n) => n === SESSION_COOKIE).length > 1
         ? "yes — two cookies share this name, so the wrong one may win"
         : "no",
-      names.filter((n) => n === "admin_session").length > 1,
+      names.filter((n) => n === SESSION_COOKIE).length > 1,
     ),
     diagnosis.issuedAt
       ? row("Issued", `${diagnosis.issuedAt.toISOString()} (${formatAge(diagnosis.issuedAt)})`)

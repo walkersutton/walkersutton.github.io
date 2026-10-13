@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { SITE_CONFIG } from "./config";
 import { getAuthState } from "./live-state";
 
 // Sessions carry their issue time so they expire server-side.
@@ -22,11 +23,55 @@ export const SESSION_COOKIE_OPTIONS = {
   // though the session is perfectly valid. Lax still withholds the cookie on
   // cross-site POSTs, which is the CSRF case that matters here.
   sameSite: "lax",
-  path: "/admin",
+  // "/", not "/admin": stats.walkersutton.com shares this sign-in, and its
+  // owner-only routes aren't under /admin.
+  path: "/",
   maxAge: SESSION_MAX_AGE_MS / 1000,
 } as const;
 
-export const SESSION_COOKIE = "admin_session";
+// Renamed from "admin_session" when the cookie moved from a host-only /admin
+// cookie to a site-wide one. A new name means the old cookie (which still
+// lingers at path /admin) can never shadow the new one or survive a logout.
+export const SESSION_COOKIE = "ws_admin";
+
+/** The site's own domain, which every subdomain's cookie scope falls under. */
+export function siteDomain(): string {
+  return new URL(SITE_CONFIG.siteUrl).hostname;
+}
+
+function isSiteHost(hostname: string): boolean {
+  const site = siteDomain();
+  return hostname === site || hostname.endsWith(`.${site}`);
+}
+
+/**
+ * Cookie options for a response served on `host`. On walkersutton.com (or a
+ * subdomain) the cookie is scoped to the whole domain, so
+ * stats.walkersutton.com receives it too. Elsewhere — localhost, a *.vercel.app
+ * preview — a Domain attribute would make the browser drop the cookie, so it
+ * stays host-only.
+ */
+export function sessionCookieOptions(host: string | null) {
+  const hostname = (host ?? "").split(":")[0].toLowerCase();
+  return isSiteHost(hostname) ? { ...SESSION_COOKIE_OPTIONS, domain: siteDomain() } : SESSION_COOKIE_OPTIONS;
+}
+
+/**
+ * `next` if it's an https page on this domain or a subdomain (stats sends
+ * people here to sign in and asks to be sent back), otherwise null. Anything
+ * else would make /admin an open redirect.
+ */
+export function safeReturnTo(next: string | null | undefined): string | null {
+  if (!next) return null;
+  try {
+    const url = new URL(next);
+    const local = process.env.NODE_ENV === "development" && url.hostname === "localhost";
+    if (!local && (url.protocol !== "https:" || !isSiteHost(url.hostname))) return null;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
 
 // Holds the challenge between asking the browser for a passkey and checking
 // what it sent back. Signed and short-lived, so it can't be swapped for a
@@ -147,7 +192,7 @@ export function describeToken(
     return {
       ok: false,
       verdict:
-        "No admin_session cookie arrived with this request. Either you have not signed in on this host, or the cookie is being written for a different host than the one you are reading.",
+        "No session cookie arrived with this request. Either you have not signed in on this host, or the cookie is being written for a different host than the one you are reading.",
     };
   }
 
