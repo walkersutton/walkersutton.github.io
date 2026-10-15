@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { hasTripReport } from "./trip-report";
 import type { ReportTrack, ReportWaypoint } from "@/app/trips/[slug]/LeafletReportMap";
 
 const tripsDirectory = path.join(process.cwd(), "content/trips");
@@ -393,16 +394,22 @@ export function getTripBySlug(slug: string): Trip | null {
   };
 }
 
+/**
+ * A draft trip with an archived log is still listed, linking to that log: the
+ * log was public as it was posted, so it can be read while the write-up isn't.
+ */
 export function buildTripEntries(options: { includeDrafts?: boolean } = {}): TripEntry[] {
-  return getAllTripSlugs(options)
+  return getAllTripSlugs({ includeDrafts: true })
     .map((slug): TripEntry | null => {
       const trip = getTripBySlug(slug);
       if (!trip || !trip.frontmatter.title) return null;
+      const reportHidden = trip.frontmatter.draft === true && !options.includeDrafts;
+      if (reportHidden && !hasTripReport(slug)) return null;
       return {
         name: trip.frontmatter.title,
         region: trip.frontmatter.region,
         date: trip.date,
-        href: `/trips/${slug}`,
+        href: reportHidden ? `/trips/${slug}/log` : `/trips/${slug}`,
         stats: `${trip.stats.distance} · ${trip.stats.gained}`,
         days: `${trip.days} day${trip.days !== 1 ? "s" : ""}`,
         segments: trip.tracks

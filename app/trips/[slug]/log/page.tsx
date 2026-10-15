@@ -60,8 +60,10 @@ export default async function TripReportArchivePage(props: {
   const entries = getTripReport(slug);
   if (!trip || !entries || entries.length === 0) notFound();
 
+  // The log was public as it was posted, so it stays public while the
+  // write-up is still a draft — only the links to that write-up are held back.
   const { isEnabled: showDrafts } = await draftMode();
-  if (trip.frontmatter.draft && !showDrafts) notFound();
+  const showReport = !trip.frontmatter.draft || showDrafts;
 
   const days = groupByDay(entries);
 
@@ -93,43 +95,51 @@ export default async function TripReportArchivePage(props: {
             marginBottom: 4,
           }}
         >
-          The unabridged archive of updates, posted in real-time. Trip narrative
-          can be found{" "}
-          <Link
-            href={`/trips/${slug}`}
-            style={{
-              color: "var(--color-text)",
-              textDecoration: "underline",
-              textUnderlineOffset: "2px",
-            }}
-          >
-            here
-            {/* {trip.frontmatter.title} */}
-          </Link>
-          .
+          The unabridged archive of updates, posted in real-time.{" "}
+          {showReport ? (
+            <>
+              Trip narrative can be found{" "}
+              <Link
+                href={`/trips/${slug}`}
+                style={{
+                  color: "var(--color-text)",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "2px",
+                }}
+              >
+                here
+                {/* {trip.frontmatter.title} */}
+              </Link>
+              .
+            </>
+          ) : (
+            "The trip narrative is still being written."
+          )}
         </p>
 
         <ReportEntries days={days} />
 
-        <div
-          style={{
-            marginTop: 56,
-            paddingTop: 20,
-            borderTop: "1px solid var(--color-rule)",
-          }}
-        >
-          <Link
-            href={`/trips/${slug}`}
-            className="text-[13px] font-medium"
+        {showReport && (
+          <div
             style={{
-              color: "var(--color-text-faint)",
-              textDecoration: "underline",
-              textUnderlineOffset: "2px",
+              marginTop: 56,
+              paddingTop: 20,
+              borderTop: "1px solid var(--color-rule)",
             }}
           >
-            ← {trip.frontmatter.title}
-          </Link>
-        </div>
+            <Link
+              href={`/trips/${slug}`}
+              className="text-[13px] font-medium"
+              style={{
+                color: "var(--color-text-faint)",
+                textDecoration: "underline",
+                textUnderlineOffset: "2px",
+              }}
+            >
+              ← {trip.frontmatter.title}
+            </Link>
+          </div>
+        )}
       </div>
 
       <Footer />

@@ -1,11 +1,11 @@
 {
-  "enabled": true,
+  "enabled": false,
   "bannerEnabled": false,
-  "bannerText": "riding to new york",
-  "bannerLink": "/trips/live",
+  "bannerText": "Read the Pacific to Atlantic trip log",
+  "bannerLink": "/trips/pacific-atlantic/log",
   "latestText": "",
   "latestHref": "",
-  "activeTripName": "Day 1: SF -> Saccc",
+  "activeTripName": "Pacific to Atlantic",
   "socialLatestPosts": [
     {
       "platform": "YouTube",
@@ -50,14 +50,5 @@
     }
   ],
   "blueskyHandle": "walkersutton.com",
-  "liveReportEntries": [
-    {
-      "id": "e8cf8a84-3de6-4fae-b6e9-f5ed07b75937",
-      "date": "2026-08-04T14:20:52.853Z",
-      "text": "Early morning at coffee shop in San Rafael. Last minute route planning before hitting FedEx to ship my laptop off. First stop: The Pacific",
-      "images": [
-        "https://qyom4yfgqqzdud36.public.blob.vercel-storage.com/IMG_0194-S8MoewyzHnTXtaDDbNp61ctjAWv16n.jpg"
-      ]
-    }
-  ]
+  "liveReportEntries": []
 }

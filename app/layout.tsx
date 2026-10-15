@@ -39,7 +39,7 @@ import Header from "./components/Header";
 import HideOnPaths from "./components/HideOnPaths";
 import Banner from "./components/Banner";
 import { getBannerEnabled, getBannerText, getBannerLink, getLiveEnabled } from "@/lib/live-state";
-import { getAllTripSlugs } from "@/lib/trips";
+import { buildTripEntries } from "@/lib/trips";
 import { draftMode } from "next/headers";
 
 export const dynamic = "force-dynamic";
@@ -62,7 +62,7 @@ export default async function RootLayout({
       getLiveEnabled(),
       draftMode(),
     ]);
-  const hasTrips = getAllTripSlugs({ includeDrafts }).length > 0;
+  const hasTrips = buildTripEntries({ includeDrafts }).length > 0;
 
   return (
     <html
