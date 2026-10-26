@@ -46,6 +46,16 @@ function formatRssDate(dateStr: string): string {
   return `${day} ${month} ${year} ${hours}:${minutes}:${seconds} GMT`;
 }
 
+/**
+ * Where a feed item links to. Links to this site's own posts carry ?ref=rss,
+ * which stats.js records as the visit's source, so click-throughs from feed
+ * readers show up in the stats. Only the link is tagged: item IDs stay the
+ * bare URL, or readers would see every post as new.
+ */
+function itemLink(post: { slug: string; external_url?: string }) {
+  return post.external_url || `${SITE_CONFIG.siteUrl}/posts/${post.slug}?ref=rss`;
+}
+
 export async function generateRssFeed() {
   const postsMetadata = getAllPosts();
   const posts = await Promise.all(
@@ -70,8 +80,6 @@ export async function generateRssFeed() {
 
   const itemsXml = posts
     .map((post) => {
-      const url =
-        post.external_url || `${SITE_CONFIG.siteUrl}/posts/${post.slug}`;
       const guid = `/posts/${post.slug}`;
       const categoriesXml = (post.categories || [])
         .map((cat) => `<category>${escapeXml(cat)}</category>`)
@@ -81,7 +89,7 @@ export async function generateRssFeed() {
 <item>
   <guid>${guid}</guid>
   <title>${escapeXml(post.title)}</title>
-  <link>${url}</link>
+  <link>${itemLink(post)}</link>
   ${categoriesXml ? categoriesXml + "\n  " : ""}<pubDate>${formatRssDate(post.date)}</pubDate>
   <description>${escapeXml(post.htmlContent)}</description>
 </item>`;
@@ -130,7 +138,7 @@ export async function generateAtomFeed() {
       return `
   <entry>
     <title>${escapeXml(post.title)}</title>
-    <link href="${url}" />
+    <link href="${itemLink(post)}" />
     <id>${url}</id>
     <updated>${new Date(post.date).toISOString()}</updated>
     <content type="html">${escapeXml(post.htmlContent)}</content>
@@ -172,7 +180,7 @@ export async function generateJsonFeed() {
 
       return {
         id: url,
-        url: url,
+        url: itemLink(post),
         title: post.title,
         content_html: htmlContent,
         date_published: new Date(post.date).toISOString(),
